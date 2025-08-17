@@ -1,0 +1,157 @@
+import React, { useState, useEffect } from 'react';
+import { Navbar } from './Navbar';
+import { GameCard } from './GameCard';
+import { GameRequestModal } from './GameRequestModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Game, fetchPopularGames, searchGames } from '@/services/igdbApi';
+import { FaFire, FaTrophy, FaGamepad, FaPlus } from 'react-icons/fa';
+
+export const GameDashboard: React.FC = () => {
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'popular' | 'top-rated' | 'new'>('popular');
+
+  useEffect(() => {
+    loadGames();
+  }, []);
+
+  const loadGames = async () => {
+    setLoading(true);
+    try {
+      const gameData = await fetchPopularGames();
+      setGames(gameData);
+    } catch (error) {
+      console.error('Error loading games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      loadGames();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const results = await searchGames(query);
+      setGames(results);
+    } catch (error) {
+      console.error('Error searching games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGameRequest = (gameId: number) => {
+    const game = games.find(g => g.id === gameId);
+    if (game) {
+      setSelectedGame(game);
+      setIsRequestModalOpen(true);
+    }
+  };
+
+  const filterButtons = [
+    { key: 'popular' as const, label: 'Popular', icon: FaFire },
+    { key: 'top-rated' as const, label: 'Top Rated', icon: FaTrophy },
+    { key: 'new' as const, label: 'New Releases', icon: FaPlus },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-hero">
+      <Navbar onSearch={handleSearch} />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <FaGamepad className="text-primary text-3xl" />
+            <h1 className="text-3xl font-bold text-foreground">Game Marketplace</h1>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            Discover and request your favorite games from our curated collection
+          </p>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {filterButtons.map(({ key, label, icon: Icon }) => (
+            <Button
+              key={key}
+              variant={activeFilter === key ? "default" : "outline"}
+              className={activeFilter === key 
+                ? "bg-gradient-primary hover:shadow-glow-primary" 
+                : "border-border/50 hover:bg-secondary/80"
+              }
+              onClick={() => setActiveFilter(key)}
+            >
+              <Icon className="w-4 h-4 mr-2" />
+              {label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Games Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-[300px] w-full rounded-lg bg-secondary/30" />
+                <Skeleton className="h-4 w-full bg-secondary/30" />
+                <Skeleton className="h-4 w-3/4 bg-secondary/30" />
+              </div>
+            ))}
+          </div>
+        ) : games.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {games.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                onRequest={handleGameRequest}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <FaGamepad className="text-6xl text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No games found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search or browse our popular games
+            </p>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+            <div className="text-3xl font-bold text-primary mb-2">500+</div>
+            <div className="text-muted-foreground">Games Available</div>
+          </div>
+          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+            <div className="text-3xl font-bold text-accent mb-2">10K+</div>
+            <div className="text-muted-foreground">Active Gamers</div>
+          </div>
+          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+            <div className="text-3xl font-bold text-gaming-green mb-2">98%</div>
+            <div className="text-muted-foreground">Satisfaction Rate</div>
+          </div>
+        </div>
+      </main>
+
+      <GameRequestModal
+        game={selectedGame}
+        isOpen={isRequestModalOpen}
+        onClose={() => {
+          setIsRequestModalOpen(false);
+          setSelectedGame(null);
+        }}
+      />
+    </div>
+  );
+};
