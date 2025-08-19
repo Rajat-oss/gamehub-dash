@@ -15,6 +15,9 @@ import {
 import { db } from '@/lib/firebase';
 import { GameLog, GameLogInput, GameLogStats, GameStatus } from '@/types/gameLog';
 import { userActivityService } from './userActivityService';
+import { firestoreRateLimiter } from '@/utils/rateLimiter';
+import { gameLogsCache } from '@/utils/cache';
+import { withFirestoreErrorHandling } from '@/utils/firestoreErrorHandler';
 
 const COLLECTION_NAME = 'gameLogs';
 
@@ -46,7 +49,13 @@ const convertGameLogDocument = (doc: any): GameLog => {
 export const gameLogService = {
   // Add a new game log
   async addGameLog(userId: string, gameLogInput: GameLogInput, userName?: string): Promise<string> {
-    try {
+    const rateLimitKey = `gameLog_${userId}`;
+    
+    if (!firestoreRateLimiter.canMakeRequest(rateLimitKey)) {
+      throw new Error('Too many requests. Please wait before adding another game.');
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const now = Timestamp.now();
       const docRef = await addDoc(collection(db, COLLECTION_NAME), {
         ...gameLogInput,
@@ -55,22 +64,26 @@ export const gameLogService = {
         dateUpdated: now,
       });
       
-      // Log activity
+      // Clear cache
+      gameLogsCache.delete(`gameLogs_${userId}`);
+      
+      // Log activity (with error handling)
       if (userName) {
-        await userActivityService.logGameAdded(
-          userId, 
-          userName, 
-          gameLogInput.gameId, 
-          gameLogInput.gameName, 
-          gameLogInput.gameImageUrl
-        );
+        try {
+          await userActivityService.logGameAdded(
+            userId, 
+            userName, 
+            gameLogInput.gameId, 
+            gameLogInput.gameName, 
+            gameLogInput.gameImageUrl
+          );
+        } catch (activityError) {
+          console.warn('Failed to log activity:', activityError);
+        }
       }
       
       return docRef.id;
-    } catch (error) {
-      console.error('Error adding game log:', error);
-      throw error;
-    }
+    });
   },
 
   // Update an existing game log
@@ -142,18 +155,28 @@ export const gameLogService = {
 
   // Get all game logs for a user
   async getUserGameLogs(userId: string): Promise<GameLog[]> {
-    try {
+    const cacheKey = `gameLogs_${userId}`;
+    
+    // Check cache first
+    const cached = gameLogsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const q = query(
         collection(db, COLLECTION_NAME),
         where('userId', '==', userId),
         orderBy('dateUpdated', 'desc')
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertGameLogDocument);
-    } catch (error) {
-      console.error('Error fetching user game logs:', error);
-      throw error;
-    }
+      const gameLogs = querySnapshot.docs.map(convertGameLogDocument);
+      
+      // Cache the result
+      gameLogsCache.set(cacheKey, gameLogs);
+      
+      return gameLogs;
+    });
   },
 
   // Get game logs by status

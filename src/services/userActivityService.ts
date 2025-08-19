@@ -10,6 +10,9 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { activityRateLimiter } from '@/utils/rateLimiter';
+import { activitiesCache } from '@/utils/cache';
+import { withFirestoreErrorHandling } from '@/utils/firestoreErrorHandler';
 
 export interface UserActivity {
   id: string;
@@ -71,21 +74,38 @@ const convertActivityDocument = (doc: any): UserActivity => {
 export const userActivityService = {
   // Log a new activity
   async logActivity(activityInput: ActivityInput): Promise<string> {
-    try {
+    const rateLimitKey = `activity_${activityInput.userId}`;
+    
+    if (!activityRateLimiter.canMakeRequest(rateLimitKey)) {
+      console.warn('Activity rate limit exceeded for user:', activityInput.userId);
+      return 'rate-limited';
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const docRef = await addDoc(collection(db, ACTIVITIES_COLLECTION), {
         ...activityInput,
         timestamp: Timestamp.now()
       });
+      
+      // Clear relevant caches
+      activitiesCache.delete(`activities_${activityInput.userId}`);
+      activitiesCache.delete('recent_activities');
+      
       return docRef.id;
-    } catch (error) {
-      console.error('Error logging activity:', error);
-      throw error;
-    }
+    });
   },
 
   // Get user's activities
   async getUserActivities(userId: string, limitCount: number = 20): Promise<UserActivity[]> {
-    try {
+    const cacheKey = `activities_${userId}_${limitCount}`;
+    
+    // Check cache first
+    const cached = activitiesCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const q = query(
         collection(db, ACTIVITIES_COLLECTION),
         where('userId', '==', userId),
@@ -93,27 +113,39 @@ export const userActivityService = {
         limit(limitCount)
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertActivityDocument);
-    } catch (error) {
-      console.error('Error fetching user activities:', error);
-      throw error;
-    }
+      const activities = querySnapshot.docs.map(convertActivityDocument);
+      
+      // Cache the result
+      activitiesCache.set(cacheKey, activities);
+      
+      return activities;
+    });
   },
 
   // Get recent activities from all users (public feed)
   async getRecentActivities(limitCount: number = 50): Promise<UserActivity[]> {
-    try {
+    const cacheKey = `recent_activities_${limitCount}`;
+    
+    // Check cache first
+    const cached = activitiesCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const q = query(
         collection(db, ACTIVITIES_COLLECTION),
         orderBy('timestamp', 'desc'),
         limit(limitCount)
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertActivityDocument);
-    } catch (error) {
-      console.error('Error fetching recent activities:', error);
-      throw error;
-    }
+      const activities = querySnapshot.docs.map(convertActivityDocument);
+      
+      // Cache the result
+      activitiesCache.set(cacheKey, activities);
+      
+      return activities;
+    });
   },
 
   // Get activities for a specific game

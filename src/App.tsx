@@ -5,11 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LandingPage } from "./pages/LandingPage";
 import Index from "./pages/Index";
 import Favorites from "./pages/Favorites";
 import MyGames from "./pages/MyGames";
 import GameDetails from "./pages/GameDetails";
+import Profile from "./pages/Profile";
+import PublicProfiles from "./pages/PublicProfiles";
+import UserProfilePage from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
 import "@/utils/verifyTemplate"; // Import template verification utility
@@ -17,28 +21,33 @@ import "@/utils/verifyTemplate"; // Import template verification utility
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/auth" element={<Index />} />
-              <Route path="/dashboard" element={<Index />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/my-games" element={<MyGames />} />
-              <Route path="/game/:gameId" element={<GameDetails />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/auth" element={<Index />} />
+                <Route path="/dashboard" element={<Index />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/my-games" element={<MyGames />} />
+                <Route path="/game/:gameId" element={<GameDetails />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/community" element={<PublicProfiles />} />
+                <Route path="/user/:userId" element={<UserProfilePage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

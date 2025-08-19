@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TwitchGame, getTopGames, searchGames as searchTwitchGames } from '@/lib/twitch';
-import { FaFire, FaTrophy, FaGamepad, FaPlus } from 'react-icons/fa';
+import { FaFire, FaTrophy, FaGamepad, FaPlus, FaUser } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 export const GameDashboard: React.FC = () => {
   const [games, setGames] = useState<TwitchGame[]>([]);
@@ -89,12 +90,19 @@ export const GameDashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* Info Badge */}
-        <div className="mb-8">
+        {/* Community Button */}
+        <div className="mb-8 flex items-center justify-between">
           <Badge variant="secondary" className="text-sm">
             <FaFire className="w-4 h-4 mr-2" />
             Top Games on Pixel Pilgrim
           </Badge>
+          
+          <Link to="/community">
+            <Button variant="outline" className="border-primary/50 hover:bg-primary/10">
+              <FaUser className="w-4 h-4 mr-2" />
+              Gaming Community
+            </Button>
+          </Link>
         </div>
 
         {/* Games Grid */}
