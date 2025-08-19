@@ -141,7 +141,16 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
   };
 
   const handleSubmitReply = async (commentId: string) => {
-    if (!replyText.trim() || !user) {
+    if (!replyText.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a reply message.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (!user) {
       toast({
         title: 'Error',
         description: 'Please sign in to post a reply.',
@@ -151,11 +160,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
     }
     
     try {
+      setSubmitting(true);
+      console.log('Submitting reply to comment:', commentId);
+      
       await commentService.addReply(commentId, {
         userId: user.uid,
         userName: user.displayName || user.email || 'Anonymous',
         userAvatar: user.photoURL || undefined,
-        comment: replyText
+        comment: replyText.trim()
       });
       
       setReplyText('');
@@ -167,12 +179,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
         description: 'Your reply has been posted!'
       });
     } catch (error) {
-      console.error('Error submitting reply:', error);
+      console.error('Error submitting reply to comment', commentId, ':', error);
       toast({
         title: 'Error',
         description: 'Failed to post reply. Please try again.',
         variant: 'destructive'
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -346,9 +360,10 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                     <Button
                       size="sm"
                       onClick={() => handleSubmitReply(comment.id)}
-                      disabled={!replyText.trim() || !user}
+                      disabled={!replyText.trim() || !user || submitting}
+                      className="bg-gradient-primary hover:shadow-glow-primary"
                     >
-                      Post Reply
+                      {submitting ? 'Posting...' : 'Post Reply'}
                     </Button>
                     <Button
                       size="sm"
@@ -357,6 +372,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                         setReplyingTo(null);
                         setReplyText('');
                       }}
+                      disabled={submitting}
                     >
                       Cancel
                     </Button>

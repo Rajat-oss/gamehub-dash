@@ -77,10 +77,16 @@ const convertCommentDocument = (doc: any): Comment => {
     comment: data.comment,
     rating: data.rating,
     timestamp: timestampToDate(data.timestamp),
-    replies: data.replies?.map((reply: any) => ({
-      ...reply,
-      timestamp: timestampToDate(reply.timestamp)
-    })) || [],
+    replies: (data.replies || []).map((reply: any) => ({
+      id: reply.id,
+      userId: reply.userId,
+      userName: reply.userName,
+      userAvatar: reply.userAvatar,
+      comment: reply.comment,
+      timestamp: timestampToDate(reply.timestamp),
+      likes: reply.likes || 0,
+      likedBy: reply.likedBy || []
+    })),
     likes: data.likes || 0,
     likedBy: data.likedBy || []
   };
@@ -134,7 +140,8 @@ export const commentService = {
     try {
       const q = query(
         collection(db, COMMENTS_COLLECTION),
-        where('gameId', '==', gameId)
+        where('gameId', '==', gameId),
+        orderBy('timestamp', 'desc')
       );
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(convertCommentDocument);
@@ -148,9 +155,13 @@ export const commentService = {
   async addReply(commentId: string, replyInput: ReplyInput): Promise<void> {
     try {
       const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
+      
       const newReply = {
-        id: Date.now().toString(),
-        ...replyInput,
+        id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: replyInput.userId,
+        userName: replyInput.userName,
+        userAvatar: replyInput.userAvatar || '',
+        comment: replyInput.comment,
         timestamp: Timestamp.now(),
         likes: 0,
         likedBy: []
