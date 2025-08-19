@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Game } from '@/services/igdbApi';
+import { sendGameRequest } from '@/services/emailService';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 interface GameRequestModalProps {
@@ -22,21 +24,25 @@ interface GameRequestModalProps {
 export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen, onClose }) => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!game) return;
+    if (!game || !user) return;
 
     setIsSubmitting(true);
     
     try {
-      // Here you would typically send the request to your backend
-      // For demo purposes, we'll just show a success message
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await sendGameRequest({
+        game,
+        userEmail: user.email || 'unknown@example.com',
+        userName: user.displayName || user.email || 'Anonymous User',
+        message
+      });
       
       toast({
         title: "Game requested!",
-        description: `Your request for "${game.name}" has been submitted successfully.`,
+        description: `Your request for "${game.name}" has been sent successfully.`,
       });
       
       setMessage('');
@@ -44,7 +50,7 @@ export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen
     } catch (error) {
       toast({
         title: "Request failed",
-        description: "There was an error submitting your request. Please try again.",
+        description: "There was an error sending your request. Please try again.",
         variant: "destructive",
       });
     } finally {

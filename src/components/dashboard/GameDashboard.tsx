@@ -5,7 +5,7 @@ import { GameRequestModal } from './GameRequestModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Game, fetchPopularGames, searchGames } from '@/services/igdbApi';
+import { Game, fetchPopularGames, fetchTopRatedGames, fetchNewReleases, searchGames } from '@/services/igdbApi';
 import { FaFire, FaTrophy, FaGamepad, FaPlus } from 'react-icons/fa';
 
 export const GameDashboard: React.FC = () => {
@@ -19,10 +19,20 @@ export const GameDashboard: React.FC = () => {
     loadGames();
   }, []);
 
-  const loadGames = async () => {
+  const loadGames = async (filter: 'popular' | 'top-rated' | 'new' = activeFilter) => {
     setLoading(true);
     try {
-      const gameData = await fetchPopularGames();
+      let gameData: Game[];
+      switch (filter) {
+        case 'top-rated':
+          gameData = await fetchTopRatedGames();
+          break;
+        case 'new':
+          gameData = await fetchNewReleases();
+          break;
+        default:
+          gameData = await fetchPopularGames();
+      }
       setGames(gameData);
     } catch (error) {
       console.error('Error loading games:', error);
@@ -88,7 +98,10 @@ export const GameDashboard: React.FC = () => {
                 ? "bg-gradient-primary hover:shadow-glow-primary" 
                 : "border-border/50 hover:bg-secondary/80"
               }
-              onClick={() => setActiveFilter(key)}
+              onClick={() => {
+                setActiveFilter(key);
+                loadGames(key);
+              }}
             >
               <Icon className="w-4 h-4 mr-2" />
               {label}

@@ -6,80 +6,87 @@
 
 @layer base {
   :root {
-    /* Dark gaming theme */
-    --background: 224 15% 8%;
-    --foreground: 220 20% 95%;
-
-    --card: 224 15% 10%;
-    --card-foreground: 220 20% 95%;
-
-    --popover: 224 15% 12%;
-    --popover-foreground: 220 20% 95%;
-
-    /* Gaming purple/blue primary */
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 250 100% 65%;
-    --primary-foreground: 224 15% 8%;
-
-    /* Gaming secondary with slight purple tint */
-    --secondary: 224 15% 15%;
-    --secondary-foreground: 220 20% 85%;
-
-    --muted: 224 15% 12%;
-    --muted-foreground: 220 10% 60%;
-
-    /* Vibrant gaming accent */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
     --accent: 280 100% 70%;
-    --accent-foreground: 224 15% 8%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 20% 95%;
-
-    --border: 224 15% 20%;
-    --input: 224 15% 15%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 250 100% 65%;
-
     --radius: 0.75rem;
-
-    /* Gaming-specific colors */
-    --gaming-green: 120 100% 50%;
-    --gaming-orange: 30 100% 60%;
-    --gaming-blue: 210 100% 65%;
-    --gaming-purple: 280 100% 70%;
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(250 100% 65%), hsl(280 100% 70%));
-    --gradient-card: linear-gradient(145deg, hsl(224 15% 10%), hsl(224 15% 12%));
-    --gradient-hero: linear-gradient(135deg, hsl(224 15% 8%) 0%, hsl(250 100% 15%) 100%);
-
-    /* Glow effects */
-    --glow-primary: 0 0 30px hsl(250 100% 65% / 0.3);
-    --glow-accent: 0 0 20px hsl(280 100% 70% / 0.4);
-
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
+    
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Gaming colors */
+    --gaming-green: 120 100% 50%;
+    --gaming-orange: 25 95% 53%;
+    --gaming-blue: 217 91% 60%;
+    --gaming-purple: 271 81% 56%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    
+    /* Glows */
+    --glow-primary: 0 0 20px hsla(var(--primary), 0.5);
+    --glow-accent: 0 0 20px hsla(var(--accent), 0.5);
+    
+    /* Transitions */
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    /* Keep same dark theme since we're primarily dark */
+    /* Dark gaming theme */
     --background: 224 15% 8%;
     --foreground: 220 20% 95%;
+    --card: 224 15% 10%;
+    --card-foreground: 220 20% 95%;
+    --popover: 224 15% 12%;
+    --popover-foreground: 220 20% 95%;
+    --primary: 250 100% 65%;
+    --primary-foreground: 224 15% 8%;
+    --secondary: 224 15% 15%;
+    --secondary-foreground: 220 20% 85%;
+    --muted: 224 15% 12%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 280 100% 70%;
+    --accent-foreground: 224 15% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 20% 95%;
+    --border: 224 15% 20%;
+    --input: 224 15% 15%;
+    --ring: 250 100% 65%;
+    
+    --sidebar-background: 224 15% 10%;
+    --sidebar-foreground: 220 20% 85%;
+    --sidebar-primary: 220 20% 95%;
+    --sidebar-primary-foreground: 224 15% 8%;
+    --sidebar-accent: 224 15% 15%;
+    --sidebar-accent-foreground: 220 20% 85%;
+    --sidebar-border: 224 15% 20%;
+    --sidebar-ring: 250 100% 65%;
   }
 }
 
@@ -90,9 +97,6 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    background: hsl(var(--background));
-    background-image: radial-gradient(circle at 20% 50%, hsl(250 100% 15% / 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, hsl(280 100% 15% / 0.1) 0%, transparent 50%);
   }
 
   /* Gaming scrollbar */
@@ -112,4 +116,355 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--accent));
   }
+}
+
+/* Landing Page Animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Gaming-Specific Animations */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.6), 0 0 60px rgba(124, 58, 237, 0.3);
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 100% {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 5px currentColor, 0 0 15px currentColor, 0 0 25px currentColor;
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-100px, -100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes gaming-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -15px, 0);
+  }
+  70% {
+    transform: translate3d(0, -7px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes circuit-lines {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes matrix-rain {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* Gaming Animation Classes */
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 1.5s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.animate-particle-float {
+  animation: particle-float 6s linear infinite;
+}
+
+.animate-gaming-bounce {
+  animation: gaming-bounce 2s infinite;
+}
+
+.animate-circuit-lines {
+  animation: circuit-lines 2s ease-in-out infinite;
+}
+
+.animate-matrix-rain {
+  animation: matrix-rain 4s linear infinite;
+}
+
+/* Gaming Background Effects */
+.gaming-grid-bg {
+  background-image: 
+    linear-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gradient-shift 10s ease infinite;
+}
+
+.cyber-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(124, 58, 237, 0.2),
+    transparent
+  );
+  animation: cyber-sweep 3s infinite;
+}
+
+@keyframes cyber-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.particle-system {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(124, 58, 237, 0.6);
+  border-radius: 50%;
+  animation: particle-float 8s linear infinite;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+.particle:nth-child(9) { left: 90%; animation-delay: 8s; }
+
+/* Gaming Hero Background */
+.gaming-hero-bg {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      rgba(124, 58, 237, 0.03) 25%,
+      rgba(168, 85, 247, 0.03) 50%,
+      rgba(147, 51, 234, 0.03) 75%,
+      hsl(var(--background)) 100%
+    );
+  position: relative;
+}
+
+.gaming-hero-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+  animation: gradient-shift 8s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+/* Gaming Section Backgrounds */
+.gaming-features-bg {
+  background: 
+    linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      rgba(34, 197, 94, 0.02) 25%,
+      rgba(59, 130, 246, 0.02) 50%,
+      rgba(168, 85, 247, 0.02) 75%,
+      hsl(var(--background)) 100%
+    );
+  position: relative;
+}
+
+.gaming-stats-bg {
+  background: 
+    linear-gradient(45deg, 
+      rgba(124, 58, 237, 0.05) 0%, 
+      rgba(168, 85, 247, 0.05) 25%,
+      rgba(147, 51, 234, 0.05) 50%,
+      rgba(126, 34, 206, 0.05) 75%,
+      rgba(124, 58, 237, 0.05) 100%
+    );
+  animation: gradient-shift 6s ease infinite;
+  position: relative;
+}
+
+.gaming-testimonials-bg {
+  background: 
+    radial-gradient(ellipse at center, rgba(124, 58, 237, 0.03) 0%, transparent 70%),
+    linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      rgba(168, 85, 247, 0.02) 50%,
+      hsl(var(--background)) 100%
+    );
+}
+
+/* Neon Text Effects */
+.neon-text {
+  text-shadow: 
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 15px currentColor,
+    0 0 20px currentColor;
+  animation: neon-flicker 2s ease-in-out infinite alternate;
+}
+
+.gaming-card-glow {
+  transition: all 0.3s ease;
+}
+
+.gaming-card-glow:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(124, 58, 237, 0.1),
+    0 0 20px rgba(124, 58, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Gaming Button Effects */
+.gaming-button {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, 
+    rgba(124, 58, 237, 1) 0%, 
+    rgba(168, 85, 247, 1) 100%
+  );
+  transition: all 0.3s ease;
+}
+
+.gaming-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.gaming-button:hover::before {
+  left: 100%;
+}
+
+.gaming-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 5px 15px rgba(124, 58, 237, 0.4),
+    0 0 20px rgba(124, 58, 237, 0.2);
 }

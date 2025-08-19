@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { FaGoogle, FaGamepad } from 'react-icons/fa';
+import { Mail, Lock, Chrome } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
@@ -59,15 +59,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
   };
 
   return (
-    <Card className="w-full max-w-md bg-gradient-card border-border/50 shadow-glow-primary">
+    <Card className="w-full max-w-md">
       <CardHeader className="space-y-2 text-center">
-        <div className="flex items-center justify-center space-x-2 mb-4">
-          <FaGamepad className="text-primary text-3xl" />
-          <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            GameHub
-          </CardTitle>
+        <div className="flex items-center justify-center mb-4">
+          <img 
+            src="/logofinal.png" 
+            alt="GameHub" 
+            className="h-36 w-36 object-contain" 
+          />
         </div>
-        <CardDescription className="text-muted-foreground">
+        <CardDescription>
           Sign in to your gaming account
         </CardDescription>
       </CardHeader>
@@ -75,31 +76,37 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="gamer@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-secondary/50 border-border/50 focus:border-primary"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="gamer@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="pl-10"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-secondary/50 border-border/50 focus:border-primary"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pl-10"
+              />
+            </div>
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300"
+            className="w-full"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign In"}
@@ -117,12 +124,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
 
         <Button
           variant="outline"
-          className="w-full border-border/50 hover:bg-secondary/80"
+          className="w-full"
           onClick={handleGoogleLogin}
           disabled={isLoading}
         >
-          <FaGoogle className="mr-2 h-4 w-4" />
-          Google
+          <Chrome className="mr-2 h-4 w-4" />
+          Continue with Google
         </Button>
 
         <div className="text-center text-sm">
@@ -130,7 +137,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
           <button
             type="button"
             onClick={onToggleMode}
-            className="text-primary hover:text-accent font-medium transition-colors"
+            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
           >
             Sign up
           </button>

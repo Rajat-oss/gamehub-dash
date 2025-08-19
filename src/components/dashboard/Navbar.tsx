@@ -11,7 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaGamepad, FaSearch, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -20,6 +21,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +41,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <FaGamepad className="text-primary text-2xl" />
-            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              GameHub
-            </h1>
+          <div className="cursor-pointer" onClick={() => navigate('/')}>
+            <img 
+              src="/logofinal.png" 
+              alt="GameHub" 
+              className="h-28 w-28 object-contain" 
+            />
           </div>
 
           {/* Search */}

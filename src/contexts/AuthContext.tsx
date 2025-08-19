@@ -47,12 +47,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      if (error.code === 'auth/operation-not-allowed') {
+        throw new Error('Email/password authentication is not enabled. Please enable it in Firebase Console.');
+      }
+      throw error;
+    }
   };
 
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      if (error.code === 'auth/operation-not-allowed') {
+        throw new Error('Google authentication is not enabled. Please enable it in Firebase Console.');
+      }
+      throw error;
+    }
   };
 
   const logout = async () => {
