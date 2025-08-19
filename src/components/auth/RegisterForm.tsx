@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Lock, Chrome, User } from 'lucide-react';
+import { Mail, Lock, Chrome, User, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { profileService } from '@/services/profileService';
 
 interface RegisterFormProps {
   onToggleMode: () => void;
@@ -18,7 +19,29 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
   const { register, loginWithGoogle } = useAuth();
+
+  // Check username availability
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (username.length < 3) {
+        setUsernameStatus(null);
+        return;
+      }
+      
+      setUsernameStatus('checking');
+      try {
+        const isAvailable = await profileService.isUsernameAvailable(username);
+        setUsernameStatus(isAvailable ? 'available' : 'taken');
+      } catch (error) {
+        setUsernameStatus(null);
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,10 +58,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
     setIsLoading(true);
     
     try {
-      await register(email, password);
-      
-      // Save username to localStorage for profile creation
-      localStorage.setItem('gamehub_username', username);
+      await register(email, password, username);
       
       toast({
         title: "Account created!",
@@ -101,9 +121,27 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="pl-10"
+                className={`pl-10 pr-10 ${
+                  usernameStatus === 'taken' ? 'border-red-500' : 
+                  usernameStatus === 'available' ? 'border-green-500' : ''
+                }`}
               />
+              {usernameStatus === 'checking' && (
+                <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              )}
+              {usernameStatus === 'available' && (
+                <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-500" />
+              )}
+              {usernameStatus === 'taken' && (
+                <X className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500" />
+              )}
             </div>
+            {usernameStatus === 'taken' && (
+              <p className="text-sm text-red-500">Username is already taken</p>
+            )}
+            {usernameStatus === 'available' && (
+              <p className="text-sm text-green-500">Username is available</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -153,7 +191,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
           <Button 
             type="submit" 
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || usernameStatus === 'taken' || usernameStatus === 'checking'}
           >
             {isLoading ? "Creating account..." : "Create Account"}
           </Button>
