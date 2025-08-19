@@ -88,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="cursor-pointer" onClick={() => navigate('/dashboard')}>
+          <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
               src="/logofinal.png" 
               alt="GameHub" 
@@ -183,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                 <FaUser className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
                 <FaCog className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>

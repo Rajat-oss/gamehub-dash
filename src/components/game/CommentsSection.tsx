@@ -161,8 +161,6 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
     
     try {
       setSubmitting(true);
-      console.log('Submitting reply to comment:', commentId);
-      
       await commentService.addReply(commentId, {
         userId: user.uid,
         userName: user.displayName || user.email || 'Anonymous',
@@ -179,7 +177,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
         description: 'Your reply has been posted!'
       });
     } catch (error) {
-      console.error('Error submitting reply to comment', commentId, ':', error);
+      console.error('Error submitting reply:', error);
       toast({
         title: 'Error',
         description: 'Failed to post reply. Please try again.',

@@ -2,10 +2,10 @@ import { TwitchGame } from '@/lib/twitch';
 import emailjs from '@emailjs/browser';
 
 // EmailJS Configuration
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+const EMAILJS_SERVICE_ID = 'service_zdf9xta';
+const EMAILJS_TEMPLATE_ID = 'template_apnp45o';
+const EMAILJS_PUBLIC_KEY = 'meXmdsep-Hf_vqEqa';
+const ADMIN_EMAIL = 'vedantvyas79@gmail.com';
 
 // Initialize EmailJS
 if (EMAILJS_PUBLIC_KEY) {
