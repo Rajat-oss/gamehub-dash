@@ -10,13 +10,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Game } from '@/services/igdbApi';
-import { sendGameRequest } from '@/services/emailService';
-import { useAuth } from '@/contexts/AuthContext';
+import { TwitchGame } from '@/lib/twitch';
 import { toast } from '@/hooks/use-toast';
 
 interface GameRequestModalProps {
-  game: Game | null;
+  game: TwitchGame | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -24,21 +22,16 @@ interface GameRequestModalProps {
 export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen, onClose }) => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!game || !user) return;
+    if (!game) return;
 
     setIsSubmitting(true);
     
     try {
-      await sendGameRequest({
-        game,
-        userEmail: user.email || 'unknown@example.com',
-        userName: user.displayName || user.email || 'Anonymous User',
-        message
-      });
+      // Simulate request submission
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: "Game requested!",
@@ -75,17 +68,15 @@ export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4 p-4 bg-secondary/30 rounded-lg">
             <img
-              src={game.cover?.url || 'https://via.placeholder.com/64x64?text=No+Image'}
+              src={game.box_art_url || 'https://via.placeholder.com/64x64?text=No+Image'}
               alt={game.name}
               className="w-16 h-16 object-cover rounded"
             />
             <div>
               <h3 className="font-semibold">{game.name}</h3>
-              {game.genres && game.genres.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {game.genres.map(g => g.name).join(', ')}
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                Popular on Twitch
+              </p>
             </div>
           </div>
 
