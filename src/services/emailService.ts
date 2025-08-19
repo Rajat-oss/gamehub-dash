@@ -2,10 +2,10 @@ import { Game } from './igdbApi';
 import emailjs from '@emailjs/browser';
 
 // EmailJS Configuration
-const EMAILJS_SERVICE_ID = 'pixelpilgrim-service';
-const EMAILJS_TEMPLATE_ID = 'template_game_request';
-const EMAILJS_PUBLIC_KEY = 'meXmdsep-Hf_vqEqa';
-const ADMIN_EMAIL = 'vedantvyas79@gmail.com';
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'pixelpilgrim-service';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_game_request';
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'meXmdsep-Hf_vqEqa';
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'vedantvyas79@gmail.com';
 
 // Initialize EmailJS
 emailjs.init(EMAILJS_PUBLIC_KEY);
@@ -19,25 +19,19 @@ interface GameRequestData {
 
 export const sendGameRequest = async (data: GameRequestData): Promise<void> => {
   try {
-    // Email content
-    const emailContent = `
-New Game Request from GameHub
+    console.log('Starting email send process...');
+    console.log('EmailJS Config:', {
+      serviceId: EMAILJS_SERVICE_ID,
+      templateId: EMAILJS_TEMPLATE_ID,
+      publicKey: EMAILJS_PUBLIC_KEY ? '***SET***' : 'NOT SET',
+      adminEmail: ADMIN_EMAIL
+    });
+    console.log('Game request data:', data);
 
-User: ${data.userName}
-Email: ${data.userEmail}
-
-Game Details:
-- Name: ${data.game.name}
-- Genres: ${data.game.genres?.map(g => g.name).join(', ') || 'N/A'}
-- Rating: ${data.game.rating || 'N/A'}
-- Cover Image: ${data.game.cover?.url || 'No image available'}
-
-User Message:
-${data.message || 'No additional message'}
-
----
-Sent from GameHub Platform
-    `;
+    // Check if EmailJS is properly initialized
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      throw new Error('EmailJS configuration is incomplete. Check environment variables.');
+    }
 
     const templateParams = {
       to_email: ADMIN_EMAIL,
@@ -51,14 +45,23 @@ Sent from GameHub Platform
       request_date: new Date().toLocaleString()
     };
 
-    await emailjs.send(
+    console.log('Template params:', templateParams);
+
+    const result = await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
       templateParams
     );
     
+    console.log('Email sent successfully:', result);
+    
   } catch (error) {
     console.error('Email sending failed:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     throw error;
   }
 };

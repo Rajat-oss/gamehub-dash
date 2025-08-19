@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import Favorites from "./pages/Favorites";
 import GameDetails from "./pages/GameDetails";
 import NotFound from "./pages/NotFound";
+import "@/utils/emailTest"; // Import email test utility
+import "@/utils/verifyTemplate"; // Import template verification utility
 
 const queryClient = new QueryClient();
 
