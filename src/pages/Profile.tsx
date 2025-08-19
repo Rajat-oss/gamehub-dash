@@ -1,71 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/dashboard/Navbar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getUserProfile, updateUserProfile, getOrCreateProfile, UserProfile } from '@/lib/profile';
+import { profileService, UserProfile } from '@/services/profileService';
 import { getFavorites } from '@/lib/favorites';
-import { auth } from '@/lib/firebase';
-import { FaUser, FaEdit, FaSave, FaTimes, FaGamepad, FaCalendar, FaComments, FaStar } from 'react-icons/fa';
+import { useAuth } from '@/contexts/AuthContext';
+import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
+
 const Profile = () => {
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    userName: '',
-    email: '',
-    bio: ''
-  });
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
-      const userProfile = getOrCreateProfile();
+      if (!user) return;
       
-      // Get real email from Firebase Auth
-      const currentUser = auth.currentUser;
-      if (currentUser?.email && !userProfile.email) {
-        userProfile.email = currentUser.email;
-        updateUserProfile({ email: currentUser.email });
+      try {
+        let userProfile = await profileService.getUserProfile(user.uid);
+        
+        // Create profile if it doesn't exist
+        if (!userProfile) {
+          userProfile = await profileService.updateUserProfile(user.uid, {
+            userName: user.displayName || 'Gamer' + Math.floor(Math.random() * 10000),
+            email: user.email || '',
+            favoriteGames: [],
+            totalComments: 0,
+            averageRating: 0
+          });
+        }
+        
+        setProfile(userProfile);
+        setBioText(userProfile.bio || '');
+      } catch (error) {
+        const errorInfo = FirestoreErrorHandler.handleError(error);
+        showFirestoreError(errorInfo);
       }
-      
-      setProfile(userProfile);
-      setEditForm({
-        userName: userProfile.userName,
-        email: userProfile.email || currentUser?.email || '',
-        bio: userProfile.bio || ''
-      });
     };
     
     loadProfile();
-  }, []);
+  }, [user]);
 
-  const handleSave = () => {
-    if (!profile) return;
-    
-    const updatedProfile = updateUserProfile({
-      userName: editForm.userName,
-      email: editForm.email,
-      bio: editForm.bio
-    });
-    
-    setProfile(updatedProfile);
-    setIsEditing(false);
-  };
 
-  const handleCancel = () => {
-    if (!profile) return;
-    
-    setEditForm({
-      userName: profile.userName,
-      email: profile.email || '',
-      bio: profile.bio || ''
-    });
-    setIsEditing(false);
-  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
@@ -75,7 +58,7 @@ const Profile = () => {
     });
   };
 
-  if (!profile) {
+  if (!user || !profile) {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <Navbar onSearch={() => {}} />
@@ -96,48 +79,18 @@ const Profile = () => {
         {/* Profile Header */}
         <Card className="bg-gradient-card border-border/50 mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    <FaUser />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  {isEditing ? (
-                    <Input
-                      value={editForm.userName}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, userName: e.target.value }))}
-                      className="text-2xl font-bold bg-secondary/50 border-border/50"
-                    />
-                  ) : (
-                    <h1 className="text-3xl font-bold text-foreground">{profile.userName}</h1>
-                  )}
-                  <div className="flex items-center space-x-2 mt-2">
-                    <FaCalendar className="text-muted-foreground w-4 h-4" />
-                    <span className="text-muted-foreground">Joined {formatDate(profile.joinDate)}</span>
-                  </div>
+            <div className="flex items-center space-x-4">
+              <Avatar className="h-20 w-20">
+                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                  <FaUser />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">{profile.userName}</h1>
+                <div className="flex items-center space-x-2 mt-2">
+                  <FaCalendar className="text-muted-foreground w-4 h-4" />
+                  <span className="text-muted-foreground">Joined {formatDate(profile.joinDate)}</span>
                 </div>
-              </div>
-              
-              <div className="flex space-x-2">
-                {isEditing ? (
-                  <>
-                    <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                      <FaSave className="w-4 h-4 mr-2" />
-                      Save
-                    </Button>
-                    <Button onClick={handleCancel} variant="outline">
-                      <FaTimes className="w-4 h-4 mr-2" />
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)} variant="outline">
-                    <FaEdit className="w-4 h-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                )}
               </div>
             </div>
           </CardHeader>
@@ -154,25 +107,43 @@ const Profile = () => {
               <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Email</label>
-                  {isEditing ? (
-                    <Input
-                      type="email"
-                      value={editForm.email}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="your.email@example.com"
-                      className="bg-secondary/50 border-border/50"
-                    />
-                  ) : (
-                    <p className="text-muted-foreground">{profile.email || 'No email provided'}</p>
-                  )}
+                  <p className="text-muted-foreground">{profile.email || 'No email provided'}</p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Bio</label>
-                  {isEditing ? (
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Bio</label>
+                    {isEditingBio ? (
+                      <div className="flex space-x-2">
+                        <Button size="sm" onClick={async () => {
+                          try {
+                            const updatedProfile = await profileService.updateUserProfile(user.uid, { bio: bioText });
+                            setProfile(updatedProfile);
+                            setIsEditingBio(false);
+                            toast.success('Bio updated successfully');
+                          } catch (error) {
+                            toast.error('Failed to update bio');
+                          }
+                        }}>
+                          <FaSave className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setBioText(profile.bio || '');
+                          setIsEditingBio(false);
+                        }}>
+                          <FaTimes className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => setIsEditingBio(true)}>
+                        <FaEdit className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+                  {isEditingBio ? (
                     <Textarea
-                      value={editForm.bio}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                      value={bioText}
+                      onChange={(e) => setBioText(e.target.value)}
                       placeholder="Tell us about yourself..."
                       className="bg-secondary/50 border-border/50 min-h-[100px]"
                     />

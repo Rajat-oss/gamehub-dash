@@ -6,15 +6,17 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  updateProfile
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { profileService } from '@/services/profileService';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, userName?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -46,9 +48,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, userName?: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const displayName = userName || 'Gamer' + Math.floor(Math.random() * 10000);
+      
+      // Check if username is available
+      if (userName) {
+        const isAvailable = await profileService.isUsernameAvailable(userName);
+        if (!isAvailable) {
+          throw new Error('Username is already taken. Please choose a different one.');
+        }
+      }
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Set display name
+      await updateProfile(user, { displayName });
+      
+      // Create user profile in Firestore
+      await profileService.updateUserProfile(user.uid, {
+        userName: displayName,
+        email: email,
+        favoriteGames: [],
+        totalComments: 0,
+        averageRating: 0
+      });
     } catch (error: any) {
       if (error.code === 'auth/operation-not-allowed') {
         throw new Error('Email/password authentication is not enabled. Please enable it in Firebase Console.');
@@ -60,7 +85,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if profile exists, create if not
+      const existingProfile = await profileService.getUserProfile(user.uid);
+      if (!existingProfile) {
+        await profileService.updateUserProfile(user.uid, {
+          userName: user.displayName || 'Gamer' + Math.floor(Math.random() * 10000),
+          email: user.email || '',
+          favoriteGames: [],
+          totalComments: 0,
+          averageRating: 0
+        });
+      }
     } catch (error: any) {
       if (error.code === 'auth/operation-not-allowed') {
         throw new Error('Google authentication is not enabled. Please enable it in Firebase Console.');
