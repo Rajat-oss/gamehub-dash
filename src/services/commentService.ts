@@ -16,6 +16,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { userActivityService } from './userActivityService';
+import { commentRateLimiter, firestoreRateLimiter } from '@/utils/rateLimiter';
+import { commentsCache, ratingsCache } from '@/utils/cache';
+import { withFirestoreErrorHandling } from '@/utils/firestoreErrorHandler';
 
 export interface Comment {
   id: string;
@@ -89,7 +92,13 @@ const convertCommentDocument = (doc: any): Comment => {
 export const commentService = {
   // Add a new comment
   async addComment(commentInput: CommentInput): Promise<string> {
-    try {
+    const rateLimitKey = `comment_${commentInput.userId}`;
+    
+    if (!commentRateLimiter.canMakeRequest(rateLimitKey)) {
+      throw new Error('Too many comments. Please wait before posting again.');
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const data = {
         gameId: commentInput.gameId,
         userId: commentInput.userId,
@@ -113,35 +122,50 @@ export const commentService = {
       
       const docRef = await addDoc(collection(db, COMMENTS_COLLECTION), data);
       
-      // Log activity
-      await userActivityService.logCommentPosted(
-        commentInput.userId,
-        commentInput.userName,
-        commentInput.gameId,
-        'a game', // We could pass the actual game name if available
-        commentInput.userAvatar
-      );
+      // Clear cache for this game
+      commentsCache.delete(`comments_${commentInput.gameId}`);
+      ratingsCache.delete(`rating_${commentInput.gameId}`);
+      
+      // Log activity (with rate limiting)
+      try {
+        await userActivityService.logCommentPosted(
+          commentInput.userId,
+          commentInput.userName,
+          commentInput.gameId,
+          'a game',
+          commentInput.userAvatar
+        );
+      } catch (activityError) {
+        console.warn('Failed to log activity:', activityError);
+      }
       
       return docRef.id;
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      throw error;
-    }
+    });
   },
 
   // Get comments for a game
   async getGameComments(gameId: string): Promise<Comment[]> {
-    try {
+    const cacheKey = `comments_${gameId}`;
+    
+    // Check cache first
+    const cached = commentsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const q = query(
         collection(db, COMMENTS_COLLECTION),
         where('gameId', '==', gameId)
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertCommentDocument);
-    } catch (error) {
-      console.error('Error fetching game comments:', error);
-      throw error;
-    }
+      const comments = querySnapshot.docs.map(convertCommentDocument);
+      
+      // Cache the result
+      commentsCache.set(cacheKey, comments);
+      
+      return comments;
+    });
   },
 
   // Add a reply to a comment
@@ -215,22 +239,30 @@ export const commentService = {
 
   // Get average rating for a game
   async getGameAverageRating(gameId: string): Promise<{ average: number; count: number }> {
-    try {
+    const cacheKey = `rating_${gameId}`;
+    
+    // Check cache first
+    const cached = ratingsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return withFirestoreErrorHandling(async () => {
       const comments = await this.getGameComments(gameId);
       const ratingsOnly = comments.filter(c => c.rating).map(c => c.rating!);
       
-      if (ratingsOnly.length === 0) {
-        return { average: 0, count: 0 };
-      }
+      const result = ratingsOnly.length === 0 
+        ? { average: 0, count: 0 }
+        : {
+            average: Math.round((ratingsOnly.reduce((acc, rating) => acc + rating, 0) / ratingsOnly.length) * 10) / 10,
+            count: ratingsOnly.length
+          };
       
-      const sum = ratingsOnly.reduce((acc, rating) => acc + rating, 0);
-      const average = Math.round((sum / ratingsOnly.length) * 10) / 10;
+      // Cache the result
+      ratingsCache.set(cacheKey, result);
       
-      return { average, count: ratingsOnly.length };
-    } catch (error) {
-      console.error('Error calculating average rating:', error);
-      throw error;
-    }
+      return result;
+    });
   },
 
   // Get user's comments
