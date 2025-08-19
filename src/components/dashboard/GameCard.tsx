@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FaStar, FaDownload, FaHeart } from 'react-icons/fa';
 import { TwitchGame } from '@/lib/twitch';
 import { addToFavorites, removeFromFavorites, isFavorite } from '@/lib/favorites';
+import { useNavigate } from 'react-router-dom';
 
 interface GameCardProps {
   game: TwitchGame;
@@ -14,6 +15,7 @@ interface GameCardProps {
 }
 
 export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite: propIsFavorite, onToggleFavorite }) => {
+  const navigate = useNavigate();
   const [isGameFavorite, setIsGameFavorite] = React.useState(
     propIsFavorite !== undefined ? propIsFavorite : isFavorite(game.id)
   );
@@ -36,8 +38,12 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite:
   };
 
 
+  const handleCardClick = () => {
+    navigate(`/game/${game.id}`);
+  };
+
   return (
-    <Card className="group bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary overflow-hidden">
+    <Card className="group bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary overflow-hidden cursor-pointer" onClick={handleCardClick}>
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={game.box_art_url || 'https://via.placeholder.com/285x380?text=No+Image'}
@@ -71,7 +77,10 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite:
           <Button
             size="sm"
             className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground"
-            onClick={() => onRequest?.(game.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRequest?.(game.id);
+            }}
           >
             <FaDownload className="w-3 h-3 mr-2" />
             Request
