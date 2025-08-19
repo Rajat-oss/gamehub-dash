@@ -5,13 +5,13 @@ import { GameRequestModal } from './GameRequestModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Game, fetchPopularGames, fetchTopRatedGames, fetchNewReleases, searchGames } from '@/services/igdbApi';
+import { TwitchGame, getTopGames, searchGames as searchTwitchGames } from '@/lib/twitch';
 import { FaFire, FaTrophy, FaGamepad, FaPlus } from 'react-icons/fa';
 
 export const GameDashboard: React.FC = () => {
-  const [games, setGames] = useState<Game[]>([]);
+  const [games, setGames] = useState<TwitchGame[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [selectedGame, setSelectedGame] = useState<TwitchGame | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'popular' | 'top-rated' | 'new'>('popular');
 
@@ -19,20 +19,10 @@ export const GameDashboard: React.FC = () => {
     loadGames();
   }, []);
 
-  const loadGames = async (filter: 'popular' | 'top-rated' | 'new' = activeFilter) => {
+  const loadGames = async () => {
     setLoading(true);
     try {
-      let gameData: Game[];
-      switch (filter) {
-        case 'top-rated':
-          gameData = await fetchTopRatedGames();
-          break;
-        case 'new':
-          gameData = await fetchNewReleases();
-          break;
-        default:
-          gameData = await fetchPopularGames();
-      }
+      const gameData = await getTopGames(100);
       setGames(gameData);
     } catch (error) {
       console.error('Error loading games:', error);
@@ -49,7 +39,7 @@ export const GameDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      const results = await searchGames(query);
+      const results = await searchTwitchGames(query);
       setGames(results);
     } catch (error) {
       console.error('Error searching games:', error);
@@ -58,7 +48,7 @@ export const GameDashboard: React.FC = () => {
     }
   };
 
-  const handleGameRequest = (gameId: number) => {
+  const handleGameRequest = (gameId: string) => {
     const game = games.find(g => g.id === gameId);
     if (game) {
       setSelectedGame(game);
@@ -88,25 +78,12 @@ export const GameDashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {filterButtons.map(({ key, label, icon: Icon }) => (
-            <Button
-              key={key}
-              variant={activeFilter === key ? "default" : "outline"}
-              className={activeFilter === key 
-                ? "bg-gradient-primary hover:shadow-glow-primary" 
-                : "border-border/50 hover:bg-secondary/80"
-              }
-              onClick={() => {
-                setActiveFilter(key);
-                loadGames(key);
-              }}
-            >
-              <Icon className="w-4 h-4 mr-2" />
-              {label}
-            </Button>
-          ))}
+        {/* Info Badge */}
+        <div className="mb-8">
+          <Badge variant="secondary" className="text-sm">
+            <FaFire className="w-4 h-4 mr-2" />
+            Top Games on Twitch
+          </Badge>
         </div>
 
         {/* Games Grid */}
@@ -143,16 +120,16 @@ export const GameDashboard: React.FC = () => {
         {/* Stats */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">500+</div>
+            <div className="text-3xl font-bold text-primary mb-2">{games.length}+</div>
             <div className="text-muted-foreground">Games Available</div>
           </div>
           <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-accent mb-2">10K+</div>
-            <div className="text-muted-foreground">Active Gamers</div>
+            <div className="text-3xl font-bold text-accent mb-2">Live</div>
+            <div className="text-muted-foreground">Twitch Data</div>
           </div>
           <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-gaming-green mb-2">98%</div>
-            <div className="text-muted-foreground">Satisfaction Rate</div>
+            <div className="text-3xl font-bold text-gaming-green mb-2">Real-time</div>
+            <div className="text-muted-foreground">Updates</div>
           </div>
         </div>
       </main>
