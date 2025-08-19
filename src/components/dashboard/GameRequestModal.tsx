@@ -13,6 +13,9 @@ import { Label } from '@/components/ui/label';
 import { TwitchGame } from '@/lib/twitch';
 import { toast } from '@/hooks/use-toast';
 
+import { useAuth } from '@/contexts/AuthContext';
+import { submitGameRequest } from '@/services/gameRequestService';
+
 interface GameRequestModalProps {
   game: TwitchGame | null;
   isOpen: boolean;
@@ -20,31 +23,46 @@ interface GameRequestModalProps {
 }
 
 export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen, onClose }) => {
+  const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!game) return;
+    
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to submit a game request.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsSubmitting(true);
-    
+
     try {
-      // Simulate request submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Game requested!",
-        description: `Your request for "${game.name}" has been sent successfully.`,
+      await submitGameRequest({
+        game,
+        userEmail: user.email || 'Unknown Email',
+        userName: user.displayName || 'Anonymous User',
+        message,
       });
-      
+
+      toast({
+        title: 'Game requested!',
+        description: `Your request for "${game.name}" has been sent successfully! You will receive a confirmation email shortly.`,
+      });
+
       setMessage('');
       onClose();
     } catch (error) {
+      console.error('Game request error:', error);
       toast({
-        title: "Request failed",
-        description: "There was an error sending your request. Please try again.",
-        variant: "destructive",
+        title: 'Request failed',
+        description: error.message || 'There was an error sending your request. Please check your internet connection and try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
