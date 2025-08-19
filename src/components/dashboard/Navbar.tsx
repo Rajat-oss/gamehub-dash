@@ -11,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -22,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="cursor-pointer" onClick={() => navigate('/')}>
+          <div className="cursor-pointer" onClick={() => navigate('/dashboard')}>
             <img 
               src="/logofinal.png" 
               alt="GameHub" 
@@ -62,6 +63,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               />
             </div>
           </form>
+
+          {/* Favorites Button */}
+          <Button 
+            variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
+            className="mr-4"
+            onClick={() => navigate('/favorites')}
+          >
+            <FaHeart className="w-4 h-4 mr-2" />
+            Favorites
+          </Button>
 
           {/* User Menu */}
           <DropdownMenu>

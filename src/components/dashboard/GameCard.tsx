@@ -4,17 +4,46 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FaStar, FaDownload, FaHeart } from 'react-icons/fa';
 import { TwitchGame } from '@/lib/twitch';
+import { addToFavorites, removeFromFavorites, isFavorite } from '@/lib/favorites';
+import { useNavigate } from 'react-router-dom';
 
 interface GameCardProps {
   game: TwitchGame;
   onRequest?: (gameId: string) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ game, onRequest }) => {
+export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite: propIsFavorite, onToggleFavorite }) => {
+  const navigate = useNavigate();
+  const [isGameFavorite, setIsGameFavorite] = React.useState(
+    propIsFavorite !== undefined ? propIsFavorite : isFavorite(game.id)
+  );
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (onToggleFavorite) {
+      onToggleFavorite();
+      setIsGameFavorite(!isGameFavorite);
+    } else {
+      if (isGameFavorite) {
+        removeFromFavorites(game.id);
+        setIsGameFavorite(false);
+      } else {
+        addToFavorites(game);
+        setIsGameFavorite(true);
+      }
+    }
+  };
+
+
+  const handleCardClick = () => {
+    navigate(`/game/${game.id}`);
+  };
 
   return (
-    <Card className="group bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary overflow-hidden">
+    <Card className="group bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary overflow-hidden cursor-pointer" onClick={handleCardClick}>
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={game.box_art_url || 'https://via.placeholder.com/285x380?text=No+Image'}
@@ -23,12 +52,24 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest }) => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Twitch Badge */}
+        {/* Pixel Pilgrim Badge */}
         <div className="absolute top-3 right-3">
-          <Badge className="bg-purple-600/80 backdrop-blur-sm text-white">
+          <Badge className="bg-primary/80 backdrop-blur-sm text-white">
             <FaStar className="w-3 h-3 mr-1" />
-            Twitch
+            Pixel Pilgrim
           </Badge>
+        </div>
+
+        {/* Favorite Button */}
+        <div className="absolute top-3 left-3">
+          <Button
+            size="sm"
+            variant="secondary"
+            className={`h-8 w-8 p-0 ${isGameFavorite ? 'bg-red-500/90 hover:bg-red-500 text-white' : 'bg-black/50 hover:bg-black/70 text-white'} backdrop-blur-sm border-0`}
+            onClick={handleToggleFavorite}
+          >
+            <FaHeart className="w-3 h-3" />
+          </Button>
         </div>
 
         {/* Action buttons on hover */}
@@ -36,18 +77,15 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest }) => {
           <Button
             size="sm"
             className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground"
-            onClick={() => onRequest?.(game.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRequest?.(game.id);
+            }}
           >
             <FaDownload className="w-3 h-3 mr-2" />
             Request
           </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="bg-secondary/80 hover:bg-secondary"
-          >
-            <FaHeart className="w-3 h-3" />
-          </Button>
+
         </div>
       </div>
 
@@ -57,7 +95,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest }) => {
         </h3>
         
         <p className="text-sm text-muted-foreground mb-3">
-          Popular game on Twitch platform
+          Popular game on Pixel Pilgrim platform
         </p>
 
         <div className="flex flex-wrap gap-1">
@@ -71,7 +109,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest }) => {
             variant="secondary"
             className="text-xs bg-secondary/50 text-secondary-foreground"
           >
-            Twitch
+            Pixel Pilgrim
           </Badge>
         </div>
       </CardContent>

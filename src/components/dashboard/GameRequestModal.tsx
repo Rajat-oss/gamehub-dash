@@ -93,7 +93,7 @@ export const GameRequestModal: React.FC<GameRequestModalProps> = ({ game, isOpen
             <div>
               <h3 className="font-semibold">{game.name}</h3>
               <p className="text-sm text-muted-foreground">
-                Popular on Twitch
+                Popular on Pixel Pilgrim
               </p>
             </div>
           </div>

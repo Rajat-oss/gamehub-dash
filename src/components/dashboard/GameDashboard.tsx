@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './Navbar';
 import { GameCard } from './GameCard';
 import { GameRequestModal } from './GameRequestModal';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +14,7 @@ export const GameDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState<TwitchGame | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'popular' | 'top-rated' | 'new'>('popular');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     loadGames();
@@ -67,6 +68,7 @@ export const GameDashboard: React.FC = () => {
       <Navbar onSearch={handleSearch} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
@@ -82,7 +84,7 @@ export const GameDashboard: React.FC = () => {
         <div className="mb-8">
           <Badge variant="secondary" className="text-sm">
             <FaFire className="w-4 h-4 mr-2" />
-            Top Games on Twitch
+            Top Games on Pixel Pilgrim
           </Badge>
         </div>
 
@@ -101,7 +103,7 @@ export const GameDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {games.map((game) => (
               <GameCard
-                key={game.id}
+                key={`${game.id}-${refreshKey}`}
                 game={game}
                 onRequest={handleGameRequest}
               />
@@ -125,7 +127,7 @@ export const GameDashboard: React.FC = () => {
           </div>
           <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
             <div className="text-3xl font-bold text-accent mb-2">Live</div>
-            <div className="text-muted-foreground">Twitch Data</div>
+            <div className="text-muted-foreground">Pixel Pilgrim Data</div>
           </div>
           <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
             <div className="text-3xl font-bold text-gaming-green mb-2">Real-time</div>
