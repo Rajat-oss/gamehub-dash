@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getComments, addComment, addReply, getAverageRating, Comment } from '@/lib/comments';
-import { FaStar, FaReply, FaUser } from 'react-icons/fa';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { commentService, Comment } from '@/services/commentService';
+import { FaStar, FaReply, FaUser, FaHeart, FaTrash, FaEdit } from 'react-icons/fa';
 
 interface CommentsSectionProps {
   gameId: string;
@@ -18,54 +20,160 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [averageRating, setAverageRating] = useState(0);
-  const [userName, setUserName] = useState('');
+  const [ratingCount, setRatingCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const handleToggleLike = async (commentId: string) => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'Please sign in to like comments.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      await commentService.toggleCommentLike(commentId, user.uid);
+      await loadComments();
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update like. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user) return;
+    
+    if (confirm('Are you sure you want to delete this comment?')) {
+      try {
+        await commentService.deleteComment(commentId, user.uid);
+        await loadComments();
+        toast({
+          title: 'Success',
+          description: 'Comment deleted successfully.'
+        });
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete comment. Please try again.',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     loadComments();
-    
-    // Get or create username
-    let storedUserName = localStorage.getItem('gamehub_username');
-    if (!storedUserName) {
-      storedUserName = 'Gamer' + Math.floor(Math.random() * 10000);
-      localStorage.setItem('gamehub_username', storedUserName);
-    }
-    setUserName(storedUserName);
-    
-    // Listen for real-time updates
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'gamehub_comments') {
-        loadComments();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, [gameId]);
 
-  const loadComments = () => {
-    const gameComments = getComments(gameId);
-    setComments(gameComments);
-    setAverageRating(getAverageRating(gameId));
+  const loadComments = async () => {
+    try {
+      setLoading(true);
+      const [gameComments, ratingData] = await Promise.all([
+        commentService.getGameComments(gameId),
+        commentService.getGameAverageRating(gameId)
+      ]);
+      
+      setComments(gameComments);
+      setAverageRating(ratingData.average);
+      setRatingCount(ratingData.count);
+    } catch (error) {
+      console.error('Error loading comments:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load comments. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmitComment = () => {
-    if (!newComment.trim() || !userName) return;
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() || !user) {
+      toast({
+        title: 'Error',
+        description: 'Please sign in to post a comment.',
+        variant: 'destructive'
+      });
+      return;
+    }
     
-    addComment(gameId, userName, newComment, newRating || undefined);
-    
-    setNewComment('');
-    setNewRating(0);
-    loadComments();
+    try {
+      setSubmitting(true);
+      await commentService.addComment({
+        gameId,
+        userId: user.uid,
+        userName: user.displayName || user.email || 'Anonymous',
+        userAvatar: user.photoURL || undefined,
+        comment: newComment,
+        rating: newRating || undefined
+      });
+      
+      setNewComment('');
+      setNewRating(0);
+      await loadComments();
+      
+      toast({
+        title: 'Success',
+        description: 'Your comment has been posted!'
+      });
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to post comment. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSubmitReply = (commentId: string) => {
-    if (!replyText.trim() || !userName) return;
+  const handleSubmitReply = async (commentId: string) => {
+    if (!replyText.trim() || !user) {
+      toast({
+        title: 'Error',
+        description: 'Please sign in to post a reply.',
+        variant: 'destructive'
+      });
+      return;
+    }
     
-    addReply(commentId, userName, replyText);
-    
-    setReplyText('');
-    setReplyingTo(null);
-    loadComments();
+    try {
+      await commentService.addReply(commentId, {
+        userId: user.uid,
+        userName: user.displayName || user.email || 'Anonymous',
+        userAvatar: user.photoURL || undefined,
+        comment: replyText
+      });
+      
+      setReplyText('');
+      setReplyingTo(null);
+      await loadComments();
+      
+      toast({
+        title: 'Success',
+        description: 'Your reply has been posted!'
+      });
+    } catch (error) {
+      console.error('Error submitting reply:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to post reply. Please try again.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -103,7 +211,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
           <div className="text-3xl font-bold text-primary">{averageRating.toFixed(1)}</div>
           {renderStars(Math.round(averageRating))}
           <div className="text-muted-foreground">
-            ({comments.filter(c => c.rating).length} ratings)
+            ({ratingCount} ratings)
           </div>
         </div>
       </div>
@@ -112,9 +220,11 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
       <div className="bg-gradient-card border border-border/50 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Leave a Review</h3>
-          <div className="text-sm text-muted-foreground">
-            Posting as: <span className="font-medium text-foreground">{userName}</span>
-          </div>
+          {user && (
+            <div className="text-sm text-muted-foreground">
+              Posting as: <span className="font-medium text-foreground">{user.displayName || user.email}</span>
+            </div>
+          )}
         </div>
         
         <div className="space-y-4">
@@ -133,10 +243,16 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
           <Button 
             onClick={handleSubmitComment}
             className="bg-gradient-primary hover:shadow-glow-primary"
-            disabled={!newComment.trim()}
+            disabled={!newComment.trim() || !user || submitting}
           >
-            Post Review
+            {submitting ? 'Posting...' : 'Post Review'}
           </Button>
+          
+          {!user && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Please sign in to post a review.
+            </p>
+          )}
         </div>
       </div>
 
@@ -144,7 +260,11 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Reviews & Comments ({comments.length})</h3>
         
-        {comments.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-8 bg-gradient-card border border-border/50 rounded-lg">
+            <p className="text-muted-foreground">Loading comments...</p>
+          </div>
+        ) : comments.length === 0 ? (
           <div className="text-center py-8 bg-gradient-card border border-border/50 rounded-lg">
             <p className="text-muted-foreground">No reviews yet. Be the first to share your thoughts!</p>
           </div>
@@ -175,16 +295,43 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
               {/* Comment Text */}
               <p className="text-foreground mb-4">{comment.comment}</p>
 
-              {/* Reply Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <FaReply className="w-3 h-3 mr-2" />
-                Reply
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleToggleLike(comment.id)}
+                  className={`text-muted-foreground hover:text-foreground ${
+                    user && comment.likedBy.includes(user.uid) ? 'text-red-500' : ''
+                  }`}
+                  disabled={!user}
+                >
+                  <FaHeart className="w-3 h-3 mr-1" />
+                  {comment.likes}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                  className="text-muted-foreground hover:text-foreground"
+                  disabled={!user}
+                >
+                  <FaReply className="w-3 h-3 mr-2" />
+                  Reply
+                </Button>
+                
+                {user && comment.userId === user.uid && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="text-muted-foreground hover:text-red-500"
+                  >
+                    <FaTrash className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
 
               {/* Reply Form */}
               {replyingTo === comment.id && (
@@ -199,7 +346,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                     <Button
                       size="sm"
                       onClick={() => handleSubmitReply(comment.id)}
-                      disabled={!replyText.trim()}
+                      disabled={!replyText.trim() || !user}
                     >
                       Post Reply
                     </Button>

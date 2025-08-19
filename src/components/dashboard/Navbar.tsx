@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad } from 'react-icons/fa';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { searchGames, TwitchGame } from '@/lib/twitch';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -21,13 +22,58 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<TwitchGame[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery);
+    setShowSuggestions(false);
   };
+  
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    if (query.length > 1) {
+      const timeout = setTimeout(async () => {
+        try {
+          const results = await searchGames(query);
+          setSuggestions(results.slice(0, 6));
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error('Search error:', error);
+        }
+      }, 300);
+      setSearchTimeout(timeout);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+  
+  const handleSuggestionClick = (game: TwitchGame) => {
+    setSearchQuery(game.name);
+    onSearch(game.name);
+    setShowSuggestions(false);
+  };
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -52,27 +98,62 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
 
           {/* Search */}
           <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-8">
-            <div className="relative">
+            <div className="relative" ref={searchRef}>
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search games..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
               />
+              
+              {/* Search Suggestions */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto">
+                  {suggestions.map((game, index) => (
+                    <div
+                      key={game.id}
+                      className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer transition-colors duration-150 border-b border-border/20 last:border-b-0"
+                      onClick={() => handleSuggestionClick(game)}
+                    >
+                      <div className="w-10 h-12 flex-shrink-0 bg-secondary/30 rounded overflow-hidden">
+                        <img
+                          src={game.box_art_url.replace('{width}', '40').replace('{height}', '48')}
+                          alt={game.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{game.name}</div>
+                        <div className="text-xs text-muted-foreground">Game</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </form>
 
-          {/* Favorites Button */}
-          <Button 
-            variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
-            className="mr-4"
-            onClick={() => navigate('/favorites')}
-          >
-            <FaHeart className="w-4 h-4 mr-2" />
-            Favorites
-          </Button>
+          {/* Navigation Buttons */}
+          <div className="flex items-center gap-2 mr-4">
+            <Button 
+              variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
+              onClick={() => navigate('/my-games')}
+            >
+              <FaGamepad className="w-4 h-4 mr-2" />
+              My Games
+            </Button>
+            
+            <Button 
+              variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
+              onClick={() => navigate('/favorites')}
+            >
+              <FaHeart className="w-4 h-4 mr-2" />
+              Favorites
+            </Button>
+          </div>
 
           {/* User Menu */}
           <DropdownMenu>

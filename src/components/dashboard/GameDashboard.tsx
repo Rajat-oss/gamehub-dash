@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './Navbar';
 import { GameCard } from './GameCard';
 import { GameRequestModal } from './GameRequestModal';
+import { GameLogModal } from '@/components/game/GameLogModal';
+import { ActivityFeed } from './ActivityFeed';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +16,8 @@ export const GameDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState<TwitchGame | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [selectedGameForLog, setSelectedGameForLog] = useState<TwitchGame | null>(null);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -55,6 +59,11 @@ export const GameDashboard: React.FC = () => {
       setSelectedGame(game);
       setIsRequestModalOpen(true);
     }
+  };
+
+  const handleGameLog = (game: TwitchGame) => {
+    setSelectedGameForLog(game);
+    setIsLogModalOpen(true);
   };
 
   const filterButtons = [
@@ -106,6 +115,7 @@ export const GameDashboard: React.FC = () => {
                 key={`${game.id}-${refreshKey}`}
                 game={game}
                 onRequest={handleGameRequest}
+                onLogGame={handleGameLog}
               />
             ))}
           </div>
@@ -119,19 +129,31 @@ export const GameDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">{games.length}+</div>
-            <div className="text-muted-foreground">Games Available</div>
+        {/* Stats and Activity Feed */}
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Stats */}
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-primary mb-2">{games.length}+</div>
+              <div className="text-muted-foreground">Games Available</div>
+            </div>
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-accent mb-2">Live</div>
+              <div className="text-muted-foreground">Pixel Pilgrim Data</div>
+            </div>
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-gaming-green mb-2">Real-time</div>
+              <div className="text-muted-foreground">Updates</div>
+            </div>
           </div>
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-accent mb-2">Live</div>
-            <div className="text-muted-foreground">Pixel Pilgrim Data</div>
-          </div>
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-gaming-green mb-2">Real-time</div>
-            <div className="text-muted-foreground">Updates</div>
+          
+          {/* Activity Feed */}
+          <div className="lg:col-span-1">
+            <ActivityFeed 
+              title="Community Activity" 
+              maxItems={10}
+              showUserInfo={true}
+            />
           </div>
         </div>
       </main>
@@ -142,6 +164,19 @@ export const GameDashboard: React.FC = () => {
         onClose={() => {
           setIsRequestModalOpen(false);
           setSelectedGame(null);
+        }}
+      />
+      
+      <GameLogModal
+        game={selectedGameForLog}
+        isOpen={isLogModalOpen}
+        onClose={() => {
+          setIsLogModalOpen(false);
+          setSelectedGameForLog(null);
+        }}
+        onGameLogged={() => {
+          // Optionally refresh data or show success message
+          setRefreshKey(prev => prev + 1);
         }}
       />
     </div>

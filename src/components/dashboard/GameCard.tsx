@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FaStar, FaDownload, FaHeart } from 'react-icons/fa';
+import { FaStar, FaDownload, FaHeart, FaPlus } from 'react-icons/fa';
 import { TwitchGame } from '@/lib/twitch';
 import { addToFavorites, removeFromFavorites, isFavorite } from '@/lib/favorites';
 import { useNavigate } from 'react-router-dom';
@@ -10,11 +10,12 @@ import { useNavigate } from 'react-router-dom';
 interface GameCardProps {
   game: TwitchGame;
   onRequest?: (gameId: string) => void;
+  onLogGame?: (game: TwitchGame) => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite: propIsFavorite, onToggleFavorite }) => {
+export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, isFavorite: propIsFavorite, onToggleFavorite }) => {
   const navigate = useNavigate();
   const [isGameFavorite, setIsGameFavorite] = React.useState(
     propIsFavorite !== undefined ? propIsFavorite : isFavorite(game.id)
@@ -85,7 +86,18 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, isFavorite:
             <FaDownload className="w-3 h-3 mr-2" />
             Request
           </Button>
-
+          
+          <Button
+            size="sm"
+            variant="secondary"
+            className="bg-green-600/90 hover:bg-green-600 text-white border-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLogGame?.(game);
+            }}
+          >
+            <FaPlus className="w-3 h-3" />
+          </Button>
         </div>
       </div>
 
