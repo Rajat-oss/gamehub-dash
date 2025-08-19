@@ -10,8 +10,10 @@ const Index = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!loading && user && location.pathname === '/auth') {
-      navigate('/dashboard');
+    if (!loading && user) {
+      if (location.pathname === '/auth' || location.pathname === '/') {
+        navigate('/dashboard', { replace: true });
+      }
     }
   }, [user, loading, navigate, location.pathname]);
 
@@ -31,13 +33,13 @@ const Index = () => {
     return <GameDashboard />;
   }
 
-  // Show auth page if not authenticated or on auth route
-  if (!user || location.pathname === '/auth') {
+  // Show auth page if not authenticated
+  if (!user) {
     return <AuthPage />;
   }
 
-  // Default to auth page
-  return <AuthPage />;
+  // Show dashboard if authenticated
+  return <GameDashboard />;
 };
 
 export default Index;

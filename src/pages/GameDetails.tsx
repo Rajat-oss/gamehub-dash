@@ -94,11 +94,15 @@ const GameDetails = () => {
     if (isGameFavorite) {
       removeFromFavorites(game.id);
       setIsGameFavorite(false);
-      toast.success('Removed from favorites');
+      toast.success(`${game.name} removed from favorites`, {
+        description: 'You can add it back anytime from the game page'
+      });
     } else {
       addToFavorites(game);
       setIsGameFavorite(true);
-      toast.success('Added to favorites');
+      toast.success(`${game.name} added to favorites`, {
+        description: 'View all favorites in your favorites page'
+      });
     }
   };
 

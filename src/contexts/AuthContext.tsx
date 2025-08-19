@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { profileService } from '@/services/profileService';
+import { userService } from '@/services/userService';
 
 interface AuthContextType {
   user: User | null;
@@ -39,6 +40,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      
+      // Create user profile in background without blocking
+      if (user) {
+        userService.createUserProfile(user.uid, {
+          email: user.email || '',
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || ''
+        }).catch(error => {
+          console.error('Error creating user profile:', error);
+        });
+      }
     });
 
     return unsubscribe;

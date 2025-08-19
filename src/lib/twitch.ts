@@ -13,6 +13,8 @@ export interface TwitchGame {
   igdb_id?: string;
   isRawgGame?: boolean;
   rawgId?: number;
+  genres?: string[];
+  platforms?: string[];
 }
 
 export interface GameDetails {
@@ -123,7 +125,9 @@ export async function searchGames(query: string): Promise<TwitchGame[]> {
           name: game.name,
           box_art_url: game.background_image || 'https://via.placeholder.com/285x380?text=' + encodeURIComponent(game.name),
           isRawgGame: true,
-          rawgId: game.id
+          rawgId: game.id,
+          genres: game.genres?.map((g: any) => g.name) || [],
+          platforms: game.platforms?.map((p: any) => p.platform.name) || []
         }));
       }
     }

@@ -111,18 +111,32 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
         </p>
 
         <div className="flex flex-wrap gap-1">
-          <Badge
-            variant="secondary"
-            className="text-xs bg-secondary/50 text-secondary-foreground"
-          >
-            Gaming
-          </Badge>
-          <Badge
-            variant="secondary"
-            className="text-xs bg-secondary/50 text-secondary-foreground"
-          >
-            Pixel Pilgrim
-          </Badge>
+          {game.genres && game.genres.length > 0 ? (
+            game.genres.slice(0, 2).map((genre) => (
+              <Badge
+                key={genre}
+                variant="secondary"
+                className="text-xs bg-secondary/50 text-secondary-foreground"
+              >
+                {genre}
+              </Badge>
+            ))
+          ) : (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-secondary/50 text-secondary-foreground"
+            >
+              Gaming
+            </Badge>
+          )}
+          {game.genres && game.genres.length > 2 && (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-secondary/50 text-secondary-foreground"
+            >
+              +{game.genres.length - 2}
+            </Badge>
+          )}
         </div>
       </CardContent>
     </Card>
