@@ -26,10 +26,17 @@ const Index = () => {
     );
   }
 
-  if (location.pathname === '/dashboard') {
-    return user ? <GameDashboard /> : <AuthPage />;
+  // Show dashboard if user is authenticated and on dashboard route
+  if (user && location.pathname === '/dashboard') {
+    return <GameDashboard />;
   }
 
+  // Show auth page if not authenticated or on auth route
+  if (!user || location.pathname === '/auth') {
+    return <AuthPage />;
+  }
+
+  // Default to auth page
   return <AuthPage />;
 };
 
