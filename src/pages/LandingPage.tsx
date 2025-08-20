@@ -147,10 +147,10 @@ export const LandingPage: React.FC = () => {
               )}
               {user && (
                 <Button 
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/homepage')}
                   size="sm"
                 >
-                  Dashboard
+                  Homepage
                 </Button>
               )}
             </nav>
@@ -210,8 +210,8 @@ export const LandingPage: React.FC = () => {
                   </Button>
                 </>
               ) : (
-                <Button size="lg" onClick={() => navigate('/dashboard')} className="gaming-button group animate-glow-pulse">
-                  Go to Dashboard
+                <Button size="lg" onClick={() => navigate('/homepage')} className="gaming-button group animate-glow-pulse">
+                  Go to Homepage
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/userService';
 import { UserProfile } from '@/types/user';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,20 +28,25 @@ const Community: React.FC = () => {
   const loadCommunityUsers = async () => {
     setLoading(true);
     try {
-      // Temporarily show empty due to quota limits
-      setUsers([]);
-      toast.error('Community temporarily unavailable due to quota limits');
+      const allUsers = await userService.searchUsers('');
+      const publicUsers = allUsers.filter(u => 
+        u.isPublic !== false && 
+        u.uid !== user?.uid &&
+        u.username &&
+        u.username !== 'Anonymous User' &&
+        !u.username.startsWith('Gamer')
+      );
+      setUsers(publicUsers);
       
-      // Load current user's following list
       if (user) {
         const currentUser = await userService.getUserProfile(user.uid);
-        if (currentUser) {
+        if (currentUser && currentUser.following) {
           setFollowingUsers(new Set(currentUser.following));
         }
       }
     } catch (error) {
       console.error('Error loading community users:', error);
-      toast.error('Failed to load community users');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -56,11 +61,19 @@ const Community: React.FC = () => {
     setLoading(true);
     try {
       const searchResults = await userService.searchUsers(query);
-      setUsers(searchResults.filter(u => u.isPublic && u.uid !== user?.uid));
-      toast.success(`Found ${searchResults.length} users`);
+      const publicUsers = searchResults.filter(u => 
+        u.isPublic !== false && 
+        u.uid !== user?.uid &&
+        u.username &&
+        u.username !== 'Anonymous User' &&
+        !u.username.startsWith('Gamer')
+      );
+      setUsers(publicUsers);
+      toast.success(`Found ${publicUsers.length} users`);
     } catch (error) {
       console.error('Error searching users:', error);
       toast.error('Failed to search users');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -91,8 +104,8 @@ const Community: React.FC = () => {
     }
   };
 
-  const handleUserClick = (username: string) => {
-    navigate(`/user/${username}`);
+  const handleUserClick = (userProfile: UserProfile) => {
+    navigate(`/user/${userProfile.username}`);
   };
 
   return (
@@ -150,7 +163,7 @@ const Community: React.FC = () => {
               <Card 
                 key={userProfile.uid} 
                 className="bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer"
-                onClick={() => handleUserClick(userProfile.username)}
+                onClick={() => handleUserClick(userProfile)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
@@ -201,6 +214,7 @@ const Community: React.FC = () => {
                         variant={followingUsers.has(userProfile.uid) ? "outline" : "default"}
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           handleFollowToggle(userProfile);
                         }}
                         className={followingUsers.has(userProfile.uid) ? "border-red-500 text-red-500 hover:bg-red-50" : ""}

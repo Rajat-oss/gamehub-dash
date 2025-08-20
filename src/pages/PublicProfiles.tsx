@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -46,7 +46,7 @@ const PublicProfiles = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link to="/dashboard">
+          <Link to="/homepage">
             <Button variant="ghost" className="mb-4">
               <FaArrowLeft className="w-4 h-4 mr-2" />
               Back to Marketplace

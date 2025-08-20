@@ -75,22 +75,17 @@ export function subscribeToPublicProfiles(callback: (profiles: UserProfile[]) =>
         averageRating: data.averageRating || 0
       };
       
-      // Show all users except current user and anonymous users
+      // Show only public profiles except current user
       if (profile.id !== currentUser?.uid && 
           profile.userName !== 'Anonymous User' && 
           !profile.userName.startsWith('Gamer') &&
-          profile.email) {
+          profile.email &&
+          data.isPublic !== false) {
         profiles.push(profile);
       }
     });
     
-    // Auto-create current user profile if it doesn't exist
-    if (currentUser) {
-      const currentProfile = getUserProfile();
-      if (currentProfile) {
-        trackUser(currentProfile);
-      }
-    }
+    // Removed automatic user tracking to prevent infinite saves
     
     callback(profiles);
   }, (error) => {

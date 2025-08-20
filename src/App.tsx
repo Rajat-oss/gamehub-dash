@@ -34,7 +34,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<Index />} />
-                <Route path="/dashboard" element={<Index />} />
+                <Route path="/homepage" element={<Index />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/my-games" element={<MyGames />} />
                 <Route path="/game/:gameId" element={<GameDetails />} />

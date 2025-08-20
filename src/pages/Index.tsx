@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthPage } from '@/components/auth/AuthPage';
-import { GameDashboard } from '@/components/dashboard/GameDashboard';
+import { GameDashboard } from '@/components/homepage/GameDashboard';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -12,7 +12,7 @@ const Index = () => {
   useEffect(() => {
     if (!loading && user) {
       if (location.pathname === '/auth' || location.pathname === '/') {
-        navigate('/dashboard', { replace: true });
+        navigate('/homepage', { replace: true });
       }
     }
   }, [user, loading, navigate, location.pathname]);
@@ -28,8 +28,8 @@ const Index = () => {
     );
   }
 
-  // Show dashboard if user is authenticated and on dashboard route
-  if (user && location.pathname === '/dashboard') {
+  // Show homepage if user is authenticated and on homepage route
+  if (user && location.pathname === '/homepage') {
     return <GameDashboard />;
   }
 
@@ -38,7 +38,7 @@ const Index = () => {
     return <AuthPage />;
   }
 
-  // Show dashboard if authenticated
+  // Show homepage if authenticated
   return <GameDashboard />;
 };
 

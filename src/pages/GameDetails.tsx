@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { CommentsSection } from '@/components/game/CommentsSection';
 import { GameLogModal } from '@/components/game/GameLogModal';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { ActivityFeed } from '@/components/homepage/ActivityFeed';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

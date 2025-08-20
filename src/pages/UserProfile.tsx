@@ -5,7 +5,7 @@ import { userService } from '@/services/userService';
 import { gameLogService } from '@/services/gameLogService';
 import { UserProfile as UserProfileType } from '@/types/user';
 import { GameLog } from '@/types/gameLog';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

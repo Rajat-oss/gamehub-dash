@@ -72,32 +72,52 @@ export const userService = {
 
   // Follow a user
   async followUser(followerId: string, followingId: string): Promise<void> {
-    const followerRef = doc(db, USERS_COLLECTION, followerId);
-    const followingRef = doc(db, USERS_COLLECTION, followingId);
-    
-    await Promise.all([
-      updateDoc(followerRef, {
-        following: arrayUnion(followingId)
-      }),
-      updateDoc(followingRef, {
-        followers: arrayUnion(followerId)
-      })
-    ]);
+    try {
+      const followerRef = doc(db, USERS_COLLECTION, followerId);
+      const followingRef = doc(db, USERS_COLLECTION, followingId);
+      
+      // Ensure both users exist and have the required arrays
+      const [followerDoc, followingDoc] = await Promise.all([
+        getDoc(followerRef),
+        getDoc(followingRef)
+      ]);
+      
+      if (!followerDoc.exists() || !followingDoc.exists()) {
+        throw new Error('One or both users do not exist');
+      }
+      
+      await Promise.all([
+        updateDoc(followerRef, {
+          following: arrayUnion(followingId)
+        }),
+        updateDoc(followingRef, {
+          followers: arrayUnion(followerId)
+        })
+      ]);
+    } catch (error) {
+      console.error('Error following user:', error);
+      throw error;
+    }
   },
 
   // Unfollow a user
   async unfollowUser(followerId: string, followingId: string): Promise<void> {
-    const followerRef = doc(db, USERS_COLLECTION, followerId);
-    const followingRef = doc(db, USERS_COLLECTION, followingId);
-    
-    await Promise.all([
-      updateDoc(followerRef, {
-        following: arrayRemove(followingId)
-      }),
-      updateDoc(followingRef, {
-        followers: arrayRemove(followerId)
-      })
-    ]);
+    try {
+      const followerRef = doc(db, USERS_COLLECTION, followerId);
+      const followingRef = doc(db, USERS_COLLECTION, followingId);
+      
+      await Promise.all([
+        updateDoc(followerRef, {
+          following: arrayRemove(followingId)
+        }),
+        updateDoc(followingRef, {
+          followers: arrayRemove(followerId)
+        })
+      ]);
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+      throw error;
+    }
   },
 
   // Search users by username

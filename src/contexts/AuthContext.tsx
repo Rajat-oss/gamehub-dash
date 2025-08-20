@@ -40,17 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
-      
-      // Create user profile in background without blocking
-      if (user) {
-        userService.createUserProfile(user.uid, {
-          email: user.email || '',
-          displayName: user.displayName || '',
-          photoURL: user.photoURL || ''
-        }).catch(error => {
-          console.error('Error creating user profile:', error);
-        });
-      }
     });
 
     return unsubscribe;
@@ -66,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Check if username is available
       if (userName) {
-        const isAvailable = await profileService.isUsernameAvailable(userName);
+        const isAvailable = await userService.isUsernameAvailable(userName);
         if (!isAvailable) {
           throw new Error('Username is already taken. Please choose a different one.');
         }
@@ -79,12 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await updateProfile(user, { displayName });
       
       // Create user profile in Firestore
-      await profileService.updateUserProfile(user.uid, {
-        userName: displayName,
+      await userService.createUserProfile(user.uid, {
+        username: displayName,
+        displayName: displayName,
         email: email,
-        favoriteGames: [],
-        totalComments: 0,
-        averageRating: 0
+        isPublic: true
       });
     } catch (error: any) {
       if (error.code === 'auth/operation-not-allowed') {

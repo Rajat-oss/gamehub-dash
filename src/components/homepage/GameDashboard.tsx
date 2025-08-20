@@ -4,13 +4,7 @@ import { GameCard } from './GameCard';
 import { GameRequestModal } from './GameRequestModal';
 import { GameLogModal } from '@/components/game/GameLogModal';
 import { ActivityFeed } from './ActivityFeed';
-import { GameFilters } from './GameFilters';
 
-export interface GameFiltersType {
-  genre: string;
-  platform: string;
-  rating: string;
-}
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,26 +16,19 @@ import { toast } from 'sonner';
 
 export const GameDashboard: React.FC = () => {
   const [games, setGames] = useState<TwitchGame[]>([]);
-  const [filteredGames, setFilteredGames] = useState<TwitchGame[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState<TwitchGame | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [selectedGameForLog, setSelectedGameForLog] = useState<TwitchGame | null>(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [filters, setFilters] = useState<GameFiltersType>({
-    genre: 'all',
-    platform: 'all',
-    rating: 'all'
-  });
+
 
   useEffect(() => {
     loadGames();
   }, []);
-  
-  useEffect(() => {
-    applyFilters();
-  }, [games, filters]);
+
 
   const loadGames = async () => {
     setLoading(true);
@@ -81,46 +68,7 @@ export const GameDashboard: React.FC = () => {
     }
   };
   
-  const applyFilters = () => {
-    let filtered = [...games];
-    
-    // Apply genre filter
-    if (filters.genre && filters.genre !== 'all') {
-      filtered = filtered.filter(game => 
-        game.genres?.some(genre => 
-          genre.toLowerCase().includes(filters.genre.toLowerCase())
-        )
-      );
-    }
-    
-    // Apply platform filter
-    if (filters.platform && filters.platform !== 'all') {
-      filtered = filtered.filter(game => 
-        game.platforms?.some(platform => 
-          platform.toLowerCase().includes(filters.platform.toLowerCase())
-        )
-      );
-    }
-    
-    setFilteredGames(filtered);
-  };
-  
-  const handleFilterChange = (newFilters: GameFiltersType) => {
-    setFilters(newFilters);
-    const activeFilters = Object.values(newFilters).filter(Boolean).length;
-    if (activeFilters > 0) {
-      toast.success('Filters applied', {
-        description: `${activeFilters} filter(s) active`
-      });
-    }
-  };
-  
-  const handleClearFilters = () => {
-    setFilters({ genre: 'all', platform: 'all', rating: 'all' });
-    toast.success('Filters cleared', {
-      description: 'Showing all games'
-    });
-  };
+
 
   const handleGameRequest = (gameId: string) => {
     const game = games.find(g => g.id === gameId);
@@ -173,13 +121,7 @@ export const GameDashboard: React.FC = () => {
           </Link>
         </div>
 
-        {/* Filters */}
-        <GameFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-        />
-        
+
         {/* Games Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -191,9 +133,9 @@ export const GameDashboard: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : (filteredGames.length > 0 ? filteredGames : games).length > 0 ? (
+        ) : games.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {(filteredGames.length > 0 ? filteredGames : games).map((game) => (
+            {games.map((game) => (
               <GameCard
                 key={`${game.id}-${refreshKey}`}
                 game={game}

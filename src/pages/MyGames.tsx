@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { gameLogService } from '@/services/gameLogService';
 import { GameLog, GameStatus, GAME_STATUS_LABELS, GAME_STATUS_COLORS, GameLogStats } from '@/types/gameLog';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { GameLogModal } from '@/components/game/GameLogModal';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

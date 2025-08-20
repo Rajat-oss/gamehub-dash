@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from '@/components/dashboard/Navbar';
+import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { profileService, UserProfile } from '@/services/profileService';
+import { userService } from '@/services/userService';
+import { UserProfile } from '@/types/user';
 import { getFavorites } from '@/lib/favorites';
 import { useAuth } from '@/contexts/AuthContext';
 import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
@@ -24,24 +25,24 @@ const Profile = () => {
       if (!user) return;
       
       try {
-        let userProfile = await profileService.getUserProfile(user.uid);
+        let userProfile = await userService.getUserProfile(user.uid);
         
         // Create profile if it doesn't exist
         if (!userProfile) {
-          userProfile = await profileService.updateUserProfile(user.uid, {
-            userName: user.displayName || 'Gamer' + Math.floor(Math.random() * 10000),
+          await userService.createUserProfile(user.uid, {
+            username: user.displayName || 'Gamer' + Math.floor(Math.random() * 10000),
+            displayName: user.displayName || '',
             email: user.email || '',
-            favoriteGames: [],
-            totalComments: 0,
-            averageRating: 0
+            isPublic: true
           });
+          userProfile = await userService.getUserProfile(user.uid);
         }
         
         setProfile(userProfile);
         setBioText(userProfile.bio || '');
       } catch (error) {
-        const errorInfo = FirestoreErrorHandler.handleError(error);
-        showFirestoreError(errorInfo);
+        console.error('Error loading profile:', error);
+        toast.error('Failed to load profile');
       }
     };
     
@@ -86,10 +87,10 @@ const Profile = () => {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{profile.userName}</h1>
+                <h1 className="text-3xl font-bold text-foreground">{profile.username || profile.displayName}</h1>
                 <div className="flex items-center space-x-2 mt-2">
                   <FaCalendar className="text-muted-foreground w-4 h-4" />
-                  <span className="text-muted-foreground">Joined {formatDate(profile.joinDate)}</span>
+                  <span className="text-muted-foreground">Joined {profile.joinDate ? formatDate(profile.joinDate.getTime()) : 'Recently'}</span>
                 </div>
               </div>
             </div>
@@ -117,7 +118,8 @@ const Profile = () => {
                       <div className="flex space-x-2">
                         <Button size="sm" onClick={async () => {
                           try {
-                            const updatedProfile = await profileService.updateUserProfile(user.uid, { bio: bioText });
+                            await userService.updateUserProfile(user.uid, { bio: bioText });
+                            const updatedProfile = await userService.getUserProfile(user.uid);
                             setProfile(updatedProfile);
                             setIsEditingBio(false);
                             toast.success('Bio updated successfully');
@@ -215,7 +217,7 @@ const Profile = () => {
                     <FaComments className="text-accent w-4 h-4" />
                     <span className="text-sm">Comments</span>
                   </div>
-                  <Badge variant="secondary">{profile.totalComments}</Badge>
+                  <Badge variant="secondary">{profile.totalComments || 0}</Badge>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -223,7 +225,7 @@ const Profile = () => {
                     <FaStar className="text-yellow-400 w-4 h-4" />
                     <span className="text-sm">Avg Rating</span>
                   </div>
-                  <Badge variant="secondary">{profile.averageRating.toFixed(1)}</Badge>
+                  <Badge variant="secondary">{(profile.averageRating || 0).toFixed(1)}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -234,7 +236,7 @@ const Profile = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Link to="/dashboard">
+                <Link to="/homepage">
                   <Button variant="outline" className="w-full justify-start">
                     <FaGamepad className="w-4 h-4 mr-2" />
                     Browse Games

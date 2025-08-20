@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { userService } from '@/services/userService';
 import { FaUser, FaBell, FaEye, FaTrash } from 'react-icons/fa';
 
 export const Settings: React.FC = () => {
@@ -17,12 +18,45 @@ export const Settings: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [publicProfile, setPublicProfile] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const handleSaveProfile = () => {
-    toast({
-      title: 'Profile Updated',
-      description: 'Your profile settings have been saved.'
-    });
+  useEffect(() => {
+    loadUserSettings();
+  }, [user]);
+
+  const loadUserSettings = async () => {
+    if (!user) return;
+    try {
+      const profile = await userService.getUserProfile(user.uid);
+      if (profile) {
+        setPublicProfile(profile.isPublic !== false);
+      }
+    } catch (error) {
+      console.error('Error loading user settings:', error);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      await userService.updateUserProfile(user.uid, {
+        isPublic: publicProfile
+      });
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile settings have been saved.'
+      });
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save profile settings.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -73,8 +107,8 @@ export const Settings: React.FC = () => {
                 />
               </div>
             </div>
-            <Button onClick={handleSaveProfile} className="bg-gradient-primary">
-              Save Profile
+            <Button onClick={handleSaveProfile} disabled={loading} className="bg-gradient-primary">
+              {loading ? 'Saving...' : 'Save Profile'}
             </Button>
           </CardContent>
         </Card>

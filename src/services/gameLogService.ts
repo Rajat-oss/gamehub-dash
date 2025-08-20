@@ -67,20 +67,20 @@ export const gameLogService = {
       // Clear cache
       gameLogsCache.delete(`gameLogs_${userId}`);
       
-      // Log activity (with error handling)
-      if (userName) {
-        try {
-          await userActivityService.logGameAdded(
-            userId, 
-            userName, 
-            gameLogInput.gameId, 
-            gameLogInput.gameName, 
-            gameLogInput.gameImageUrl
-          );
-        } catch (activityError) {
-          console.warn('Failed to log activity:', activityError);
-        }
-      }
+      // Activity logging temporarily disabled to prevent infinite saves
+      // if (userName) {
+      //   try {
+      //     await userActivityService.logGameAdded(
+      //       userId, 
+      //       userName, 
+      //       gameLogInput.gameId, 
+      //       gameLogInput.gameName, 
+      //       gameLogInput.gameImageUrl
+      //     );
+      //   } catch (activityError) {
+      //     console.warn('Failed to log activity:', activityError);
+      //   }
+      // }
       
       return docRef.id;
     });
@@ -98,44 +98,44 @@ export const gameLogService = {
         dateUpdated: Timestamp.now(),
       });
       
-      // Log activities for significant changes
-      if (userName && existingData) {
-        // Status change
-        if (updates.status && updates.status !== existingData.status) {
-          await userActivityService.logGameStatusChanged(
-            existingData.userId,
-            userName,
-            existingData.gameId,
-            existingData.gameName,
-            updates.status,
-            existingData.gameImageUrl
-          );
-          
-          // Special case for completion
-          if (updates.status === 'completed') {
-            await userActivityService.logGameCompleted(
-              existingData.userId,
-              userName,
-              existingData.gameId,
-              existingData.gameName,
-              existingData.gameImageUrl,
-              updates.rating || existingData.rating
-            );
-          }
-        }
-        
-        // Rating change
-        if (updates.rating && updates.rating !== existingData.rating) {
-          await userActivityService.logGameRated(
-            existingData.userId,
-            userName,
-            existingData.gameId,
-            existingData.gameName,
-            updates.rating,
-            existingData.gameImageUrl
-          );
-        }
-      }
+      // Activity logging temporarily disabled to prevent infinite saves
+      // if (userName && existingData) {
+      //   // Status change
+      //   if (updates.status && updates.status !== existingData.status) {
+      //     await userActivityService.logGameStatusChanged(
+      //       existingData.userId,
+      //       userName,
+      //       existingData.gameId,
+      //       existingData.gameName,
+      //       updates.status,
+      //       existingData.gameImageUrl
+      //     );
+      //     
+      //     // Special case for completion
+      //     if (updates.status === 'completed') {
+      //       await userActivityService.logGameCompleted(
+      //         existingData.userId,
+      //         userName,
+      //         existingData.gameId,
+      //         existingData.gameName,
+      //         existingData.gameImageUrl,
+      //         updates.rating || existingData.rating
+      //       );
+      //     }
+      //   }
+      //   
+      //   // Rating change
+      //   if (updates.rating && updates.rating !== existingData.rating) {
+      //     await userActivityService.logGameRated(
+      //       existingData.userId,
+      //       userName,
+      //       existingData.gameId,
+      //       existingData.gameName,
+      //       updates.rating,
+      //       existingData.gameImageUrl
+      //     );
+      //   }
+      // }
     } catch (error) {
       console.error('Error updating game log:', error);
       throw error;

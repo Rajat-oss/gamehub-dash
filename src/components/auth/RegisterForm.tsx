@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Lock, Chrome, User, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { profileService } from '@/services/profileService';
+import { userService } from '@/services/userService';
 
 interface RegisterFormProps {
   onToggleMode: () => void;
@@ -32,7 +32,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
       
       setUsernameStatus('checking');
       try {
-        const isAvailable = await profileService.isUsernameAvailable(username);
+        const isAvailable = await userService.isUsernameAvailable(username);
         setUsernameStatus(isAvailable ? 'available' : 'taken');
       } catch (error) {
         setUsernameStatus(null);
