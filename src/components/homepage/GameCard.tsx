@@ -74,45 +74,46 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
         </div>
 
         {/* Action buttons on hover */}
-        <div className="absolute bottom-3 left-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3 flex space-x-1 sm:space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <Button
             size="sm"
-            className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground"
+            className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground text-xs sm:text-sm"
             onClick={(e) => {
               e.stopPropagation();
               onRequest?.(game.id);
             }}
           >
-            <FaDownload className="w-3 h-3 mr-2" />
-            Request
+            <FaDownload className="w-2 h-2 sm:w-3 sm:h-3 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Request</span>
+            <span className="sm:hidden">Add</span>
           </Button>
           
           <Button
             size="sm"
             variant="secondary"
-            className="bg-green-600/90 hover:bg-green-600 text-white border-0"
+            className="bg-green-600/90 hover:bg-green-600 text-white border-0 px-2 sm:px-3"
             onClick={(e) => {
               e.stopPropagation();
               onLogGame?.(game);
             }}
           >
-            <FaPlus className="w-3 h-3" />
+            <FaPlus className="w-2 h-2 sm:w-3 sm:h-3" />
           </Button>
         </div>
       </div>
 
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+      <CardContent className="p-2 sm:p-4">
+        <h3 className="font-semibold text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {game.name}
         </h3>
         
-        <p className="text-sm text-muted-foreground mb-3">
+        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 hidden sm:block">
           Popular game on Pixel Pilgrim platform
         </p>
 
         <div className="flex flex-wrap gap-1">
           {game.genres && game.genres.length > 0 ? (
-            game.genres.slice(0, 2).map((genre) => (
+            game.genres.slice(0, 1).map((genre) => (
               <Badge
                 key={genre}
                 variant="secondary"
@@ -129,12 +130,12 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
               Gaming
             </Badge>
           )}
-          {game.genres && game.genres.length > 2 && (
+          {game.genres && game.genres.length > 1 && (
             <Badge
               variant="secondary"
               className="text-xs bg-secondary/50 text-secondary-foreground"
             >
-              +{game.genres.length - 2}
+              +{game.genres.length - 1}
             </Badge>
           )}
         </div>

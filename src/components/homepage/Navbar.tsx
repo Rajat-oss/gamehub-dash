@@ -92,20 +92,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             <img 
               src="/logofinal.png" 
               alt="GameHub" 
-              className="h-28 w-28 object-contain" 
+              className="h-20 w-20 sm:h-28 sm:w-28 object-contain" 
             />
           </div>
 
           {/* Search */}
-          <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-8">
+          <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-2 sm:mx-8">
             <div className="relative" ref={searchRef}>
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <FaSearch className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
               <Input
                 type="text"
-                placeholder="Search games..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
+                className="pl-8 sm:pl-10 bg-secondary/50 border-border/50 focus:border-primary text-sm sm:text-base"
               />
               
               {/* Search Suggestions */}
@@ -137,21 +137,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           </form>
 
           {/* Navigation Buttons */}
-          <div className="flex items-center gap-2 mr-4">
+          <div className="hidden md:flex items-center gap-2 mr-4">
             <Button 
               variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
               onClick={() => navigate('/my-games')}
+              size="sm"
             >
-              <FaGamepad className="w-4 h-4 mr-2" />
-              My Games
+              <FaGamepad className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">My Games</span>
             </Button>
             
             <Button 
               variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
               onClick={() => navigate('/favorites')}
+              size="sm"
             >
-              <FaHeart className="w-4 h-4 mr-2" />
-              Favorites
+              <FaHeart className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Favorites</span>
             </Button>
           </div>
 

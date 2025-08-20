@@ -117,6 +117,22 @@ const UserProfile: React.FC = () => {
 
   const isOwnProfile = user?.uid === profile.uid;
 
+  // Check if profile is private and user is not the owner
+  if (!isOwnProfile && profile.isPublic === false) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <Navbar onSearch={() => {}} />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <FaUser className="text-6xl text-muted-foreground mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Private Profile</h1>
+            <p className="text-muted-foreground">This user has set their profile to private.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Navbar onSearch={() => {}} />

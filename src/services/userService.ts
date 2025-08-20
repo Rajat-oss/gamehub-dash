@@ -143,5 +143,22 @@ export const userService = {
     });
     
     return users.slice(0, 20);
+  },
+
+  // Cleanup function - remove user document by username (for testing)
+  async deleteUserByUsername(username: string): Promise<void> {
+    try {
+      const q = query(collection(db, USERS_COLLECTION), where('username', '==', username));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        await userDoc.ref.delete();
+        console.log(`Deleted user document for username: ${username}`);
+      }
+    } catch (error) {
+      console.error('Error deleting user document:', error);
+      throw error;
+    }
   }
 };

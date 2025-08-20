@@ -158,7 +158,7 @@ const Community: React.FC = () => {
             ))}
           </div>
         ) : users.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {users.map((userProfile) => (
               <Card 
                 key={userProfile.uid} 
@@ -166,22 +166,22 @@ const Community: React.FC = () => {
                 onClick={() => handleUserClick(userProfile)}
               >
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="w-16 h-16">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
+                    <Avatar className="w-16 h-16 flex-shrink-0">
                       <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
                       <AvatarFallback className="text-lg">
                         {userProfile.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 text-center sm:text-left">
                       <h3 className="font-semibold text-lg truncate">@{userProfile.username}</h3>
                       {userProfile.displayName && (
                         <p className="text-sm text-muted-foreground truncate">
                           {userProfile.displayName}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-center sm:justify-start gap-3 mt-1 text-xs text-muted-foreground">
                         <span>{userProfile.followers.length} followers</span>
                         <span>{userProfile.following.length} following</span>
                       </div>

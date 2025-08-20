@@ -9,7 +9,9 @@ import { userService } from '@/services/userService';
 import { UserProfile } from '@/types/user';
 import { getFavorites } from '@/lib/favorites';
 import { useAuth } from '@/contexts/AuthContext';
-import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
@@ -19,6 +21,7 @@ const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -40,6 +43,7 @@ const Profile = () => {
         
         setProfile(userProfile);
         setBioText(userProfile.bio || '');
+        setIsPublic(userProfile.isPublic !== false);
       } catch (error) {
         console.error('Error loading profile:', error);
         toast.error('Failed to load profile');
@@ -97,7 +101,7 @@ const Profile = () => {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Profile Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* About Section */}
@@ -153,6 +157,31 @@ const Profile = () => {
                     <p className="text-muted-foreground">{profile.bio || 'No bio provided'}</p>
                   )}
                 </div>
+                
+                {/* Privacy Setting */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="flex items-center gap-2">
+                      {isPublic ? <FaEye className="w-4 h-4" /> : <FaEyeSlash className="w-4 h-4" />}
+                      Profile Visibility
+                    </Label>
+                    <Switch 
+                      checked={isPublic} 
+                      onCheckedChange={async (checked) => {
+                        try {
+                          await userService.updateUserProfile(user.uid, { isPublic: checked });
+                          setIsPublic(checked);
+                          toast.success(checked ? 'Profile is now public' : 'Profile is now private');
+                        } catch (error) {
+                          toast.error('Failed to update privacy setting');
+                        }
+                      }}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {isPublic ? 'Your profile is visible to everyone' : 'Your profile is private and hidden from others'}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
@@ -166,16 +195,16 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 {favoriteGames.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-3 sm:gap-4">
                     {favoriteGames.slice(0, 6).map((game) => (
                       <Link key={game.id} to={`/game/${game.id}`}>
-                        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/50 transition-colors cursor-pointer">
+                        <div className="bg-secondary/30 rounded-lg p-2 sm:p-3 hover:bg-secondary/50 transition-colors cursor-pointer">
                           <img
                             src={game.box_art_url}
                             alt={game.name}
-                            className="w-full h-20 object-cover rounded mb-2"
+                            className="w-full h-16 sm:h-20 object-cover rounded mb-2"
                           />
-                          <p className="text-sm font-medium truncate">{game.name}</p>
+                          <p className="text-xs sm:text-sm font-medium truncate">{game.name}</p>
                         </div>
                       </Link>
                     ))}

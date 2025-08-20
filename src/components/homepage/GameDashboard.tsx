@@ -96,27 +96,29 @@ export const GameDashboard: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <FaGamepad className="text-primary text-3xl" />
-            <h1 className="text-3xl font-bold text-foreground">Game Marketplace</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+            <FaGamepad className="text-primary text-2xl sm:text-3xl" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Game Marketplace</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             Discover and request your favorite games from our curated collection
           </p>
         </div>
 
         {/* Community Button */}
-        <div className="mb-8 flex items-center justify-between">
-          <Badge variant="secondary" className="text-sm">
-            <FaFire className="w-4 h-4 mr-2" />
-            Top Games on Pixel Pilgrim
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <Badge variant="secondary" className="text-xs sm:text-sm">
+            <FaFire className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Top Games on Pixel Pilgrim</span>
+            <span className="sm:hidden">Top Games</span>
           </Badge>
           
           <Link to="/community">
-            <Button variant="outline" className="border-primary/50 hover:bg-primary/10">
-              <FaUser className="w-4 h-4 mr-2" />
-              Gaming Community
+            <Button variant="outline" className="border-primary/50 hover:bg-primary/10 w-full sm:w-auto text-sm" size="sm">
+              <FaUser className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Gaming Community</span>
+              <span className="sm:hidden">Community</span>
             </Button>
           </Link>
         </div>
@@ -134,7 +136,7 @@ export const GameDashboard: React.FC = () => {
             ))}
           </div>
         ) : games.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
             {games.map((game) => (
               <GameCard
                 key={`${game.id}-${refreshKey}`}
@@ -155,20 +157,20 @@ export const GameDashboard: React.FC = () => {
         )}
 
         {/* Stats and Activity Feed */}
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Stats */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">{games.length}+</div>
-              <div className="text-muted-foreground">Games Available</div>
+          <div className="lg:col-span-2 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6">
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
+              <div className="text-xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">{games.length}+</div>
+              <div className="text-xs sm:text-base text-muted-foreground">Games Available</div>
             </div>
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-accent mb-2">Live</div>
-              <div className="text-muted-foreground">Pixel Pilgrim Data</div>
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
+              <div className="text-xl sm:text-3xl font-bold text-accent mb-1 sm:mb-2">Live</div>
+              <div className="text-xs sm:text-base text-muted-foreground">Pixel Pilgrim Data</div>
             </div>
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-gaming-green mb-2">Real-time</div>
-              <div className="text-muted-foreground">Updates</div>
+            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
+              <div className="text-xl sm:text-3xl font-bold text-gaming-green mb-1 sm:mb-2">Real-time</div>
+              <div className="text-xs sm:text-base text-muted-foreground">Updates</div>
             </div>
           </div>
           

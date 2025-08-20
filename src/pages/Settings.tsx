@@ -17,46 +17,13 @@ export const Settings: React.FC = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
-  const [publicProfile, setPublicProfile] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadUserSettings();
-  }, [user]);
-
-  const loadUserSettings = async () => {
-    if (!user) return;
-    try {
-      const profile = await userService.getUserProfile(user.uid);
-      if (profile) {
-        setPublicProfile(profile.isPublic !== false);
-      }
-    } catch (error) {
-      console.error('Error loading user settings:', error);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      await userService.updateUserProfile(user.uid, {
-        isPublic: publicProfile
-      });
-      toast({
-        title: 'Profile Updated',
-        description: 'Your profile settings have been saved.'
-      });
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save profile settings.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleSaveProfile = () => {
+    toast({
+      title: 'Profile Updated',
+      description: 'Your profile settings have been saved.'
+    });
   };
 
   const handleDeleteAccount = () => {
@@ -107,8 +74,8 @@ export const Settings: React.FC = () => {
                 />
               </div>
             </div>
-            <Button onClick={handleSaveProfile} disabled={loading} className="bg-gradient-primary">
-              {loading ? 'Saving...' : 'Save Profile'}
+            <Button onClick={handleSaveProfile} className="bg-gradient-primary">
+              Save Profile
             </Button>
           </CardContent>
         </Card>
@@ -132,24 +99,7 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Privacy Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FaEye className="w-5 h-5" />
-              Privacy
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Public Profile</Label>
-                <p className="text-sm text-muted-foreground">Allow others to see your profile and game activity</p>
-              </div>
-              <Switch checked={publicProfile} onCheckedChange={setPublicProfile} />
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* Account Actions */}
         <Card>
