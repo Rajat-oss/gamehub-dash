@@ -28,12 +28,15 @@ import {
   FaPlay,
   FaClock,
   FaListUl,
-  FaTimes
+  FaTimes,
+  FaArrowLeft
 } from 'react-icons/fa';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 const MyGames: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [gameLogs, setGameLogs] = useState<GameLog[]>([]);
   const [filteredGameLogs, setFilteredGameLogs] = useState<GameLog[]>([]);
   const [stats, setStats] = useState<GameLogStats | null>(null);
@@ -133,6 +136,18 @@ const MyGames: React.FC = () => {
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/homepage')}
+            className="flex items-center gap-2"
+          >
+            <FaArrowLeft className="w-4 h-4" />
+            Back to Marketplace
+          </Button>
+        </div>
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">

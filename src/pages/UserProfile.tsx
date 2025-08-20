@@ -8,17 +8,22 @@ import { GameLog } from '@/types/gameLog';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { getGameById, TwitchGame } from '@/lib/twitch';
 
 const UserProfile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfileType | null>(null);
   const [userGames, setUserGames] = useState<GameLog[]>([]);
+  const [userFavorites, setUserFavorites] = useState<TwitchGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -48,10 +53,33 @@ const UserProfile: React.FC = () => {
         // Load user's public games
         try {
           const games = await gameLogService.getUserGameLogs(userProfile.uid);
-          setUserGames(games.slice(0, 6)); // Show first 6 games
+          setUserGames(games); // Show all games
         } catch (gameError) {
           console.error('Error loading user games:', gameError);
           // Don't fail the whole page if games can't load
+        }
+        
+        // Load user's favorites
+        try {
+          if (userProfile.favoriteGames && userProfile.favoriteGames.length > 0) {
+            const favoriteGamesData = await Promise.all(
+              userProfile.favoriteGames.map(async (gameId: string) => {
+                try {
+                  const gameData = await getGameById(gameId);
+                  return gameData;
+                } catch (error) {
+                  console.error(`Error loading game ${gameId}:`, error);
+                  return null;
+                }
+              })
+            );
+            setUserFavorites(favoriteGamesData.filter((game): game is TwitchGame => game !== null));
+          } else {
+            setUserFavorites([]);
+          }
+        } catch (favError) {
+          console.error('Error loading user favorites:', favError);
+          setUserFavorites([]);
         }
       }
     } catch (error) {
@@ -137,7 +165,19 @@ const UserProfile: React.FC = () => {
     <div className="min-h-screen bg-gradient-hero">
       <Navbar onSearch={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/community')}
+            className="flex items-center gap-2"
+          >
+            <FaArrowLeft className="w-4 h-4" />
+            Back to Community
+          </Button>
+        </div>
+        
         {/* Profile Header */}
         <Card className="bg-gradient-card border-border/50 mb-8">
           <CardContent className="p-6">
@@ -191,49 +231,143 @@ const UserProfile: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* User's Games */}
+        {/* Gaming Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-gradient-card border-border/50">
+            <CardContent className="p-6 text-center">
+              <FaGamepad className="text-3xl text-primary mx-auto mb-2" />
+              <div className="text-2xl font-bold">{userGames.length}</div>
+              <div className="text-sm text-muted-foreground">Games Logged</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-card border-border/50">
+            <CardContent className="p-6 text-center">
+              <FaTrophy className="text-3xl text-yellow-500 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{userGames.filter(g => g.status === 'completed').length}</div>
+              <div className="text-sm text-muted-foreground">Completed</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-card border-border/50">
+            <CardContent className="p-6 text-center">
+              <FaStar className="text-3xl text-blue-500 mx-auto mb-2" />
+              <div className="text-2xl font-bold">
+                {userGames.filter(g => g.rating && g.rating >= 4).length}
+              </div>
+              <div className="text-sm text-muted-foreground">Highly Rated</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Games and Favorites Tabs */}
         <Card className="bg-gradient-card border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FaGamepad className="text-primary" />
-              Recent Games
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {userGames.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userGames.map((game) => (
-                  <div key={game.id} className="bg-secondary/30 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      {game.gameImageUrl && (
-                        <img
-                          src={game.gameImageUrl}
-                          alt={game.gameName}
-                          className="w-12 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{game.gameName}</h3>
-                        <Badge variant="secondary" className="text-xs">
-                          {game.status.replace('-', ' ')}
-                        </Badge>
-                      </div>
-                    </div>
-                    {game.rating && game.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-yellow-400">★</span>
-                        <span className="text-sm">{game.rating}/5</span>
-                      </div>
-                    )}
+          <CardContent className="p-6">
+            <Tabs defaultValue="games" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="games" className="flex items-center gap-2">
+                  <FaGamepad className="w-4 h-4" />
+                  My Games ({userGames.length})
+                </TabsTrigger>
+                <TabsTrigger value="favorites" className="flex items-center gap-2">
+                  <FaHeart className="w-4 h-4" />
+                  Favorites ({userFavorites.length})
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="games" className="mt-6">
+                {userGames.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {userGames.map((game) => (
+                      <Card key={game.id} className="bg-secondary/30 border-border/30 hover:border-primary/50 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            {game.gameImageUrl && (
+                              <img
+                                src={game.gameImageUrl}
+                                alt={game.gameName}
+                                className="w-16 h-20 object-cover rounded flex-shrink-0"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm mb-1 line-clamp-2">{game.gameName}</h3>
+                              <Badge 
+                                variant={game.status === 'completed' ? 'default' : 'secondary'} 
+                                className="text-xs mb-2"
+                              >
+                                {game.status.replace('-', ' ')}
+                              </Badge>
+                              {game.rating && game.rating > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <FaStar className="text-yellow-400 w-3 h-3" />
+                                  <span className="text-sm font-medium">{game.rating}/5</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {game.notes && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
+                              {game.notes}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            <FaClock className="w-3 h-3" />
+                            <span>{new Date(game.dateAdded).toLocaleDateString()}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <FaGamepad className="text-4xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">No games to show</p>
-              </div>
-            )}
+                ) : (
+                  <div className="text-center py-12">
+                    <FaGamepad className="text-6xl text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No games logged yet</h3>
+                    <p className="text-muted-foreground">
+                      {isOwnProfile ? 'Start logging your games to build your library!' : `${profile.username} hasn't logged any games yet.`}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="favorites" className="mt-6">
+                {userFavorites.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {userFavorites.map((game, index) => (
+                      <Card key={game.id || index} className="bg-secondary/30 border-border/30 hover:border-primary/50 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            {game.box_art_url && (
+                              <img
+                                src={game.box_art_url}
+                                alt={game.name}
+                                className="w-16 h-20 object-cover rounded flex-shrink-0"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm mb-1 line-clamp-2">{game.name}</h3>
+                              <Badge variant="outline" className="text-xs mb-2">
+                                <FaHeart className="w-3 h-3 mr-1" />
+                                Favorite
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <FaHeart className="text-6xl text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No favorite games yet</h3>
+                    <p className="text-muted-foreground">
+                      {isOwnProfile ? 'Add games to your favorites to see them here!' : `${profile.username} hasn't added any favorite games yet.`}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </main>

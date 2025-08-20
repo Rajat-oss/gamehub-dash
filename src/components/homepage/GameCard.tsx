@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FaStar, FaDownload, FaHeart, FaPlus } from 'react-icons/fa';
 import { TwitchGame } from '@/lib/twitch';
-import { addToFavorites, removeFromFavorites, isFavorite } from '@/lib/favorites';
+import { addToFavorites, removeFromFavorites, isFavorite, addToUserFavorites, removeFromUserFavorites } from '@/lib/favorites';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface GameCardProps {
@@ -17,11 +18,18 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, isFavorite: propIsFavorite, onToggleFavorite }) => {
   const navigate = useNavigate();
-  const [isGameFavorite, setIsGameFavorite] = React.useState(
-    propIsFavorite !== undefined ? propIsFavorite : isFavorite(game.id)
-  );
+  const { user } = useAuth();
+  const [isGameFavorite, setIsGameFavorite] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (propIsFavorite !== undefined) {
+      setIsGameFavorite(propIsFavorite);
+    } else {
+      setIsGameFavorite(isFavorite(game.id));
+    }
+  }, [game.id, propIsFavorite]);
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
     if (onToggleFavorite) {
@@ -31,9 +39,17 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
       if (isGameFavorite) {
         removeFromFavorites(game.id);
         setIsGameFavorite(false);
+        // Also remove from user's Firestore profile if logged in
+        if (user) {
+          await removeFromUserFavorites(user.uid, game.id);
+        }
       } else {
         addToFavorites(game);
         setIsGameFavorite(true);
+        // Also add to user's Firestore profile if logged in
+        if (user) {
+          await addToUserFavorites(user.uid, game.id);
+        }
       }
     }
   };

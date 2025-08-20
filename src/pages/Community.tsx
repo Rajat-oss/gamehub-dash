@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaUsers, FaSearch, FaHeart, FaGamepad, FaUser } from 'react-icons/fa';
+import { FaUsers, FaSearch, FaHeart, FaGamepad, FaUser, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -115,9 +115,19 @@ const Community: React.FC = () => {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <FaUsers className="text-primary text-3xl" />
-            <h1 className="text-3xl font-bold text-foreground">Gaming Community</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <FaUsers className="text-primary text-3xl" />
+              <h1 className="text-3xl font-bold text-foreground">Gaming Community</h1>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/homepage')}
+              className="flex items-center gap-2"
+            >
+              <FaArrowLeft className="w-4 h-4" />
+              Back to Marketplace
+            </Button>
           </div>
           <p className="text-muted-foreground text-lg">
             Connect with fellow gamers and discover new friends

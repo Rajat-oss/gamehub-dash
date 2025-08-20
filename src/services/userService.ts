@@ -21,6 +21,7 @@ export const userService = {
         joinDate: new Date(),
         followers: [],
         following: [],
+        favoriteGames: [],
         isPublic: true,
         ...userData
       });
@@ -143,6 +144,22 @@ export const userService = {
     });
     
     return users.slice(0, 20);
+  },
+
+  // Add game to favorites
+  async addToFavorites(uid: string, gameId: string): Promise<void> {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    await updateDoc(userRef, {
+      favoriteGames: arrayUnion(gameId)
+    });
+  },
+
+  // Remove game from favorites
+  async removeFromFavorites(uid: string, gameId: string): Promise<void> {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    await updateDoc(userRef, {
+      favoriteGames: arrayRemove(gameId)
+    });
   },
 
   // Cleanup function - remove user document by username (for testing)

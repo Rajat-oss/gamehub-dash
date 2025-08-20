@@ -9,6 +9,7 @@ export interface UserProfile {
   followers: string[];
   following: string[];
   isPublic: boolean;
+  favoriteGames?: string[]; // Array of game IDs
 }
 
 export interface FollowData {
