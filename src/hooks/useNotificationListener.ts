@@ -27,6 +27,12 @@ export const useNotificationListener = () => {
         
         if (change.type === 'added') {
           const data = change.doc.data();
+          
+          // Skip chat notifications
+          if (data.type === 'chat_message') {
+            return;
+          }
+          
           const notification = {
             id: change.doc.id,
             ...data,

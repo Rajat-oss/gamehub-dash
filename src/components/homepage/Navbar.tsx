@@ -17,9 +17,10 @@ import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, 
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
-import { notificationService } from '@/services/notificationService';
+
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { useChatUnreadCount } from '@/hooks/useChatUnreadCount';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -32,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const chatUnreadCount = useChatUnreadCount();
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -109,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       return;
     }
     
-    // Set up real-time listener for unread notifications
+    // Set up real-time listener for unread notifications (excluding chat)
     const q = query(
       collection(db, 'notifications'),
       where('userId', '==', user.uid),
@@ -117,7 +119,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnreadCount(snapshot.size);
+      // Filter out chat notifications
+      const nonChatNotifications = snapshot.docs.filter(doc => 
+        doc.data().type !== 'chat_message'
+      );
+      setUnreadCount(nonChatNotifications.length);
     }, (error) => {
       console.error('Error listening to notification count:', error);
     });
@@ -215,9 +221,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
               onClick={() => navigate('/inbox')}
               size="sm"
+              className="relative"
             >
               <FaComments className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Chat</span>
+              {chatUnreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-green-500 text-white">
+                  {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                </Badge>
+              )}
             </Button>
           </div>
 

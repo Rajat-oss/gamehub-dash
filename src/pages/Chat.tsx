@@ -64,10 +64,18 @@ const Chat: React.FC = () => {
 
     // Subscribe to typing status
     const unsubscribeTyping = subscribeToTypingStatus(user.uid, otherUserId, (typing) => {
+      console.log('Other user typing status:', typing);
       setOtherUserTyping(typing);
     });
 
     return () => {
+      // Clean up typing status when leaving chat
+      if (isTyping) {
+        setTypingStatus(user.uid, otherUserId, false);
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
       unsubscribe();
       unsubscribeTyping();
     };
@@ -77,7 +85,7 @@ const Chat: React.FC = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, otherUserTyping]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,21 +120,35 @@ const Chat: React.FC = () => {
     if (!otherUserId || !user) return;
     
     // Set typing status
-    if (value.trim() && !isTyping) {
-      setIsTyping(true);
-      setTypingStatus(user.uid, otherUserId, true);
+    if (value.trim()) {
+      if (!isTyping) {
+        setIsTyping(true);
+        setTypingStatus(user.uid, otherUserId, true);
+        console.log('Setting typing status to true');
+      }
+      
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Set timeout to stop typing
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        setTypingStatus(user.uid, otherUserId, false);
+        console.log('Setting typing status to false');
+      }, 2000);
+    } else {
+      // Stop typing immediately if input is empty
+      if (isTyping) {
+        setIsTyping(false);
+        setTypingStatus(user.uid, otherUserId, false);
+        console.log('Stopping typing - empty input');
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     }
-    
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Set timeout to stop typing
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      setTypingStatus(user.uid, otherUserId, false);
-    }, 2000);
   };
 
   const formatTime = (timestamp: any) => {
@@ -236,7 +258,7 @@ const Chat: React.FC = () => {
                               {formatTime(message.timestamp)}
                             </p>
                             {isOwn && (
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-slate-400 ml-1">
                                 {message.read ? '✓✓' : '✓'}
                               </span>
                             )}

@@ -32,9 +32,11 @@ function getChatRoomId(userId1: string, userId2: string): string {
 export async function setTypingStatus(userId1: string, userId2: string, isTyping: boolean): Promise<void> {
   try {
     const chatRoomId = getChatRoomId(userId1, userId2);
+    console.log('Setting typing status:', { chatRoomId, userId1, isTyping });
     await setDoc(doc(db, 'chats', chatRoomId), {
       [`typing_${userId1}`]: isTyping ? serverTimestamp() : null
     }, { merge: true });
+    console.log('Typing status set successfully');
   } catch (error) {
     console.error('Error setting typing status:', error);
   }
@@ -48,11 +50,14 @@ export async function markMessagesAsSeen(userId1: string, userId2: string, curre
     const q = query(messagesRef, where('receiverId', '==', currentUserId), where('read', '==', false));
     
     const snapshot = await getDocs(q);
+    console.log('Marking messages as seen:', snapshot.docs.length, 'messages');
+    
     const updatePromises = snapshot.docs.map(doc => 
       updateDoc(doc.ref, { read: true })
     );
     
     await Promise.all(updatePromises);
+    console.log('Messages marked as seen successfully');
   } catch (error) {
     console.error('Error marking messages as seen:', error);
   }
@@ -194,6 +199,7 @@ export function subscribeToChats(userId: string, callback: (chats: ChatRoom[]) =
 export function subscribeToTypingStatus(currentUserId: string, otherUserId: string, callback: (isTyping: boolean) => void) {
   try {
     const chatRoomId = getChatRoomId(currentUserId, otherUserId);
+    console.log('Subscribing to typing status:', { chatRoomId, currentUserId, otherUserId });
     
     return onSnapshot(doc(db, 'chats', chatRoomId), (doc) => {
       if (doc.exists()) {
@@ -201,15 +207,19 @@ export function subscribeToTypingStatus(currentUserId: string, otherUserId: stri
         const typingKey = `typing_${otherUserId}`;
         const typingTimestamp = data[typingKey];
         
+        console.log('Typing status data:', { typingKey, typingTimestamp, data });
+        
         if (typingTimestamp) {
           const now = Date.now();
           const typingTime = typingTimestamp.toDate ? typingTimestamp.toDate().getTime() : typingTimestamp;
           const isRecentlyTyping = now - typingTime < 3000; // 3 seconds
+          console.log('Typing check:', { now, typingTime, isRecentlyTyping });
           callback(isRecentlyTyping);
         } else {
           callback(false);
         }
       } else {
+        console.log('Chat room does not exist yet');
         callback(false);
       }
     }, (error) => {

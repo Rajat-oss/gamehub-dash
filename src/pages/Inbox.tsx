@@ -1,43 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { chatService } from '@/services/chatService';
+import { subscribeToChats } from '@/lib/chat';
 import { userService } from '@/services/userService';
-import { Chat } from '@/types/chat';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaComments, FaArrowLeft, FaUser } from 'react-icons/fa';
+import { FaComments, FaArrowLeft, FaReply } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Inbox: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<any[]>([]);
   const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
+  const [unreadCounts, setUnreadCounts] = useState<{[key: string]: number}>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = chatService.getUserChats(user.uid, async (userChats) => {
+    const unsubscribe = subscribeToChats(user.uid, async (userChats) => {
       setChats(userChats);
       
-      // Load user profiles for avatars
+      // Load user profiles and calculate unread counts
       const profiles: {[key: string]: any} = {};
+      const unreadCountsMap: {[key: string]: number} = {};
+      
       for (const chat of userChats) {
-        const otherUserId = chat.participants.find(p => p !== user.uid);
-        if (otherUserId && !profiles[otherUserId]) {
-          try {
-            const profile = await userService.getUserProfile(otherUserId);
-            profiles[otherUserId] = profile;
-          } catch (error) {
-            console.error('Error loading user profile:', error);
+        const otherUserId = chat.participants.find((p: string) => p !== user.uid);
+        if (otherUserId) {
+          // Load profile
+          if (!profiles[otherUserId]) {
+            try {
+              const profile = await userService.getUserProfile(otherUserId);
+              profiles[otherUserId] = profile;
+            } catch (error) {
+              console.error('Error loading user profile:', error);
+            }
           }
+          
+          // Calculate unread count by subscribing to messages
+          import('@/lib/chat').then(({ subscribeToMessages }) => {
+            subscribeToMessages(user.uid, otherUserId, (messages) => {
+              const unreadCount = messages.filter(msg => 
+                msg.receiverId === user.uid && !msg.read
+              ).length;
+              setUnreadCounts(prev => ({ ...prev, [otherUserId]: unreadCount }));
+            });
+          });
         }
       }
+      
       setUserProfiles(profiles);
       setLoading(false);
     });
@@ -45,21 +61,26 @@ const Inbox: React.FC = () => {
     return unsubscribe;
   }, [user]);
 
-  const handleChatClick = (chat: Chat) => {
-    navigate(`/chat/${chat.id}`);
+  const handleChatClick = (chat: any) => {
+    const otherUserId = chat.participants.find((p: string) => p !== user?.uid);
+    if (otherUserId) {
+      navigate(`/chat/${otherUserId}`);
+    }
   };
 
-  const getOtherParticipant = (chat: Chat) => {
-    const otherUserId = chat.participants.find(p => p !== user?.uid);
+  const getOtherParticipant = (chat: any) => {
+    const otherUserId = chat.participants.find((p: string) => p !== user?.uid);
     const profile = otherUserId ? userProfiles[otherUserId] : null;
     return {
       id: otherUserId,
-      name: profile?.username || (otherUserId ? chat.participantNames[otherUserId] : 'Unknown'),
+      name: profile?.username || (otherUserId ? chat.participantNames?.[otherUserId] : 'Unknown'),
       avatar: profile?.photoURL
     };
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -122,43 +143,72 @@ const Inbox: React.FC = () => {
           <div className="space-y-4">
             {chats.map((chat) => {
               const otherUser = getOtherParticipant(chat);
-              const unreadCount = chat.unreadCount?.[user.uid] || 0;
+              const unreadCount = unreadCounts[otherUser.id] || 0;
               
               return (
                 <Card 
                   key={chat.id} 
-                  className="bg-gradient-card border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
+                  className={`border-border/50 hover:border-primary/50 transition-colors cursor-pointer ${
+                    unreadCount > 0 
+                      ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary/30' 
+                      : 'bg-gradient-card'
+                  }`}
                   onClick={() => handleChatClick(chat)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
-                        <AvatarFallback>
-                          {otherUser.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="w-12 h-12">
+                          <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
+                          <AvatarFallback>
+                            {otherUser.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {unreadCount > 0 && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold truncate">{otherUser.name}</h3>
+                          <h3 className={`truncate ${
+                            unreadCount > 0 ? 'font-bold' : 'font-semibold'
+                          }`}>{otherUser.name}</h3>
                           <div className="flex items-center gap-2">
                             {unreadCount > 0 && (
-                              <Badge variant="default" className="bg-primary">
+                              <Badge variant="default" className="bg-red-500 text-white">
                                 {unreadCount}
                               </Badge>
                             )}
                             <span className="text-xs text-muted-foreground">
-                              {formatTime(chat.lastActivity)}
+                              {formatTime(chat.lastMessageTime)}
                             </span>
                           </div>
                         </div>
                         
                         {chat.lastMessage && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {chat.lastMessage.senderId === user.uid ? 'You: ' : ''}
-                            {chat.lastMessage.content}
-                          </p>
+                          <div className={`text-sm truncate ${
+                            unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          }`}>
+                            {chat.lastMessageSenderId ? (
+                              chat.lastMessageSenderId === user?.uid ? (
+                                `You: ${chat.lastMessage}`
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <FaReply className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {otherUser.name} sent you a message
+                                  </span>
+                                </div>
+                              )
+                            ) : (
+                              chat.lastMessage
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

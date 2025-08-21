@@ -33,11 +33,14 @@ const Notifications: React.FC = () => {
       
       snapshot.forEach((doc) => {
         const data = doc.data();
-        notificationsList.push({
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt.toDate()
-        } as Notification);
+        // Filter out chat notifications
+        if (data.type !== 'chat_message') {
+          notificationsList.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt.toDate()
+          } as Notification);
+        }
       });
       
       setNotifications(notificationsList);
