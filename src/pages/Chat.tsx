@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FaArrowLeft, FaPaperPlane, FaUser } from 'react-icons/fa';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
 interface Message {
@@ -31,6 +32,7 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [otherUserName, setOtherUserName] = useState('User');
+  const [otherUserPhoto, setOtherUserPhoto] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const Chat: React.FC = () => {
       try {
         const otherUserProfile = await userService.getUserProfile(otherUserId);
         setOtherUserName(otherUserProfile?.username || 'User');
+        setOtherUserPhoto(otherUserProfile?.photoURL || '');
       } catch (error) {
         console.error('Error loading other user:', error);
       }
@@ -116,40 +119,85 @@ const Chat: React.FC = () => {
               <FaArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <h1 className="text-2xl font-bold">Chat with {otherUserName}</h1>
+            <div className="flex items-center gap-3">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                <AvatarFallback>{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <h1 className="text-2xl font-bold">Chat with {otherUserName}</h1>
+            </div>
           </div>
         </div>
 
         {/* Chat Container */}
-        <Card className="bg-gradient-card border-border/50 h-[600px] flex flex-col">
+        <div className="bg-gradient-card border border-border/50 rounded-xl shadow-2xl h-[700px] flex flex-col backdrop-blur-sm">
+          {/* Chat Header */}
+          <div className="p-4 border-b border-border/30 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-xl">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+                  <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                  <AvatarFallback className="bg-primary/20">{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">{otherUserName}</h2>
+                <p className="text-xs text-muted-foreground">Online now</p>
+              </div>
+            </div>
+          </div>
+
           {/* Messages */}
-          <CardContent className="flex-1 p-4 overflow-y-auto">
+          <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-background/50 to-background/80">
             {loading ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-                    <Skeleton className="h-12 w-64 rounded-lg" />
+                  <div key={i} className={`flex items-end gap-3 ${i % 2 === 0 ? 'justify-start' : 'justify-end flex-row-reverse'}`}>
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <Skeleton className="h-16 w-64 rounded-2xl" />
                   </div>
                 ))}
               </div>
             ) : messages.length > 0 ? (
-              <div className="space-y-4">
-                {messages.map((message) => {
+              <div className="space-y-6">
+                {messages.map((message, index) => {
                   const isOwn = message.senderId === user.uid;
+                  const showAvatar = index === 0 || messages[index - 1]?.senderId !== message.senderId;
                   
                   return (
-                    <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg shadow-sm ${
+                    <div key={message.id} className={`flex items-end gap-3 animate-in slide-in-from-bottom-2 duration-300 ${
+                      isOwn ? 'justify-end flex-row-reverse' : 'justify-start'
+                    }`}>
+                      {showAvatar ? (
+                        <Avatar className="w-8 h-8 flex-shrink-0 ring-2 ring-background shadow-lg">
+                          <AvatarImage src={isOwn ? user.photoURL : otherUserPhoto} alt={isOwn ? user.displayName : otherUserName} />
+                          <AvatarFallback className={isOwn ? 'bg-primary/20' : 'bg-secondary/20'}>
+                            {(isOwn ? user.displayName || user.email : otherUserName).charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-8 h-8 flex-shrink-0" />
+                      )}
+                      
+                      <div className={`group relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl ${
                         isOwn 
-                          ? 'bg-primary text-primary-foreground ml-auto' 
-                          : 'bg-card text-card-foreground border border-border/50'
+                          ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground' 
+                          : 'bg-gradient-to-br from-card to-card/80 text-card-foreground border border-border/30'
                       }`}>
-                        <div className="text-sm">{message.message}</div>
-                        <div className={`text-xs mt-1 ${
-                          isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        <div className="text-sm leading-relaxed">{message.message}</div>
+                        <div className={`text-xs mt-2 opacity-70 group-hover:opacity-100 transition-opacity ${
+                          isOwn ? 'text-primary-foreground/80' : 'text-muted-foreground'
                         }`}>
                           {formatTime(message.timestamp)}
                         </div>
+                        
+                        {/* Message tail */}
+                        <div className={`absolute top-4 w-3 h-3 transform rotate-45 ${
+                          isOwn 
+                            ? '-right-1 bg-gradient-to-br from-primary to-primary/80' 
+                            : '-left-1 bg-gradient-to-br from-card to-card/80 border-l border-t border-border/30'
+                        }`}></div>
                       </div>
                     </div>
                   );
@@ -158,30 +206,42 @@ const Chat: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center text-muted-foreground">
-                  <FaUser className="text-4xl mx-auto mb-2" />
-                  <p>Start the conversation!</p>
+                <div className="text-center text-muted-foreground animate-pulse">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FaUser className="text-2xl text-primary/50" />
+                  </div>
+                  <p className="text-lg font-medium mb-2">Start the conversation!</p>
+                  <p className="text-sm">Send a message to {otherUserName}</p>
                 </div>
               </div>
             )}
-          </CardContent>
+          </div>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-border/50">
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1"
-                disabled={sending}
-              />
-              <Button type="submit" disabled={!newMessage.trim() || sending}>
+          <div className="p-4 border-t border-border/30 bg-gradient-to-r from-background/80 to-background/60 rounded-b-xl">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
+              <div className="flex-1 relative">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={`Message ${otherUserName}...`}
+                  className="pr-12 py-3 rounded-full border-border/50 bg-background/80 backdrop-blur-sm focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                  disabled={sending}
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                  {sending && <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>}
+                </div>
+              </div>
+              <Button 
+                type="submit" 
+                disabled={!newMessage.trim() || sending}
+                className="rounded-full w-12 h-12 p-0 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+              >
                 <FaPaperPlane className="w-4 h-4" />
               </Button>
             </form>
           </div>
-        </Card>
+        </div>
       </main>
     </div>
   );

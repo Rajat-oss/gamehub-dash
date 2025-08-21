@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { userService } from '@/services/userService';
 import { Badge } from '@/components/ui/badge';
 import { subscribeToChats, ChatRoom } from '@/lib/chat';
 import { auth } from '@/lib/firebase';
@@ -12,13 +13,29 @@ import { Link } from 'react-router-dom';
 
 const ChatInbox = () => {
   const [chats, setChats] = useState<ChatRoom[]>([]);
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
-        const unsubscribe = subscribeToChats(user.uid, (newChats) => {
+        const unsubscribe = subscribeToChats(user.uid, async (newChats) => {
           setChats(newChats);
+          
+          // Load user profiles for avatars
+          const profiles: {[key: string]: any} = {};
+          for (const chat of newChats) {
+            const otherUserId = chat.participants.find(id => id !== user.uid);
+            if (otherUserId && !profiles[otherUserId]) {
+              try {
+                const profile = await userService.getUserProfile(otherUserId);
+                profiles[otherUserId] = profile;
+              } catch (error) {
+                console.error('Error loading user profile:', error);
+              }
+            }
+          }
+          setUserProfiles(profiles);
           setLoading(false);
         });
         return unsubscribe;
@@ -104,14 +121,16 @@ const ChatInbox = () => {
                 {chats.map((chat) => {
                   const currentUser = auth.currentUser;
                   const otherUserId = chat.participants.find(id => id !== currentUser?.uid);
-                  const otherUserName = otherUserId ? chat.participantNames[otherUserId] : 'Unknown User';
+                  const profile = otherUserId ? userProfiles[otherUserId] : null;
+                  const otherUserName = profile?.username || (otherUserId ? chat.participantNames[otherUserId] : 'Unknown User');
                   
                   return (
                     <Link key={chat.id} to={`/chat/${otherUserId}`}>
                       <div className="flex items-center space-x-4 p-4 bg-secondary/20 rounded-lg border border-border/30 hover:bg-secondary/30 transition-colors cursor-pointer">
                         <Avatar className="h-12 w-12">
+                          <AvatarImage src={profile?.photoURL} alt={otherUserName} />
                           <AvatarFallback className="bg-primary text-primary-foreground">
-                            <FaUser className="w-6 h-6" />
+                            {otherUserName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         
