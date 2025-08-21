@@ -1,6 +1,7 @@
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { UserProfile } from '@/types/user';
+import { notificationService } from './notificationService';
 
 const USERS_COLLECTION = 'users';
 
@@ -95,6 +96,20 @@ export const userService = {
           followers: arrayUnion(followerId)
         })
       ]);
+      
+      // Create notification for the followed user
+      const followerProfile = await this.getUserProfile(followerId);
+      if (followerProfile) {
+        await notificationService.createNotification({
+          userId: followingId,
+          type: 'follow',
+          title: 'New Follower',
+          message: `${followerProfile.username} started following you`,
+          fromUserId: followerId,
+          fromUsername: followerProfile.username,
+          read: false
+        });
+      }
     } catch (error) {
       console.error('Error following user:', error);
       throw error;

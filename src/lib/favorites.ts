@@ -1,5 +1,7 @@
 import { TwitchGame } from './twitch';
 import { userService } from '@/services/userService';
+import { notificationService } from '@/services/notificationService';
+import { auth } from './firebase';
 
 const FAVORITES_KEY = 'gamehub_favorites';
 
@@ -9,11 +11,32 @@ export function getFavorites(): TwitchGame[] {
   return stored ? JSON.parse(stored) : [];
 }
 
-export function addToFavorites(game: TwitchGame): void {
+export async function addToFavorites(game: TwitchGame): Promise<void> {
   const favorites = getFavorites();
   if (!favorites.find(f => f.id === game.id)) {
     favorites.push(game);
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    
+    // Notify followers about new favorite game
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        const userProfile = await userService.getUserProfile(currentUser.uid);
+        if (userProfile && userProfile.isPublic !== false) {
+          await notificationService.notifyFollowersAboutGame(
+            currentUser.uid,
+            userProfile.username || 'A user',
+            userProfile.photoURL || '',
+            game.id,
+            game.name,
+            game.box_art_url,
+            'game_favorited'
+          );
+        }
+      } catch (error) {
+        console.error('Error notifying followers about favorite:', error);
+      }
+    }
   }
 }
 
