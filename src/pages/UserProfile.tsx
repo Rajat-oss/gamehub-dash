@@ -12,10 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList, FaEnvelope } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList, FaEnvelope, FaComments } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getGameById, TwitchGame } from '@/lib/twitch';
+import { chatService } from '@/services/chatService';
 
 const UserProfile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -228,15 +229,37 @@ const UserProfile: React.FC = () => {
                     {isFollowing ? 'Unfollow' : 'Follow'}
                   </Button>
                   
-                  {isFollowing && (
-                    <Button
-                      onClick={() => navigate(`/chat/${profile.uid}`)}
-                      variant="outline"
-                    >
-                      <FaEnvelope className="w-4 h-4 mr-2" />
-                      Message
-                    </Button>
-                  )}
+                  <Button
+                    onClick={async () => {
+                      if (!user) return;
+                      
+                      // Check if both users follow each other
+                      const currentUserProfile = await userService.getUserProfile(user.uid);
+                      const mutualFollow = isFollowing && currentUserProfile?.following.includes(profile.uid);
+                      
+                      if (!mutualFollow) {
+                        toast.error('You can only message users who follow you back');
+                        return;
+                      }
+                      
+                      try {
+                        const chatId = await chatService.createOrGetChat(
+                          user.uid, 
+                          profile.uid, 
+                          user.displayName || user.email?.split('@')[0] || 'User',
+                          profile.displayName || profile.username
+                        );
+                        navigate(`/chat/${chatId}`);
+                      } catch (error) {
+                        console.error('Error creating chat:', error);
+                        toast.error('Failed to start chat');
+                      }
+                    }}
+                    variant="outline"
+                  >
+                    <FaComments className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
                 </div>
               )}
             </div>
