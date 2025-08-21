@@ -13,10 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaBell } from 'react-icons/fa';
-import { notificationService, Notification } from '@/services/notificationService';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
 
@@ -102,19 +100,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     loadUserProfile();
   }, [user]);
 
+  // Placeholder for notifications - can be implemented later
   useEffect(() => {
-    const loadNotifications = async () => {
-      if (user) {
-        try {
-          const userNotifications = await notificationService.getUserNotifications(user.uid);
-          setUnreadCount(userNotifications.filter(n => !n.read).length);
-        } catch (error) {
-          console.error('Error loading notifications:', error);
-        }
-      }
-    };
-
-    loadNotifications();
+    // Set a placeholder unread count for demo
+    setUnreadCount(0);
   }, [user]);
 
   const handleLogout = async () => {
@@ -202,24 +191,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               <FaHeart className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Favorites</span>
             </Button>
-          </div>
-
-          {/* Notifications */}
-          <div className="mr-4">
-            <Button
-              variant="ghost"
+            
+            <Button 
+              variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
+              onClick={() => navigate('/inbox')}
               size="sm"
-              className="relative"
-              onClick={() => navigate('/notifications')}
             >
-              <FaBell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </Badge>
-              )}
+              <FaComments className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Chat</span>
             </Button>
           </div>
+
+          {/* Notifications - Hidden for now */}
+          {false && (
+            <div className="mr-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="relative"
+                onClick={() => navigate('/notifications')}
+              >
+                <FaBell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+          )}
 
           {/* User Menu */}
           <DropdownMenu>

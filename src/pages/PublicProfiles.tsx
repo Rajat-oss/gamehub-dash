@@ -6,21 +6,59 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { subscribeToPublicProfiles } from '@/lib/publicProfiles';
 import { UserProfile } from '@/lib/profile';
-import { FaUser, FaGamepad, FaComments, FaStar, FaCalendar, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaComments, FaStar, FaCalendar, FaArrowLeft, FaEnvelope, FaUserPlus, FaUserCheck } from 'react-icons/fa';
+import { followUser, unfollowUser, isFollowing } from '@/lib/followers';
+import { auth } from '@/lib/firebase';
 import { Link } from 'react-router-dom';
 
 const PublicProfiles = () => {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
+  const [followingStatus, setFollowingStatus] = useState<Record<string, boolean>>({});
 
 
   useEffect(() => {
     // Subscribe to real-time profiles from Firebase
     const unsubscribe = subscribeToPublicProfiles((newProfiles) => {
       setProfiles(newProfiles);
+      checkFollowingStatus(newProfiles);
     });
     
     return () => unsubscribe();
   }, []);
+
+  const checkFollowingStatus = async (profileList: UserProfile[]) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const statusMap: Record<string, boolean> = {};
+    for (const profile of profileList) {
+      statusMap[profile.id] = await isFollowing(profile.id, currentUser.uid);
+    }
+    setFollowingStatus(statusMap);
+  };
+
+  const handleFollowToggle = async (profile: UserProfile, e: React.MouseEvent) => {
+    e.preventDefault();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const isCurrentlyFollowing = followingStatus[profile.id];
+    
+    if (isCurrentlyFollowing) {
+      await unfollowUser(profile.id, currentUser.uid);
+    } else {
+      await followUser(profile.id, {
+        id: currentUser.uid,
+        name: currentUser.displayName || 'Anonymous',
+        email: currentUser.email || ''
+      });
+    }
+    
+    setFollowingStatus(prev => ({
+      ...prev,
+      [profile.id]: !isCurrentlyFollowing
+    }));
+  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
@@ -144,6 +182,36 @@ const PublicProfiles = () => {
                       )}
                       {Date.now() - profile.joinDate < 86400000 * 30 && (
                         <Badge variant="secondary" className="text-xs">New Member</Badge>
+                      )}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="mt-4 pt-4 border-t border-border/30 space-y-2">
+                      <Button
+                        onClick={(e) => handleFollowToggle(profile, e)}
+                        variant={followingStatus[profile.id] ? "outline" : "default"}
+                        className="w-full"
+                      >
+                        {followingStatus[profile.id] ? (
+                          <>
+                            <FaUserCheck className="w-4 h-4 mr-2" />
+                            Following
+                          </>
+                        ) : (
+                          <>
+                            <FaUserPlus className="w-4 h-4 mr-2" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
+                      
+                      {followingStatus[profile.id] && (
+                        <Link to={`/chat/${profile.id}`} onClick={(e) => e.stopPropagation()}>
+                          <Button variant="outline" className="w-full">
+                            <FaEnvelope className="w-4 h-4 mr-2" />
+                            Message
+                          </Button>
+                        </Link>
                       )}
                     </div>
                   </CardContent>

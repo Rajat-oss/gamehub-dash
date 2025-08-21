@@ -17,6 +17,8 @@ import UserProfilePage from "./pages/UserProfile";
 import Community from "./pages/Community";
 import Notifications from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
+import Chat from "./pages/Chat";
+import ChatInbox from "./pages/ChatInbox";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
 import "@/utils/verifyTemplate"; // Import template verification utility
@@ -44,6 +46,8 @@ const App = () => (
                 <Route path="/community" element={<Community />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/user/:username" element={<UserProfilePage />} />
+                <Route path="/chat/:userId" element={<Chat />} />
+                <Route path="/inbox" element={<ChatInbox />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
