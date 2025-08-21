@@ -3,6 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { userService } from '@/services/userService';
+import { UserProfile } from '@/types/user';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<TwitchGame[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -77,6 +80,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (user) {
+        try {
+          const profile = await userService.getUserProfile(user.uid);
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    loadUserProfile();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -170,9 +190,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
+                  <AvatarImage src={userProfile?.photoURL || user?.photoURL || ''} alt={userProfile?.username || user?.displayName || ''} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.email?.charAt(0).toUpperCase() || <FaUser />}
+                    {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || <FaUser />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -181,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user?.displayName || 'Gamer'}
+                    {userProfile?.username || user?.displayName || 'Gamer'}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
