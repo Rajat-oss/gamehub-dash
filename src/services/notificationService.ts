@@ -4,7 +4,7 @@ import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, Tim
 export interface Notification {
   id: string;
   userId: string;
-  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied';
+  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied' | 'chat_message';
   title: string;
   message: string;
   fromUserId?: string;
@@ -16,6 +16,7 @@ export interface Notification {
   rating?: number;
   reviewId?: string;
   replyText?: string;
+  chatMessage?: string;
   read: boolean;
   createdAt: Date;
 }
@@ -192,6 +193,27 @@ export const notificationService = {
       });
     } catch (error) {
       console.error('Error creating review reply notification:', error);
+    }
+  },
+
+  // Notify when someone sends a chat message
+  async notifyChatMessage(recipientId: string, senderId: string, senderUsername: string, senderAvatar: string, messageText: string): Promise<void> {
+    if (recipientId === senderId) return; // Don't notify if user messages themselves
+    
+    try {
+      await this.createNotification({
+        userId: recipientId,
+        type: 'chat_message',
+        title: 'New Message',
+        message: `${senderUsername} sent you a message`,
+        fromUserId: senderId,
+        fromUsername: senderUsername,
+        fromUserAvatar: senderAvatar,
+        chatMessage: messageText.substring(0, 100) + (messageText.length > 100 ? '...' : ''),
+        read: false
+      });
+    } catch (error) {
+      console.error('Error creating chat notification:', error);
     }
   }
 };

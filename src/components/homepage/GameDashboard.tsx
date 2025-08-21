@@ -156,22 +156,10 @@ export const GameDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Stats and Activity Feed */}
+        {/* Activity Feed */}
         <div className="mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Stats */}
-          <div className="lg:col-span-2 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6">
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
-              <div className="text-xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">{games.length}+</div>
-              <div className="text-xs sm:text-base text-muted-foreground">Games Available</div>
-            </div>
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
-              <div className="text-xl sm:text-3xl font-bold text-accent mb-1 sm:mb-2">Live</div>
-              <div className="text-xs sm:text-base text-muted-foreground">Pixel Pilgrim Data</div>
-            </div>
-            <div className="bg-gradient-card border border-border/50 rounded-lg p-3 sm:p-6 text-center">
-              <div className="text-xl sm:text-3xl font-bold text-gaming-green mb-1 sm:mb-2">Real-time</div>
-              <div className="text-xs sm:text-base text-muted-foreground">Updates</div>
-            </div>
+          <div className="lg:col-span-2">
+            {/* Placeholder for future content */}
           </div>
           
           {/* Activity Feed */}

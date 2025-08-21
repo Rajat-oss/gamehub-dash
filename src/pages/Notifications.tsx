@@ -3,6 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { notificationService, Notification } from '@/services/notificationService';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FaBell, FaUser, FaGamepad, FaHeart, FaCheck, FaStar, FaPlus, FaThumbsUp, FaReply } from 'react-icons/fa';
@@ -17,22 +19,38 @@ const Notifications: React.FC = () => {
   const [markingAllRead, setMarkingAllRead] = useState(false);
 
   useEffect(() => {
-    loadNotifications();
-  }, [user]);
-
-  const loadNotifications = async () => {
     if (!user) return;
     
-    setLoading(true);
-    try {
-      const userNotifications = await notificationService.getUserNotifications(user.uid);
-      setNotifications(userNotifications);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    } finally {
+    // Set up real-time listener
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notificationsList: Notification[] = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        notificationsList.push({
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt.toDate()
+        } as Notification);
+      });
+      
+      setNotifications(notificationsList);
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error('Error listening to notifications:', error);
+      setLoading(false);
+    });
+    
+    return () => unsubscribe();
+  }, [user]);
+
+  // Remove loadNotifications function as we're using real-time listener
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -93,16 +111,25 @@ const Notifications: React.FC = () => {
 
   const formatDate = (date: Date) => {
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     
-    if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
       return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
     } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
-    } else if (diffInHours < 168) {
-      return `${Math.floor(diffInHours / 24)}d ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
     } else {
-      return date.toLocaleDateString();
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      });
     }
   };
 

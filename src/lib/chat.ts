@@ -1,5 +1,7 @@
 import { db } from './firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { notificationService } from '@/services/notificationService';
+import { userService } from '@/services/userService';
 
 export interface Message {
   id: string;
@@ -51,6 +53,20 @@ export async function sendMessage(receiverId: string, receiverName: string, send
       lastMessage: message,
       lastMessageTime: serverTimestamp()
     }, { merge: true });
+    
+    // Create notification for the receiver
+    try {
+      const senderProfile = await userService.getUserProfile(senderId);
+      await notificationService.notifyChatMessage(
+        receiverId,
+        senderId,
+        senderProfile?.username || senderName,
+        senderProfile?.photoURL || '',
+        message
+      );
+    } catch (notifError) {
+      console.error('Error creating chat notification:', notifError);
+    }
     
   } catch (error) {
     console.error('Error sending message:', error);

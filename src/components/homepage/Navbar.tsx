@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
 import { notificationService } from '@/services/notificationService';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -102,18 +104,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   }, [user]);
 
   useEffect(() => {
-    const loadNotifications = async () => {
-      if (user) {
-        try {
-          const userNotifications = await notificationService.getUserNotifications(user.uid);
-          setUnreadCount(userNotifications.filter(n => !n.read).length);
-        } catch (error) {
-          console.error('Error loading notifications:', error);
-        }
-      }
-    };
-
-    loadNotifications();
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+    
+    // Set up real-time listener for unread notifications
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', user.uid),
+      where('read', '==', false)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUnreadCount(snapshot.size);
+    }, (error) => {
+      console.error('Error listening to notification count:', error);
+    });
+    
+    return () => unsubscribe();
   }, [user]);
 
   const handleLogout = async () => {

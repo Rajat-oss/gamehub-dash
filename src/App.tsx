@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useNotificationListener } from "@/hooks/useNotificationListener";
 import { LandingPage } from "./pages/LandingPage";
 import Index from "./pages/Index";
 import Favorites from "./pages/Favorites";
@@ -25,6 +26,31 @@ import "@/utils/verifyTemplate"; // Import template verification utility
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  useNotificationListener();
+  
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<Index />} />
+        <Route path="/homepage" element={<Index />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/my-games" element={<MyGames />} />
+        <Route path="/game/:gameId" element={<GameDetails />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/user/:username" element={<UserProfilePage />} />
+        <Route path="/chat/:userId" element={<Chat />} />
+        <Route path="/inbox" element={<ChatInbox />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -33,25 +59,7 @@ const App = () => (
           <AuthProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<Index />} />
-                <Route path="/homepage" element={<Index />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/my-games" element={<MyGames />} />
-                <Route path="/game/:gameId" element={<GameDetails />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/user/:username" element={<UserProfilePage />} />
-                <Route path="/chat/:userId" element={<Chat />} />
-                <Route path="/inbox" element={<ChatInbox />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <AppContent />
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

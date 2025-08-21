@@ -100,6 +100,7 @@ export const userService = {
       // Create notification for the followed user
       const followerProfile = await this.getUserProfile(followerId);
       if (followerProfile) {
+        console.log('Creating follow notification for:', followingId, 'from:', followerProfile.username);
         await notificationService.createNotification({
           userId: followingId,
           type: 'follow',
@@ -109,6 +110,9 @@ export const userService = {
           fromUsername: followerProfile.username,
           read: false
         });
+        console.log('Follow notification created successfully');
+      } else {
+        console.log('Could not find follower profile for:', followerId);
       }
     } catch (error) {
       console.error('Error following user:', error);
