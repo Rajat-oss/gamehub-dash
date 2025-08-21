@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList, FaEnvelope } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getGameById, TwitchGame } from '@/lib/twitch';
@@ -218,14 +218,26 @@ const UserProfile: React.FC = () => {
               </div>
               
               {!isOwnProfile && user && (
-                <Button
-                  onClick={handleFollowToggle}
-                  variant={isFollowing ? "outline" : "default"}
-                  className={isFollowing ? "border-red-500 text-red-500 hover:bg-red-50" : ""}
-                >
-                  <FaHeart className="w-4 h-4 mr-2" />
-                  {isFollowing ? 'Unfollow' : 'Follow'}
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleFollowToggle}
+                    variant={isFollowing ? "outline" : "default"}
+                    className={isFollowing ? "border-red-500 text-red-500 hover:bg-red-50" : ""}
+                  >
+                    <FaHeart className="w-4 h-4 mr-2" />
+                    {isFollowing ? 'Unfollow' : 'Follow'}
+                  </Button>
+                  
+                  {isFollowing && (
+                    <Button
+                      onClick={() => navigate(`/chat/${profile.uid}`)}
+                      variant="outline"
+                    >
+                      <FaEnvelope className="w-4 h-4 mr-2" />
+                      Message
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </CardContent>

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments } from 'react-icons/fa';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
 
@@ -182,6 +182,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             >
               <FaHeart className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Favorites</span>
+            </Button>
+            
+            <Button 
+              variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
+              onClick={() => navigate('/inbox')}
+              size="sm"
+            >
+              <FaComments className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Chat</span>
             </Button>
           </div>
 
