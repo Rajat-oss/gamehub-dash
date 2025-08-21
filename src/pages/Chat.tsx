@@ -139,10 +139,10 @@ const Chat: React.FC = () => {
                   
                   return (
                     <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg shadow-sm ${
                         isOwn 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-secondary text-secondary-foreground'
+                          ? 'bg-primary text-primary-foreground ml-auto' 
+                          : 'bg-card text-card-foreground border border-border/50'
                       }`}>
                         <div className="text-sm">{message.message}</div>
                         <div className={`text-xs mt-1 ${

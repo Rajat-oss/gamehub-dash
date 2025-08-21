@@ -5,6 +5,7 @@ import { GameLog, GameStatus, GAME_STATUS_LABELS, GAME_STATUS_COLORS, GameLogSta
 import { Navbar } from '@/components/homepage/Navbar';
 import { GameLogModal } from '@/components/game/GameLogModal';
 
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +30,8 @@ import {
   FaClock,
   FaListUl,
   FaTimes,
-  FaArrowLeft
+  FaArrowLeft,
+  FaPlus
 } from 'react-icons/fa';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +46,7 @@ const MyGames: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | 'all'>('all');
   const [selectedGameLog, setSelectedGameLog] = useState<GameLog | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -150,9 +153,18 @@ const MyGames: React.FC = () => {
         
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <FaGamepad className="text-primary text-3xl" />
-            <h1 className="text-3xl font-bold text-foreground">My Games</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <FaGamepad className="text-primary text-3xl" />
+              <h1 className="text-3xl font-bold text-foreground">My Games</h1>
+            </div>
+            <Button 
+              onClick={() => navigate('/homepage')}
+              className="flex items-center gap-2"
+            >
+              <FaPlus className="w-4 h-4" />
+              Browse Games
+            </Button>
           </div>
           <p className="text-muted-foreground text-lg">
             Track and manage your gaming library
@@ -381,6 +393,8 @@ const MyGames: React.FC = () => {
           loadUserGameLogs();
         }}
       />
+
+
     </div>
   );
 };
