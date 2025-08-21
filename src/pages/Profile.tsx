@@ -2,26 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { userService } from '@/services/userService';
 import { UserProfile } from '@/types/user';
 import { getFavorites } from '@/lib/favorites';
 import { useAuth } from '@/contexts/AuthContext';
-import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaGamepad, FaCalendar, FaComments, FaStar, FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash, FaUsers, FaCamera } from 'react-icons/fa';
+import { cloudinaryService } from '@/services/cloudinaryService';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followersData, setFollowersData] = useState<UserProfile[]>([]);
+  const [followingData, setFollowingData] = useState<UserProfile[]>([]);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const [loadingFollowing, setLoadingFollowing] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -52,6 +62,44 @@ const Profile = () => {
     
     loadProfile();
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const imageUrl = await cloudinaryService.uploadImage(file);
+      
+      // Update user profile with new avatar
+      await userService.updateUserProfile(user.uid, { photoURL: imageUrl });
+      
+      // Reload profile to show new avatar
+      const updatedProfile = await userService.getUserProfile(user.uid);
+      setProfile(updatedProfile);
+      
+      toast.success('Avatar updated successfully!');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload avatar. Please try again.');
+    } finally {
+      setUploadingAvatar(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
 
 
 
@@ -85,11 +133,33 @@ const Profile = () => {
         <Card className="bg-gradient-card border-border/50 mb-8">
           <CardHeader>
             <div className="flex items-center space-x-4">
-              <Avatar className="h-20 w-20">
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  <FaUser />
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={profile.photoURL} alt={profile.username} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                    <FaUser />
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  size="sm"
+                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  disabled={uploadingAvatar}
+                >
+                  {uploadingAvatar ? (
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FaCamera className="w-3 h-3" />
+                  )}
+                </Button>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+              </div>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">{profile.username || profile.displayName}</h1>
                 <div className="flex items-center space-x-2 mt-2">
@@ -259,6 +329,70 @@ const Profile = () => {
               </CardContent>
             </Card>
 
+            {/* Following */}
+            <Card className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/50 transition-colors" onClick={async () => {
+              if (profile.following && profile.following.length > 0) {
+                setLoadingFollowing(true);
+                setShowFollowingModal(true);
+                try {
+                  const followingProfiles = await Promise.all(
+                    profile.following.map(uid => userService.getUserProfile(uid))
+                  );
+                  setFollowingData(followingProfiles.filter(Boolean) as UserProfile[]);
+                } catch (error) {
+                  console.error('Error loading following:', error);
+                } finally {
+                  setLoadingFollowing(false);
+                }
+              }
+            }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FaUser className="w-4 h-4" />
+                  Following ({profile.following?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {profile.following && profile.following.length > 0 ? (
+                  <p className="text-sm text-muted-foreground">Tap to view all</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Not following anyone yet</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Followers */}
+            <Card className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/50 transition-colors" onClick={async () => {
+              if (profile.followers && profile.followers.length > 0) {
+                setLoadingFollowers(true);
+                setShowFollowersModal(true);
+                try {
+                  const followersProfiles = await Promise.all(
+                    profile.followers.map(uid => userService.getUserProfile(uid))
+                  );
+                  setFollowersData(followersProfiles.filter(Boolean) as UserProfile[]);
+                } catch (error) {
+                  console.error('Error loading followers:', error);
+                } finally {
+                  setLoadingFollowers(false);
+                }
+              }
+            }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FaUsers className="w-4 h-4" />
+                  Followers ({profile.followers?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {profile.followers && profile.followers.length > 0 ? (
+                  <p className="text-sm text-muted-foreground">Tap to view all</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No followers yet</p>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Quick Actions */}
             <Card className="bg-gradient-card border-border/50">
               <CardHeader>
@@ -283,6 +417,82 @@ const Profile = () => {
           </div>
         </div>
       </main>
+
+      {/* Following Modal */}
+      <Dialog open={showFollowingModal} onOpenChange={setShowFollowingModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Following ({profile?.following?.length || 0})</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {loadingFollowing ? (
+              <div className="text-center py-4">Loading...</div>
+            ) : followingData.length > 0 ? (
+              <div className="space-y-3">
+                {followingData.map((user) => (
+                  <div key={user.uid} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-lg cursor-pointer" onClick={() => {
+                    setShowFollowingModal(false);
+                    navigate(`/user/${user.username}`);
+                  }}>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user.photoURL} alt={user.username} />
+                      <AvatarFallback>
+                        {user.username?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">@{user.username}</p>
+                      {user.displayName && (
+                        <p className="text-sm text-muted-foreground">{user.displayName}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">No following found</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Followers Modal */}
+      <Dialog open={showFollowersModal} onOpenChange={setShowFollowersModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Followers ({profile?.followers?.length || 0})</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {loadingFollowers ? (
+              <div className="text-center py-4">Loading...</div>
+            ) : followersData.length > 0 ? (
+              <div className="space-y-3">
+                {followersData.map((user) => (
+                  <div key={user.uid} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-lg cursor-pointer" onClick={() => {
+                    setShowFollowersModal(false);
+                    navigate(`/user/${user.username}`);
+                  }}>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user.photoURL} alt={user.username} />
+                      <AvatarFallback>
+                        {user.username?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">@{user.username}</p>
+                      {user.displayName && (
+                        <p className="text-sm text-muted-foreground">{user.displayName}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">No followers found</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
