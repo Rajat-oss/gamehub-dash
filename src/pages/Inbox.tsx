@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { chatService } from '@/services/chatService';
+import { userService } from '@/services/userService';
 import { Chat } from '@/types/chat';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,29 @@ const Inbox: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [chats, setChats] = useState<Chat[]>([]);
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = chatService.getUserChats(user.uid, (userChats) => {
+    const unsubscribe = chatService.getUserChats(user.uid, async (userChats) => {
       setChats(userChats);
+      
+      // Load user profiles for avatars
+      const profiles: {[key: string]: any} = {};
+      for (const chat of userChats) {
+        const otherUserId = chat.participants.find(p => p !== user.uid);
+        if (otherUserId && !profiles[otherUserId]) {
+          try {
+            const profile = await userService.getUserProfile(otherUserId);
+            profiles[otherUserId] = profile;
+          } catch (error) {
+            console.error('Error loading user profile:', error);
+          }
+        }
+      }
+      setUserProfiles(profiles);
       setLoading(false);
     });
 
@@ -34,10 +51,11 @@ const Inbox: React.FC = () => {
 
   const getOtherParticipant = (chat: Chat) => {
     const otherUserId = chat.participants.find(p => p !== user?.uid);
+    const profile = otherUserId ? userProfiles[otherUserId] : null;
     return {
       id: otherUserId,
-      name: otherUserId ? chat.participantNames[otherUserId] : 'Unknown',
-      avatar: otherUserId ? chat.participantAvatars[otherUserId] : undefined
+      name: profile?.username || (otherUserId ? chat.participantNames[otherUserId] : 'Unknown'),
+      avatar: profile?.photoURL
     };
   };
 
