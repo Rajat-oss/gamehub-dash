@@ -13,7 +13,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaBell } from 'react-icons/fa';
+import { notificationService, Notification } from '@/services/notificationService';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
 
@@ -27,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [suggestions, setSuggestions] = useState<TwitchGame[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -96,6 +100,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     };
 
     loadUserProfile();
+  }, [user]);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (user) {
+        try {
+          const userNotifications = await notificationService.getUserNotifications(user.uid);
+          setUnreadCount(userNotifications.filter(n => !n.read).length);
+        } catch (error) {
+          console.error('Error loading notifications:', error);
+        }
+      }
+    };
+
+    loadNotifications();
   }, [user]);
 
   const handleLogout = async () => {
@@ -182,6 +201,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             >
               <FaHeart className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Favorites</span>
+            </Button>
+          </div>
+
+          {/* Notifications */}
+          <div className="mr-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative"
+              onClick={() => navigate('/notifications')}
+            >
+              <FaBell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Badge>
+              )}
             </Button>
           </div>
 

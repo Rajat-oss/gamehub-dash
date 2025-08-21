@@ -16,6 +16,8 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { notificationService } from './notificationService';
+import { userService } from './userService';
 
 export interface Comment {
   id: string;
@@ -143,6 +145,7 @@ export const commentService = {
   async addReply(commentId: string, replyInput: ReplyInput): Promise<void> {
     try {
       const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
+      const commentDoc = await getDoc(commentRef);
       
       const newReply = {
         id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -158,6 +161,30 @@ export const commentService = {
       await updateDoc(commentRef, {
         replies: arrayUnion(newReply)
       });
+      
+      // Send notification to original comment author
+      if (commentDoc.exists()) {
+        const originalComment = commentDoc.data();
+        if (originalComment.userId !== replyInput.userId) {
+          try {
+            const replierProfile = await userService.getUserProfile(replyInput.userId);
+            if (replierProfile) {
+              await notificationService.notifyReviewReplied(
+                originalComment.userId,
+                replyInput.userId,
+                replierProfile.username || replyInput.userName,
+                replierProfile.photoURL || replyInput.userAvatar || '',
+                originalComment.gameId,
+                'Game', // You might want to get actual game name
+                '', // You might want to get actual game image
+                replyInput.comment
+              );
+            }
+          } catch (notifError) {
+            console.error('Error sending reply notification:', notifError);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error adding reply:', error);
       throw error;
@@ -187,6 +214,26 @@ export const commentService = {
             likes: increment(1),
             likedBy: arrayUnion(userId)
           });
+          
+          // Send notification to comment author
+          if (data.userId !== userId) {
+            try {
+              const likerProfile = await userService.getUserProfile(userId);
+              if (likerProfile) {
+                await notificationService.notifyReviewLiked(
+                  data.userId,
+                  userId,
+                  likerProfile.username || 'A user',
+                  likerProfile.photoURL || '',
+                  data.gameId,
+                  'Game', // You might want to get actual game name
+                  '' // You might want to get actual game image
+                );
+              }
+            } catch (notifError) {
+              console.error('Error sending like notification:', notifError);
+            }
+          }
         }
       }
     } catch (error) {

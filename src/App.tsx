@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import PublicProfiles from "./pages/PublicProfiles";
 import UserProfilePage from "./pages/UserProfile";
 import Community from "./pages/Community";
+import Notifications from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/community" element={<Community />} />
+                <Route path="/notifications" element={<Notifications />} />
                 <Route path="/user/:username" element={<UserProfilePage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
