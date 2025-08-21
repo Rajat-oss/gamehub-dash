@@ -16,7 +16,7 @@ import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, F
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getGameById, TwitchGame } from '@/lib/twitch';
-import { chatService } from '@/services/chatService';
+
 
 const UserProfile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -242,18 +242,8 @@ const UserProfile: React.FC = () => {
                         return;
                       }
                       
-                      try {
-                        const chatId = await chatService.createOrGetChat(
-                          user.uid, 
-                          profile.uid, 
-                          user.displayName || user.email?.split('@')[0] || 'User',
-                          profile.displayName || profile.username
-                        );
-                        navigate(`/chat/${chatId}`);
-                      } catch (error) {
-                        console.error('Error creating chat:', error);
-                        toast.error('Failed to start chat');
-                      }
+                      navigate(`/chat/${profile.uid}`);
+                      toast.success(`Starting chat with ${profile.username}`);
                     }}
                     variant="outline"
                   >
