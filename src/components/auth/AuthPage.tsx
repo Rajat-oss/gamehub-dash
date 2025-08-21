@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +11,7 @@ export const AuthPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     const mode = searchParams.get('mode');
@@ -20,7 +22,13 @@ export const AuthPage: React.FC = () => {
     }
   }, [searchParams]);
 
-  const toggleMode = () => setIsLogin(!isLogin);
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setShowForgotPassword(false);
+  };
+
+  const showForgotPasswordForm = () => setShowForgotPassword(true);
+  const backToLogin = () => setShowForgotPassword(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,8 +51,10 @@ export const AuthPage: React.FC = () => {
       {/* Auth Content */}
       <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {isLogin ? (
-            <LoginForm onToggleMode={toggleMode} />
+          {showForgotPassword ? (
+            <ForgotPasswordForm onBack={backToLogin} />
+          ) : isLogin ? (
+            <LoginForm onToggleMode={toggleMode} onForgotPassword={showForgotPasswordForm} />
           ) : (
             <RegisterForm onToggleMode={toggleMode} />
           )}

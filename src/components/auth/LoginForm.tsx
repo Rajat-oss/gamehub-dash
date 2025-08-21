@@ -10,9 +10,10 @@ import { toast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
   onToggleMode: () => void;
+  onForgotPassword: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, onForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -132,15 +133,26 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
           Continue with Google
         </Button>
 
-        <div className="text-center text-sm">
-          <span className="text-muted-foreground">Don't have an account? </span>
-          <button
-            type="button"
-            onClick={onToggleMode}
-            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-          >
-            Sign up
-          </button>
+        <div className="text-center text-sm space-y-2">
+          <div>
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              Forgot password?
+            </button>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <button
+              type="button"
+              onClick={onToggleMode}
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              Sign up
+            </button>
+          </div>
         </div>
       </CardContent>
     </Card>
