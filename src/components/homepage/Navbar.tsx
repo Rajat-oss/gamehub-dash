@@ -17,7 +17,7 @@ import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, 
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
-import { notificationService } from '@/services/notificationService';
+
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -30,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -101,19 +102,37 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     loadUserProfile();
   }, [user]);
 
+  // Load unread message count
   useEffect(() => {
-    const loadNotifications = async () => {
-      if (user) {
-        try {
-          const userNotifications = await notificationService.getUserNotifications(user.uid);
-          setUnreadCount(userNotifications.filter(n => !n.read).length);
-        } catch (error) {
-          console.error('Error loading notifications:', error);
-        }
+    if (!user) {
+      setUnreadMessages(0);
+      return;
+    }
+
+    let unsubscribe: (() => void) | undefined;
+    
+    const loadChatService = async () => {
+      try {
+        const { chatService } = await import('@/services/chatService');
+        unsubscribe = chatService.getUserChats(user.uid, (chats: any[]) => {
+          const totalUnread = chats.reduce((sum: number, chat: any) => {
+            return sum + (chat.unreadCount?.[user.uid] || 0);
+          }, 0);
+          setUnreadMessages(totalUnread);
+        });
+      } catch (error) {
+        console.error('Error loading chat service:', error);
+        setUnreadMessages(0);
       }
     };
 
-    loadNotifications();
+    loadChatService();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   const handleLogout = async () => {
@@ -206,28 +225,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
               onClick={() => navigate('/inbox')}
               size="sm"
+              className="relative"
             >
               <FaComments className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Chat</span>
-            </Button>
-          </div>
-
-          {/* Notifications */}
-          <div className="mr-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative"
-              onClick={() => navigate('/notifications')}
-            >
-              <FaBell className="w-4 h-4" />
-              {unreadCount > 0 && (
+              {unreadMessages > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
                 </Badge>
               )}
             </Button>
           </div>
+
+
 
           {/* User Menu */}
           <DropdownMenu>
