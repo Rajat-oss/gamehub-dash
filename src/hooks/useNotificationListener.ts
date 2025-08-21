@@ -35,8 +35,10 @@ export const useNotificationListener = () => {
 
           console.log('Processing notification:', notification, 'Initial load:', isInitialLoad);
 
-          // Skip initial load, only show toast for truly new notifications
-          if (!isInitialLoad) {
+          // Skip initial load and only show toast for very recent notifications
+          const isVeryRecent = Date.now() - notification.createdAt.getTime() < 5000; // 5 seconds
+          
+          if (!isInitialLoad && isVeryRecent) {
             console.log('Showing toast for new notification:', notification.title);
             showToastNotification(notification);
           }

@@ -1,77 +1,61 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { chatService } from '@/services/chatService';
+import { sendMessage, subscribeToMessages } from '@/lib/chat';
 import { userService } from '@/services/userService';
-import { ChatMessage, Chat } from '@/types/chat';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FaArrowLeft, FaPaperPlane, FaUser } from 'react-icons/fa';
 import { toast } from 'sonner';
 
+interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  senderName: string;
+  receiverName: string;
+  message: string;
+  timestamp: any;
+  read: boolean;
+}
+
 const Chat: React.FC = () => {
-  const { chatId } = useParams<{ chatId: string }>();
+  const { userId: otherUserId } = useParams<{ userId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [canMessage, setCanMessage] = useState(false);
-  const [chat, setChat] = useState<Chat | null>(null);
+  const [otherUserName, setOtherUserName] = useState('User');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!chatId || !user) return;
+    if (!otherUserId || !user) return;
 
-    // Get chat info and check permissions
-    const checkPermissions = async () => {
+    // Get other user's name
+    const loadOtherUser = async () => {
       try {
-        const chats = await new Promise<Chat[]>((resolve) => {
-          const unsubscribe = chatService.getUserChats(user.uid, (userChats) => {
-            unsubscribe();
-            resolve(userChats);
-          });
-        });
-        
-        const currentChat = chats.find(c => c.id === chatId);
-        if (currentChat) {
-          setChat(currentChat);
-          const otherUserId = currentChat.participants.find(p => p !== user.uid);
-          
-          if (otherUserId) {
-            const [currentUserProfile, otherUserProfile] = await Promise.all([
-              userService.getUserProfile(user.uid),
-              userService.getUserProfile(otherUserId)
-            ]);
-            
-            const mutualFollow = currentUserProfile?.following.includes(otherUserId) && 
-                               otherUserProfile?.following.includes(user.uid);
-            setCanMessage(mutualFollow);
-          }
-        }
+        const otherUserProfile = await userService.getUserProfile(otherUserId);
+        setOtherUserName(otherUserProfile?.username || 'User');
       } catch (error) {
-        console.error('Error checking permissions:', error);
-        setCanMessage(false);
+        console.error('Error loading other user:', error);
       }
     };
 
-    checkPermissions();
+    loadOtherUser();
 
-    const unsubscribe = chatService.getChatMessages(chatId, (chatMessages) => {
+    // Subscribe to messages
+    const unsubscribe = subscribeToMessages(user.uid, otherUserId, (chatMessages) => {
       setMessages(chatMessages);
       setLoading(false);
-      
-      // Mark messages as read
-      chatService.markAsRead(chatId, user.uid);
     });
 
     return unsubscribe;
-  }, [chatId, user]);
+  }, [otherUserId, user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,11 +63,17 @@ const Chat: React.FC = () => {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !chatId || !user || sending || !canMessage) return;
+    if (!newMessage.trim() || !otherUserId || !user || sending) return;
 
     setSending(true);
     try {
-      await chatService.sendMessage(chatId, user.uid, user.displayName || 'User', newMessage.trim());
+      await sendMessage(
+        otherUserId,
+        otherUserName,
+        user.uid,
+        user.displayName || 'User',
+        newMessage.trim()
+      );
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -93,7 +83,9 @@ const Chat: React.FC = () => {
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -124,7 +116,7 @@ const Chat: React.FC = () => {
               <FaArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <h1 className="text-2xl font-bold">Chat</h1>
+            <h1 className="text-2xl font-bold">Chat with {otherUserName}</h1>
           </div>
         </div>
 
@@ -152,7 +144,7 @@ const Chat: React.FC = () => {
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-secondary text-secondary-foreground'
                       }`}>
-                        <div className="text-sm">{message.content}</div>
+                        <div className="text-sm">{message.message}</div>
                         <div className={`text-xs mt-1 ${
                           isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
                         }`}>
@@ -176,24 +168,18 @@ const Chat: React.FC = () => {
 
           {/* Message Input */}
           <div className="p-4 border-t border-border/50">
-            {canMessage ? (
-              <form onSubmit={handleSendMessage} className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1"
-                  disabled={sending}
-                />
-                <Button type="submit" disabled={!newMessage.trim() || sending}>
-                  <FaPaperPlane className="w-4 h-4" />
-                </Button>
-              </form>
-            ) : (
-              <div className="text-center text-muted-foreground py-4">
-                <p>You can only message users who follow you back</p>
-              </div>
-            )}
+            <form onSubmit={handleSendMessage} className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1"
+                disabled={sending}
+              />
+              <Button type="submit" disabled={!newMessage.trim() || sending}>
+                <FaPaperPlane className="w-4 h-4" />
+              </Button>
+            </form>
           </div>
         </Card>
       </main>
