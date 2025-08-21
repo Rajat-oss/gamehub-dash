@@ -83,7 +83,14 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      // Only smooth scroll for new messages, instant scroll for initial load
+      const isInitialLoad = messages.length > 0 && !messagesEndRef.current.dataset.initialized;
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: isInitialLoad ? 'auto' : 'smooth' 
+      });
+      if (isInitialLoad) {
+        messagesEndRef.current.dataset.initialized = 'true';
+      }
     }
   }, [messages, otherUserTyping]);
 
@@ -157,6 +164,21 @@ const Chat: React.FC = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getLastSeenStatus = () => {
+    if (messages.length === 0) return 'Last seen recently';
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage.timestamp) return 'Last seen recently';
+    
+    const lastMessageDate = lastMessage.timestamp.toDate ? lastMessage.timestamp.toDate() : new Date(lastMessage.timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - lastMessageDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 5) return 'Active now';
+    if (diffInMinutes < 60) return `Last seen ${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `Last seen ${Math.floor(diffInMinutes / 60)}h ago`;
+    return `Last seen ${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-hero">
@@ -170,44 +192,46 @@ const Chat: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <Navbar onSearch={() => {}} />
+      <div className="hidden sm:block">
+        <Navbar onSearch={() => {}} />
+      </div>
       
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex h-screen sm:h-[calc(100vh-80px)]">
         {/* Chat Container */}
-        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
+        <div className="flex-1 flex flex-col w-full">
           {/* Header */}
-          <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+          <div className="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-3 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/inbox')}
-                  className="p-2"
+                  className="p-1 sm:p-2 flex-shrink-0"
                 >
                   <FaArrowLeft className="w-4 h-4" />
                 </Button>
-                <Avatar className="w-10 h-10">
+                <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                   <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                  <AvatarFallback className="bg-blue-500 text-white">
+                  <AvatarFallback className="bg-blue-500 text-white text-sm">
                     {otherUserName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h1 className="font-semibold text-lg">{otherUserName}</h1>
-                  <p className="text-sm text-slate-500">
-                    {otherUserTyping ? 'Typing...' : 'Active now'}
+                <div className="min-w-0 flex-1">
+                  <h1 className="font-semibold text-base sm:text-lg truncate">{otherUserName}</h1>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    {otherUserTyping ? 'Typing...' : getLastSeenStatus()}
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="p-2">
+              <Button variant="ghost" size="sm" className="p-1 sm:p-2 flex-shrink-0">
                 <FaEllipsisV className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-800 px-6 py-4">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-800 px-3 sm:px-6 py-3 sm:py-4">
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -227,13 +251,13 @@ const Chat: React.FC = () => {
                   const isFirstInGroup = !prevMessage || prevMessage.senderId !== message.senderId;
                   
                   return (
-                    <div key={message.id} className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} ${isFirstInGroup ? 'mt-4' : 'mt-1'}`}>
+                    <div key={message.id} className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} ${isFirstInGroup ? 'mt-3 sm:mt-4' : 'mt-1'}`}>
                       {!isOwn && (
-                        <div className="w-8 h-8 flex-shrink-0">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
                           {showAvatar ? (
-                            <Avatar className="w-8 h-8">
+                            <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                               <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                              <AvatarFallback className="bg-slate-300 text-slate-700 text-sm">
+                              <AvatarFallback className="bg-slate-300 text-slate-700 text-xs sm:text-sm">
                                 {otherUserName.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -241,8 +265,8 @@ const Chat: React.FC = () => {
                         </div>
                       )}
                       
-                      <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
-                        <div className={`px-4 py-2 rounded-2xl ${isOwn 
+                      <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
+                        <div className={`px-3 sm:px-4 py-2 rounded-2xl ${isOwn 
                           ? 'bg-blue-500 text-white rounded-br-md' 
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md'
                         }`}>
@@ -251,7 +275,7 @@ const Chat: React.FC = () => {
                           </p>
                         </div>
                         {showAvatar && (
-                          <div className={`flex items-center gap-1 mt-1 px-2 ${
+                          <div className={`flex items-center gap-1 mt-1 px-1 sm:px-2 ${
                             isOwn ? 'justify-end' : 'justify-start'
                           }`}>
                             <p className="text-xs text-slate-500">
@@ -270,15 +294,15 @@ const Chat: React.FC = () => {
                 })}
                 {otherUserTyping && (
                   <div className="flex gap-2 justify-start mt-2">
-                    <div className="w-8 h-8 flex-shrink-0">
-                      <Avatar className="w-8 h-8">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
+                      <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                         <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                        <AvatarFallback className="bg-slate-300 text-slate-700 text-sm">
+                        <AvatarFallback className="bg-slate-300 text-slate-700 text-xs sm:text-sm">
                           {otherUserName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-bl-md px-4 py-2">
+                    <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-bl-md px-3 sm:px-4 py-2">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -306,24 +330,24 @@ const Chat: React.FC = () => {
           </div>
 
           {/* Input */}
-          <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-4">
-            <form onSubmit={handleSendMessage} className="flex gap-3">
+          <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-3 sm:px-6 py-3 sm:py-4">
+            <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
                 placeholder={`Message ${otherUserName}...`}
-                className="flex-1 rounded-full border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 rounded-full border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
                 disabled={sending}
               />
               <Button 
                 type="submit" 
                 disabled={!newMessage.trim() || sending}
-                className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
+                className="rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 flex-shrink-0"
               >
                 {sending ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <FaPaperPlane className="w-4 h-4" />
+                  <FaPaperPlane className="w-3 h-3 sm:w-4 sm:h-4" />
                 )}
               </Button>
             </form>

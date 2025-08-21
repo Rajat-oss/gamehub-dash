@@ -108,64 +108,67 @@ const Inbox: React.FC = () => {
     <div className="min-h-screen bg-gradient-hero">
       <Navbar onSearch={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button 
             variant="outline" 
             onClick={() => navigate('/homepage')}
             className="flex items-center gap-2"
+            size="sm"
           >
             <FaArrowLeft className="w-4 h-4" />
-            Back to Marketplace
+            <span className="hidden sm:inline">Back to Marketplace</span>
+            <span className="sm:hidden">Back</span>
           </Button>
         </div>
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <FaComments className="text-primary text-3xl" />
-            <h1 className="text-3xl font-bold text-foreground">Messages</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+            <FaComments className="text-primary text-2xl sm:text-3xl" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Messages</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             Your conversations with other gamers
           </p>
         </div>
 
         {/* Chat List */}
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
+              <Skeleton key={i} className="h-16 sm:h-20 w-full" />
             ))}
           </div>
         ) : chats.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             {chats.map((chat) => {
               const otherUser = getOtherParticipant(chat);
               const unreadCount = unreadCounts[otherUser.id] || 0;
+              console.log('Chat:', otherUser.name, 'Unread count:', unreadCount);
               
               return (
                 <Card 
                   key={chat.id} 
                   className={`border-border/50 hover:border-primary/50 transition-colors cursor-pointer ${
                     unreadCount > 0 
-                      ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary/30' 
+                      ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800 shadow-md' 
                       : 'bg-gradient-card'
                   }`}
                   onClick={() => handleChatClick(chat)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <Avatar className="w-12 h-12">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="relative flex-shrink-0">
+                        <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                           <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-sm">
                             {otherUser.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         {unreadCount > 0 && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                          <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs font-bold">
                               {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
@@ -175,24 +178,29 @@ const Inbox: React.FC = () => {
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className={`truncate ${
-                            unreadCount > 0 ? 'font-bold' : 'font-semibold'
-                          }`}>{otherUser.name}</h3>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <h3 className={`truncate text-sm sm:text-base ${
+                              unreadCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-semibold'
+                            }`}>{otherUser.name}</h3>
                             {unreadCount > 0 && (
-                              <Badge variant="default" className="bg-red-500 text-white">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 animate-pulse" title={`${unreadCount} unread`}></div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                            {unreadCount > 0 && (
+                              <Badge variant="default" className="bg-blue-500 text-white text-xs px-1.5 py-0.5 font-bold">
                                 {unreadCount}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {formatTime(chat.lastMessageTime)}
                             </span>
                           </div>
                         </div>
                         
                         {chat.lastMessage && (
-                          <div className={`text-sm truncate ${
-                            unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          <div className={`text-xs sm:text-sm truncate ${
+                            unreadCount > 0 ? 'text-blue-700 dark:text-blue-300 font-semibold' : 'text-muted-foreground'
                           }`}>
                             {chat.lastMessageSenderId ? (
                               chat.lastMessageSenderId === user?.uid ? (
@@ -201,7 +209,8 @@ const Inbox: React.FC = () => {
                                 <div className="flex items-center gap-1">
                                   <FaReply className="w-3 h-3 text-blue-500 flex-shrink-0" />
                                   <span className="truncate">
-                                    {otherUser.name} sent you a message
+                                    <span className="hidden sm:inline">{otherUser.name} sent you a message</span>
+                                    <span className="sm:hidden">New message</span>
                                   </span>
                                 </div>
                               )
@@ -218,13 +227,13 @@ const Inbox: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <FaComments className="text-6xl text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No messages yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Start a conversation with other gamers in the community!
+          <div className="text-center py-8 sm:py-12">
+            <FaComments className="text-4xl sm:text-6xl text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No messages yet</h3>
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base px-4">
+              Start a conversation with other gamers!
             </p>
-            <Button variant="outline" onClick={() => navigate('/community')}>
+            <Button variant="outline" onClick={() => navigate('/community')} size="sm">
               Browse Community
             </Button>
           </div>

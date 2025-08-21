@@ -267,7 +267,7 @@ const MyGames: React.FC = () => {
 
             {/* Games Grid */}
             {filteredGameLogs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
                 {filteredGameLogs.map((gameLog) => (
                   <Card key={gameLog.id} className="bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
                     <CardContent className="p-0">

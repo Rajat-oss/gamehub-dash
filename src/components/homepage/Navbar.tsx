@@ -198,14 +198,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           {!showGameSearch && <div className="flex-1" />}
 
           {/* Navigation Buttons */}
-          <div className="hidden md:flex items-center gap-2 mr-4">
+          <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4">
             <Button 
               variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
               onClick={() => navigate('/my-games')}
               size="sm"
             >
               <FaGamepad className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">My Games</span>
+              <span className="hidden lg:inline">My Games</span>
             </Button>
             
             <Button 
@@ -214,7 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               size="sm"
             >
               <FaHeart className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Favorites</span>
+              <span className="hidden lg:inline">Favorites</span>
             </Button>
             
             <Button 
@@ -224,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               className="relative"
             >
               <FaComments className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Chat</span>
+              <span className="hidden lg:inline">Chat</span>
               {chatUnreadCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-green-500 text-white">
                   {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
