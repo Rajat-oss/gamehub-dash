@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateDoc, where, getDocs } from 'firebase/firestore';
 import { notificationService } from '@/services/notificationService';
 import { userService } from '@/services/userService';
 
@@ -20,11 +20,42 @@ export interface ChatRoom {
   participantNames: { [key: string]: string };
   lastMessage: string;
   lastMessageTime: any;
+  [key: string]: any; // For typing status fields
 }
 
 // Create chat room ID
 function getChatRoomId(userId1: string, userId2: string): string {
   return [userId1, userId2].sort().join('_');
+}
+
+// Set typing status
+export async function setTypingStatus(userId1: string, userId2: string, isTyping: boolean): Promise<void> {
+  try {
+    const chatRoomId = getChatRoomId(userId1, userId2);
+    await setDoc(doc(db, 'chats', chatRoomId), {
+      [`typing_${userId1}`]: isTyping ? serverTimestamp() : null
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error setting typing status:', error);
+  }
+}
+
+// Mark messages as seen
+export async function markMessagesAsSeen(userId1: string, userId2: string, currentUserId: string): Promise<void> {
+  try {
+    const chatRoomId = getChatRoomId(userId1, userId2);
+    const messagesRef = collection(db, `chats/${chatRoomId}/messages`);
+    const q = query(messagesRef, where('receiverId', '==', currentUserId), where('read', '==', false));
+    
+    const snapshot = await getDocs(q);
+    const updatePromises = snapshot.docs.map(doc => 
+      updateDoc(doc.ref, { read: true })
+    );
+    
+    await Promise.all(updatePromises);
+  } catch (error) {
+    console.error('Error marking messages as seen:', error);
+  }
 }
 
 // Send a message
@@ -155,6 +186,38 @@ export function subscribeToChats(userId: string, callback: (chats: ChatRoom[]) =
     });
   } catch (error) {
     console.error('Error setting up chats subscription:', error);
+    return () => {};
+  }
+}
+
+// Subscribe to typing status
+export function subscribeToTypingStatus(currentUserId: string, otherUserId: string, callback: (isTyping: boolean) => void) {
+  try {
+    const chatRoomId = getChatRoomId(currentUserId, otherUserId);
+    
+    return onSnapshot(doc(db, 'chats', chatRoomId), (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        const typingKey = `typing_${otherUserId}`;
+        const typingTimestamp = data[typingKey];
+        
+        if (typingTimestamp) {
+          const now = Date.now();
+          const typingTime = typingTimestamp.toDate ? typingTimestamp.toDate().getTime() : typingTimestamp;
+          const isRecentlyTyping = now - typingTime < 3000; // 3 seconds
+          callback(isRecentlyTyping);
+        } else {
+          callback(false);
+        }
+      } else {
+        callback(false);
+      }
+    }, (error) => {
+      console.error('Error subscribing to typing status:', error);
+      callback(false);
+    });
+  } catch (error) {
+    console.error('Error setting up typing subscription:', error);
     return () => {};
   }
 }

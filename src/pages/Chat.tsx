@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { sendMessage, subscribeToMessages } from '@/lib/chat';
+import { sendMessage, subscribeToMessages, setTypingStatus, markMessagesAsSeen, subscribeToTypingStatus } from '@/lib/chat';
 import { userService } from '@/services/userService';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaArrowLeft, FaPaperPlane, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
@@ -33,12 +32,14 @@ const Chat: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [otherUserName, setOtherUserName] = useState('User');
   const [otherUserPhoto, setOtherUserPhoto] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!otherUserId || !user) return;
 
-    // Get other user's name
     const loadOtherUser = async () => {
       try {
         const otherUserProfile = await userService.getUserProfile(otherUserId);
@@ -51,17 +52,31 @@ const Chat: React.FC = () => {
 
     loadOtherUser();
 
-    // Subscribe to messages
     const unsubscribe = subscribeToMessages(user.uid, otherUserId, (chatMessages) => {
       setMessages(chatMessages);
       setLoading(false);
+      
+      // Mark messages as seen
+      if (chatMessages.length > 0) {
+        markMessagesAsSeen(user.uid, otherUserId, user.uid);
+      }
     });
 
-    return unsubscribe;
+    // Subscribe to typing status
+    const unsubscribeTyping = subscribeToTypingStatus(user.uid, otherUserId, (typing) => {
+      setOtherUserTyping(typing);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeTyping();
+    };
   }, [otherUserId, user]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -69,6 +84,10 @@ const Chat: React.FC = () => {
     if (!newMessage.trim() || !otherUserId || !user || sending) return;
 
     setSending(true);
+    // Stop typing when sending
+    setTypingStatus(user.uid, otherUserId, false);
+    setIsTyping(false);
+    
     try {
       await sendMessage(
         otherUserId,
@@ -84,6 +103,30 @@ const Chat: React.FC = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+    
+    if (!otherUserId || !user) return;
+    
+    // Set typing status
+    if (value.trim() && !isTyping) {
+      setIsTyping(true);
+      setTypingStatus(user.uid, otherUserId, true);
+    }
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set timeout to stop typing
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      setTypingStatus(user.uid, otherUserId, false);
+    }, 2000);
   };
 
   const formatTime = (timestamp: any) => {
@@ -104,145 +147,167 @@ const Chat: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar onSearch={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/inbox')}
-              className="flex items-center gap-2"
-            >
-              <FaArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-            <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                <AvatarFallback>{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <h1 className="text-2xl font-bold">Chat with {otherUserName}</h1>
-            </div>
-          </div>
-        </div>
-
+      <div className="flex h-[calc(100vh-80px)]">
         {/* Chat Container */}
-        <div className="bg-gradient-card border border-border/50 rounded-xl shadow-2xl h-[700px] flex flex-col backdrop-blur-sm">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-border/30 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-xl">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
+          {/* Header */}
+          <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/inbox')}
+                  className="p-2"
+                >
+                  <FaArrowLeft className="w-4 h-4" />
+                </Button>
+                <Avatar className="w-10 h-10">
                   <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                  <AvatarFallback className="bg-primary/20">{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-blue-500 text-white">
+                    {otherUserName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+                <div>
+                  <h1 className="font-semibold text-lg">{otherUserName}</h1>
+                  <p className="text-sm text-slate-500">
+                    {otherUserTyping ? 'Typing...' : 'Active now'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-semibold text-lg">{otherUserName}</h2>
-                <p className="text-xs text-muted-foreground">Online now</p>
-              </div>
+              <Button variant="ghost" size="sm" className="p-2">
+                <FaEllipsisV className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-background/50 to-background/80">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-800 px-6 py-4">
             {loading ? (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className={`flex items-end gap-3 ${i % 2 === 0 ? 'justify-start' : 'justify-end flex-row-reverse'}`}>
+                  <div key={i} className={`flex gap-3 ${i % 2 === 0 ? '' : 'justify-end'}`}>
                     <Skeleton className="w-8 h-8 rounded-full" />
-                    <Skeleton className="h-16 w-64 rounded-2xl" />
+                    <Skeleton className="h-12 w-48 rounded-2xl" />
                   </div>
                 ))}
               </div>
             ) : messages.length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-1">
                 {messages.map((message, index) => {
                   const isOwn = message.senderId === user.uid;
-                  const showAvatar = index === 0 || messages[index - 1]?.senderId !== message.senderId;
+                  const prevMessage = messages[index - 1];
+                  const nextMessage = messages[index + 1];
+                  const showAvatar = !nextMessage || nextMessage.senderId !== message.senderId;
+                  const isFirstInGroup = !prevMessage || prevMessage.senderId !== message.senderId;
                   
                   return (
-                    <div key={message.id} className={`flex items-end gap-3 animate-in slide-in-from-bottom-2 duration-300 ${
-                      isOwn ? 'justify-end flex-row-reverse' : 'justify-start'
-                    }`}>
-                      {showAvatar ? (
-                        <Avatar className="w-8 h-8 flex-shrink-0 ring-2 ring-background shadow-lg">
-                          <AvatarImage src={isOwn ? user.photoURL : otherUserPhoto} alt={isOwn ? user.displayName : otherUserName} />
-                          <AvatarFallback className={isOwn ? 'bg-primary/20' : 'bg-secondary/20'}>
-                            {(isOwn ? user.displayName || user.email : otherUserName).charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="w-8 h-8 flex-shrink-0" />
+                    <div key={message.id} className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} ${isFirstInGroup ? 'mt-4' : 'mt-1'}`}>
+                      {!isOwn && (
+                        <div className="w-8 h-8 flex-shrink-0">
+                          {showAvatar ? (
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                              <AvatarFallback className="bg-slate-300 text-slate-700 text-sm">
+                                {otherUserName.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          ) : null}
+                        </div>
                       )}
                       
-                      <div className={`group relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl ${
-                        isOwn 
-                          ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground' 
-                          : 'bg-gradient-to-br from-card to-card/80 text-card-foreground border border-border/30'
-                      }`}>
-                        <div className="text-sm leading-relaxed">{message.message}</div>
-                        <div className={`text-xs mt-2 opacity-70 group-hover:opacity-100 transition-opacity ${
-                          isOwn ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                      <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
+                        <div className={`px-4 py-2 rounded-2xl ${isOwn 
+                          ? 'bg-blue-500 text-white rounded-br-md' 
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md'
                         }`}>
-                          {formatTime(message.timestamp)}
+                          <p className="text-sm leading-relaxed break-words">
+                            {message.message}
+                          </p>
                         </div>
-                        
-                        {/* Message tail */}
-                        <div className={`absolute top-4 w-3 h-3 transform rotate-45 ${
-                          isOwn 
-                            ? '-right-1 bg-gradient-to-br from-primary to-primary/80' 
-                            : '-left-1 bg-gradient-to-br from-card to-card/80 border-l border-t border-border/30'
-                        }`}></div>
+                        {showAvatar && (
+                          <div className={`flex items-center gap-1 mt-1 px-2 ${
+                            isOwn ? 'justify-end' : 'justify-start'
+                          }`}>
+                            <p className="text-xs text-slate-500">
+                              {formatTime(message.timestamp)}
+                            </p>
+                            {isOwn && (
+                              <span className="text-xs text-slate-400">
+                                {message.read ? '✓✓' : '✓'}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
+                {otherUserTyping && (
+                  <div className="flex gap-2 justify-start mt-2">
+                    <div className="w-8 h-8 flex-shrink-0">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                        <AvatarFallback className="bg-slate-300 text-slate-700 text-sm">
+                          {otherUserName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-bl-md px-4 py-2">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center text-muted-foreground animate-pulse">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FaUser className="text-2xl text-primary/50" />
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center text-slate-500">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                      <AvatarFallback>{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                   </div>
-                  <p className="text-lg font-medium mb-2">Start the conversation!</p>
-                  <p className="text-sm">Send a message to {otherUserName}</p>
+                  <p className="text-lg font-medium mb-2">No messages yet</p>
+                  <p className="text-sm">Start a conversation with {otherUserName}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Message Input */}
-          <div className="p-4 border-t border-border/30 bg-gradient-to-r from-background/80 to-background/60 rounded-b-xl">
+          {/* Input */}
+          <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-4">
             <form onSubmit={handleSendMessage} className="flex gap-3">
-              <div className="flex-1 relative">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={`Message ${otherUserName}...`}
-                  className="pr-12 py-3 rounded-full border-border/50 bg-background/80 backdrop-blur-sm focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                  disabled={sending}
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                  {sending && <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>}
-                </div>
-              </div>
+              <Input
+                value={newMessage}
+                onChange={handleInputChange}
+                placeholder={`Message ${otherUserName}...`}
+                className="flex-1 rounded-full border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={sending}
+              />
               <Button 
                 type="submit" 
                 disabled={!newMessage.trim() || sending}
-                className="rounded-full w-12 h-12 p-0 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
               >
-                <FaPaperPlane className="w-4 h-4" />
+                {sending ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <FaPaperPlane className="w-4 h-4" />
+                )}
               </Button>
             </form>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
