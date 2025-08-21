@@ -16,11 +16,10 @@ import Profile from "./pages/Profile";
 import PublicProfiles from "./pages/PublicProfiles";
 import UserProfilePage from "./pages/UserProfile";
 import Community from "./pages/Community";
-import Followers from "./pages/Followers";
-import Following from "./pages/Following";
-import Inbox from "./pages/Inbox";
-import Chat from "./pages/Chat";
+import Notifications from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
+import Chat from "./pages/Chat";
+import ChatInbox from "./pages/ChatInbox";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
 import "@/utils/verifyTemplate"; // Import template verification utility
@@ -60,30 +59,7 @@ const App = () => (
           <AuthProvider>
             <Toaster />
             <Sonner />
-<<<<<<< HEAD
             <AppContent />
-=======
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<Index />} />
-                <Route path="/homepage" element={<Index />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/my-games" element={<MyGames />} />
-                <Route path="/game/:gameId" element={<GameDetails />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/followers" element={<Followers />} />
-                <Route path="/following" element={<Following />} />
-                <Route path="/inbox" element={<Inbox />} />
-                <Route path="/chat/:chatId" element={<Chat />} />
-                <Route path="/user/:username" element={<UserProfilePage />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
->>>>>>> 1f77b75daabeb5ba5fd8c539597be3b5876d25ba
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

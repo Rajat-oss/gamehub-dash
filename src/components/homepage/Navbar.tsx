@@ -17,13 +17,9 @@ import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, 
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
-<<<<<<< HEAD
 import { notificationService } from '@/services/notificationService';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-=======
-
->>>>>>> 1f77b75daabeb5ba5fd8c539597be3b5876d25ba
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -36,7 +32,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -108,10 +103,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     loadUserProfile();
   }, [user]);
 
-  // Load unread message count
   useEffect(() => {
     if (!user) {
-<<<<<<< HEAD
       setUnreadCount(0);
       return;
     }
@@ -130,36 +123,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     });
     
     return () => unsubscribe();
-=======
-      setUnreadMessages(0);
-      return;
-    }
-
-    let unsubscribe: (() => void) | undefined;
-    
-    const loadChatService = async () => {
-      try {
-        const { chatService } = await import('@/services/chatService');
-        unsubscribe = chatService.getUserChats(user.uid, (chats: any[]) => {
-          const totalUnread = chats.reduce((sum: number, chat: any) => {
-            return sum + (chat.unreadCount?.[user.uid] || 0);
-          }, 0);
-          setUnreadMessages(totalUnread);
-        });
-      } catch (error) {
-        console.error('Error loading chat service:', error);
-        setUnreadMessages(0);
-      }
-    };
-
-    loadChatService();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
->>>>>>> 1f77b75daabeb5ba5fd8c539597be3b5876d25ba
   }, [user]);
 
   const handleLogout = async () => {
@@ -190,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                 <FaSearch className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
                 <Input
                   type="text"
-                  placeholder="Search games..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   className="pl-8 sm:pl-10 bg-secondary/50 border-border/50 focus:border-primary text-sm sm:text-base"
@@ -252,19 +215,28 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
               onClick={() => navigate('/inbox')}
               size="sm"
-              className="relative"
             >
               <FaComments className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Chat</span>
-              {unreadMessages > 0 && (
+            </Button>
+          </div>
+
+          {/* Notifications */}
+          <div className="mr-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative"
+              onClick={() => navigate('/notifications')}
+            >
+              <FaBell className="w-4 h-4" />
+              {unreadCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
-                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </Badge>
               )}
             </Button>
           </div>
-
-
 
           {/* User Menu */}
           <DropdownMenu>
