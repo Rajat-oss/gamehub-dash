@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FaUser, FaGamepad, FaUsers, FaCalendar, FaHeart, FaArrowLeft, FaStar, FaTrophy, FaClock, FaList, FaEnvelope, FaComments } from 'react-icons/fa';
+import { AnimatedFollowButton } from '@/components/ui/animated-button';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getGameById, TwitchGame } from '@/lib/twitch';
@@ -220,14 +221,10 @@ const UserProfile: React.FC = () => {
               
               {!isOwnProfile && user && (
                 <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={handleFollowToggle}
-                    variant={isFollowing ? "outline" : "default"}
-                    className={isFollowing ? "border-red-500 text-red-500 hover:bg-red-50" : ""}
-                  >
-                    <FaHeart className="w-4 h-4 mr-2" />
-                    {isFollowing ? 'Unfollow' : 'Follow'}
-                  </Button>
+                  <AnimatedFollowButton
+                    isFollowing={isFollowing}
+                    onToggle={handleFollowToggle}
+                  />
                   
                   <Button
                     onClick={async () => {

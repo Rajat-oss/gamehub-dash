@@ -13,8 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getGameById, getGameDetails, TwitchGame, GameDetails } from '@/lib/twitch';
 import { addToFavorites, removeFromFavorites, isFavorite } from '@/lib/favorites';
 import { commentService } from '@/services/commentService';
-import { FaArrowLeft, FaHeart, FaPlus, FaComment, FaClock, FaStar, FaUsers, FaGamepad } from 'react-icons/fa';
+import { FaArrowLeft, FaHeart, FaPlus, FaComment, FaClock, FaStar, FaUsers, FaGamepad, FaPlay, FaDownload, FaShare } from 'react-icons/fa';
 import { toast } from 'sonner';
+
+import { AnimatedHeart } from '@/components/ui/animated-heart';
+import { motion } from 'framer-motion';
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -24,6 +27,7 @@ const GameDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isGameFavorite, setIsGameFavorite] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
   const [gameStats, setGameStats] = useState<{
     averageRating: number;
     ratingCount: number;
@@ -166,12 +170,14 @@ const GameDetails = () => {
                 alt={game.name}
                 className="w-full rounded-lg shadow-lg"
               />
-              <Button
-                className={`absolute top-4 right-4 ${isGameFavorite ? 'bg-red-500 hover:bg-red-600' : 'bg-black/50 hover:bg-black/70'} text-white`}
-                onClick={handleToggleFavorite}
-              >
-                <FaHeart className="w-4 h-4" />
-              </Button>
+              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-1">
+                <AnimatedHeart
+                  isLiked={isGameFavorite}
+                  onToggle={handleToggleFavorite}
+                  size="md"
+                  className="text-white"
+                />
+              </div>
             </div>
           </div>
 
@@ -185,55 +191,70 @@ const GameDetails = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
                 {user && (
-                  <Button 
-                    onClick={() => setIsLogModalOpen(true)}
-                    className="bg-gradient-primary hover:shadow-glow-primary"
-                  >
-                    <FaPlus className="w-4 h-4 mr-2" />
-                    Add to Library
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      onClick={() => setIsLogModalOpen(true)}
+                      className="bg-gradient-primary hover:shadow-glow-primary"
+                    >
+                      <FaPlus className="w-4 h-4 mr-2" />
+                      Add to Library
+                    </Button>
+                  </motion.div>
                 )}
                 
-                <Button 
-                  variant={isGameFavorite ? "default" : "outline"}
-                  onClick={handleToggleFavorite}
-                  className={isGameFavorite ? "bg-red-500 hover:bg-red-600" : ""}
-                >
-                  <FaHeart className="w-4 h-4 mr-2" />
-                  {isGameFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <AnimatedHeart
+                    isLiked={isGameFavorite}
+                    onToggle={handleToggleFavorite}
+                    size="lg"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {isGameFavorite ? 'Favorited' : 'Add to Favorites'}
+                  </span>
+                </div>
+                
+
               </div>
               
               {/* Game Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center">
+                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <FaStar className="text-yellow-400" />
+                    <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
+                      <FaStar className="text-yellow-400" />
+                    </motion.div>
                     <span className="text-2xl font-bold text-primary">
                       {gameStats?.averageRating.toFixed(1) || '0.0'}
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">Rating</div>
-                </div>
-                <div className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-accent mb-1">
+                </motion.div>
+                
+                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
+                  <motion.div className="text-2xl font-bold text-accent mb-1" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                     {gameStats?.ratingCount || 0}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-muted-foreground">Reviews</div>
-                </div>
-                <div className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center">
+                </motion.div>
+                
+                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <FaComment className="text-purple-400" />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                      <FaComment className="text-purple-400" />
+                    </motion.div>
                     <span className="text-2xl font-bold text-gaming-green">
                       {gameStats?.commentCount || 0}
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">Comments</div>
-                </div>
-                <div className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-gaming-blue mb-1">#{game.id}</div>
+                </motion.div>
+                
+                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
+                  <motion.div className="text-2xl font-bold text-gaming-blue mb-1" whileHover={{ rotateX: 360 }} transition={{ duration: 0.6 }}>
+                    #{game.id}
+                  </motion.div>
                   <div className="text-sm text-muted-foreground">Game ID</div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Game Description */}
@@ -258,25 +279,34 @@ const GameDetails = () => {
         </div>
 
         {/* Content Tabs */}
-        <Tabs defaultValue="comments" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="comments" className="flex items-center gap-2">
-              <FaComment className="w-4 h-4" />
-              Comments & Reviews
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
-              <FaClock className="w-4 h-4" />
-              Game Activity
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <FaStar className="w-4 h-4" />
-              Statistics
-            </TabsTrigger>
-          </TabsList>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Tabs defaultValue="comments" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <TabsTrigger value="comments" className="flex items-center gap-2 w-full">
+                  <FaComment className="w-4 h-4" />
+                  Comments & Reviews
+                </TabsTrigger>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <TabsTrigger value="activity" className="flex items-center gap-2 w-full">
+                  <FaClock className="w-4 h-4" />
+                  Game Activity
+                </TabsTrigger>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <TabsTrigger value="stats" className="flex items-center gap-2 w-full">
+                  <FaStar className="w-4 h-4" />
+                  Statistics
+                </TabsTrigger>
+              </motion.div>
+            </TabsList>
           
-          <TabsContent value="comments" className="mt-6">
-            <CommentsSection gameId={game.id} gameName={game.name} />
-          </TabsContent>
+            <TabsContent value="comments" className="mt-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                <CommentsSection gameId={game.id} gameName={game.name} />
+              </motion.div>
+            </TabsContent>
           
           <TabsContent value="activity" className="mt-6">
             <ActivityFeed 
@@ -376,7 +406,8 @@ const GameDetails = () => {
               </Card>
             </div>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </motion.div>
       </main>
       
       {/* Game Log Modal */}

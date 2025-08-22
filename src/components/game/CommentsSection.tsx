@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { commentService, Comment } from '@/services/commentService';
 import { FaStar, FaReply, FaUser, FaHeart, FaTrash, FaEdit } from 'react-icons/fa';
+import { AnimatedHeart } from '@/components/ui/animated-heart';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CommentsSectionProps {
   gameId: string;
@@ -37,11 +39,43 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
       return;
     }
     
+    // Optimistic update
+    setComments(prevComments => 
+      prevComments.map(comment => {
+        if (comment.id === commentId) {
+          const isLiked = comment.likedBy.includes(user.uid);
+          return {
+            ...comment,
+            likes: isLiked ? comment.likes - 1 : comment.likes + 1,
+            likedBy: isLiked 
+              ? comment.likedBy.filter(uid => uid !== user.uid)
+              : [...comment.likedBy, user.uid]
+          };
+        }
+        return comment;
+      })
+    );
+    
     try {
       await commentService.toggleCommentLike(commentId, user.uid);
-      await loadComments();
     } catch (error) {
       console.error('Error toggling like:', error);
+      // Revert optimistic update on error
+      setComments(prevComments => 
+        prevComments.map(comment => {
+          if (comment.id === commentId) {
+            const isLiked = !comment.likedBy.includes(user.uid);
+            return {
+              ...comment,
+              likes: isLiked ? comment.likes - 1 : comment.likes + 1,
+              likedBy: isLiked 
+                ? comment.likedBy.filter(uid => uid !== user.uid)
+                : [...comment.likedBy, user.uid]
+            };
+          }
+          return comment;
+        })
+      );
       toast({
         title: 'Error',
         description: 'Failed to update like. Please try again.',
@@ -281,8 +315,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
             <p className="text-muted-foreground">No reviews yet. Be the first to share your thoughts!</p>
           </div>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="bg-gradient-card border border-border/50 rounded-lg p-6">
+          comments.map((comment, index) => (
+            <motion.div 
+              key={comment.id} 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              className="bg-gradient-card border border-border/50 rounded-lg p-6 gaming-card-glow"
+            >
               {/* Comment Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
@@ -309,18 +349,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
 
               {/* Action Buttons */}
               <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleToggleLike(comment.id)}
-                  className={`text-muted-foreground hover:text-foreground ${
-                    user && comment.likedBy.includes(user.uid) ? 'text-red-500' : ''
-                  }`}
-                  disabled={!user}
-                >
-                  <FaHeart className="w-3 h-3 mr-1" />
-                  {comment.likes}
-                </Button>
+                <div className="flex items-center gap-1">
+                  <AnimatedHeart
+                    isLiked={user ? comment.likedBy.includes(user.uid) : false}
+                    onToggle={() => handleToggleLike(comment.id)}
+                    size="sm"
+                  />
+                  <span className="text-sm text-muted-foreground">{comment.likes}</span>
+                </div>
                 
                 <Button
                   variant="ghost"
@@ -346,60 +382,84 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
               </div>
 
               {/* Reply Form */}
-              {replyingTo === comment.id && (
-                <div className="mt-4 space-y-3">
-                  <Textarea
-                    placeholder="Write a reply..."
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    className="bg-secondary/50 border-border/50 focus:border-primary"
-                  />
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleSubmitReply(comment.id)}
-                      disabled={!replyText.trim() || !user || submitting}
-                      className="bg-gradient-primary hover:shadow-glow-primary"
-                    >
-                      {submitting ? 'Posting...' : 'Post Reply'}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setReplyingTo(null);
-                        setReplyText('');
-                      }}
-                      disabled={submitting}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {replyingTo === comment.id && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4 space-y-3 overflow-hidden"
+                  >
+                    <Textarea
+                      placeholder="Write a reply..."
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      className="bg-secondary/50 border-border/50 focus:border-primary"
+                    />
+                    <div className="flex space-x-2">
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSubmitReply(comment.id)}
+                          disabled={!replyText.trim() || !user || submitting}
+                          className="bg-gradient-primary hover:shadow-glow-primary"
+                        >
+                          {submitting ? 'Posting...' : 'Post Reply'}
+                        </Button>
+                      </motion.div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setReplyingTo(null);
+                          setReplyText('');
+                        }}
+                        disabled={submitting}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Replies */}
-              {comment.replies.length > 0 && (
-                <div className="mt-4 space-y-3 pl-6 border-l-2 border-border/30">
-                  {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-secondary/30 rounded-lg p-4">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="bg-secondary text-secondary-foreground">
-                            <FaUser className="w-3 h-3" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-sm">{reply.userName}</div>
-                          <div className="text-xs text-muted-foreground">{formatDate(reply.timestamp)}</div>
+              <AnimatePresence>
+                {comment.replies.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    className="mt-4 space-y-3 pl-6 border-l-2 border-border/30 overflow-hidden"
+                  >
+                    {comment.replies.map((reply, index) => (
+                      <motion.div 
+                        key={reply.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        className="bg-secondary/30 rounded-lg p-4"
+                      >
+                        <div className="flex items-center space-x-3 mb-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="bg-secondary text-secondary-foreground">
+                              <FaUser className="w-3 h-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-sm">{reply.userName}</div>
+                            <div className="text-xs text-muted-foreground">{formatDate(reply.timestamp)}</div>
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-sm">{reply.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                        <p className="text-sm">{reply.comment}</p>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))
         )}
       </div>

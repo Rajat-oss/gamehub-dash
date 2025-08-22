@@ -21,6 +21,7 @@ import { searchGames, TwitchGame } from '@/lib/twitch';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useChatUnreadCount } from '@/hooks/useChatUnreadCount';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -31,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<TwitchGame[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const chatUnreadCount = useChatUnreadCount();
@@ -155,42 +157,81 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           {/* Search - Only show on specific pages */}
           {showGameSearch && (
             <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-2 sm:mx-8">
-              <div className="relative" ref={searchRef}>
-                <FaSearch className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="pl-8 sm:pl-10 bg-secondary/50 border-border/50 focus:border-primary text-sm sm:text-base"
-                />
+              <motion.div 
+                className="relative" 
+                ref={searchRef}
+                animate={{ 
+                  scale: isSearchFocused ? 1.02 : 1,
+                  width: isSearchFocused ? "110%" : "100%"
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <motion.div
+                  animate={{ 
+                    scale: isSearchFocused ? 1.1 : 1,
+                    color: isSearchFocused ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 z-10"
+                >
+                  <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
+                </motion.div>
+                <motion.div
+                  whileFocus={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Input
+                    type="text"
+                    placeholder="Search games..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    className="pl-8 sm:pl-10 bg-secondary/50 border-border/50 focus:border-primary text-sm sm:text-base transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
+                  />
+                </motion.div>
                 
                 {/* Search Suggestions */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto">
-                    {suggestions.map((game, index) => (
-                      <div
-                        key={game.id}
-                        className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer transition-colors duration-150 border-b border-border/20 last:border-b-0"
-                        onClick={() => handleSuggestionClick(game)}
-                      >
-                        <div className="w-10 h-12 flex-shrink-0 bg-secondary/30 rounded overflow-hidden">
-                          <img
-                            src={game.box_art_url.replace('{width}', '40').replace('{height}', '48')}
-                            alt={game.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-foreground truncate">{game.name}</div>
-                          <div className="text-xs text-muted-foreground">Game</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <AnimatePresence>
+                  {showSuggestions && suggestions.length > 0 && (
+                    <motion.div 
+                      className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto"
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {suggestions.map((game, index) => (
+                        <motion.div
+                          key={game.id}
+                          className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer border-b border-border/20 last:border-b-0"
+                          onClick={() => handleSuggestionClick(game)}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                          whileHover={{ x: 5 }}
+                        >
+                          <motion.div 
+                            className="w-10 h-12 flex-shrink-0 bg-secondary/30 rounded overflow-hidden"
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            <img
+                              src={game.box_art_url.replace('{width}', '40').replace('{height}', '48')}
+                              alt={game.name}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </motion.div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-foreground truncate">{game.name}</div>
+                            <div className="text-xs text-muted-foreground">Game</div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </form>
           )}
           

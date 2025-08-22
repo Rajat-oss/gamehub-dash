@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FaUsers, FaSearch, FaHeart, FaGamepad, FaUser, FaArrowLeft } from 'react-icons/fa';
+import { AnimatedFollowButton } from '@/components/ui/animated-button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -219,19 +220,15 @@ const Community: React.FC = () => {
                     </div>
 
                     {user && (
-                      <Button
-                        size="sm"
-                        variant={followingUsers.has(userProfile.uid) ? "outline" : "default"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
+                      <AnimatedFollowButton
+                        isFollowing={followingUsers.has(userProfile.uid)}
+                        onToggle={(e) => {
+                          e?.stopPropagation();
+                          e?.preventDefault();
                           handleFollowToggle(userProfile);
                         }}
-                        className={followingUsers.has(userProfile.uid) ? "border-red-500 text-red-500 hover:bg-red-50" : ""}
-                      >
-                        <FaHeart className="w-3 h-3 mr-2" />
-                        {followingUsers.has(userProfile.uid) ? 'Unfollow' : 'Follow'}
-                      </Button>
+                        className="text-sm"
+                      />
                     )}
                   </div>
                 </CardContent>

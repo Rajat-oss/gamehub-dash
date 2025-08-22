@@ -95,80 +95,134 @@ export const GameDashboard: React.FC = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-            <FaGamepad className="text-primary text-2xl sm:text-3xl" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Game Marketplace</h1>
+        {/* Enhanced Header with Animation */}
+        <div className="mb-8 sm:mb-12 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-3xl blur-3xl animate-pulse"></div>
+          <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
+            <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
+              <div className="relative">
+                <FaGamepad className="text-primary text-3xl sm:text-4xl animate-bounce" />
+                <div className="absolute -inset-1 bg-primary/20 rounded-full blur animate-ping"></div>
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent animate-fade-in">
+                  Game Marketplace
+                </h1>
+                <div className="h-1 w-20 bg-gradient-to-r from-primary to-secondary rounded-full mt-2 animate-slide-in"></div>
+              </div>
+            </div>
+            <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed animate-fade-in-up">
+              🎮 Discover amazing games • 🚀 Request your favorites • 🌟 Join the community
+            </p>
           </div>
-          <p className="text-muted-foreground text-base sm:text-lg">
-            Discover and request your favorite games from our curated collection
-          </p>
         </div>
 
-        {/* Community Button */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <Badge variant="secondary" className="text-xs sm:text-sm">
-            <FaFire className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Top Games on Pixel Pilgrim</span>
-            <span className="sm:hidden">Top Games</span>
-          </Badge>
+        {/* Enhanced Action Bar */}
+        <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-center gap-4">
+            <Badge variant="secondary" className="text-sm px-4 py-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20 text-red-600 dark:text-red-400 animate-pulse">
+              <FaFire className="w-4 h-4 mr-2 animate-bounce" />
+              <span className="hidden sm:inline">🔥 Trending Now</span>
+              <span className="sm:hidden">🔥 Hot</span>
+            </Badge>
+            <div className="text-sm text-muted-foreground animate-fade-in">
+              {games.length} games available
+            </div>
+          </div>
           
           <Link to="/community">
-            <Button variant="outline" className="border-primary/50 hover:bg-primary/10 w-full sm:w-auto text-sm" size="sm">
-              <FaUser className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Gaming Community</span>
+            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full sm:w-auto">
+              <FaUser className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Join Community</span>
               <span className="sm:hidden">Community</span>
             </Button>
           </Link>
         </div>
 
 
-        {/* Games Grid */}
+        {/* Enhanced Games Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-[300px] w-full rounded-lg bg-secondary/30" />
-                <Skeleton className="h-4 w-full bg-secondary/30" />
-                <Skeleton className="h-4 w-3/4 bg-secondary/30" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="space-y-3 animate-pulse" style={{ animationDelay: `${i * 100}ms` }}>
+                <Skeleton className="h-[200px] sm:h-[250px] w-full rounded-xl bg-gradient-to-br from-secondary/30 to-secondary/10" />
+                <Skeleton className="h-4 w-full bg-secondary/20 rounded-full" />
+                <Skeleton className="h-3 w-3/4 bg-secondary/15 rounded-full" />
               </div>
             ))}
           </div>
         ) : games.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
-            {games.map((game) => (
-              <GameCard
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+            {games.map((game, index) => (
+              <div 
                 key={`${game.id}-${refreshKey}`}
-                game={game}
-                onRequest={handleGameRequest}
-                onLogGame={handleGameLog}
-              />
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <GameCard
+                  game={game}
+                  onRequest={handleGameRequest}
+                  onLogGame={handleGameLog}
+                />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <FaGamepad className="text-6xl text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No games found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search or browse our popular games
+          <div className="text-center py-16 animate-fade-in">
+            <div className="relative mb-6">
+              <FaGamepad className="text-6xl text-muted-foreground mx-auto animate-bounce" />
+              <div className="absolute inset-0 text-6xl text-primary/20 mx-auto animate-ping">🎮</div>
+            </div>
+            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              No games found
+            </h3>
+            <p className="text-muted-foreground text-lg mb-6">
+              Try a different search or explore our trending games
             </p>
+            <Button onClick={loadGames} className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg transition-all duration-300">
+              🔄 Refresh Games
+            </Button>
           </div>
         )}
 
-        {/* Activity Feed */}
-        <div className="mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div className="lg:col-span-2">
-            {/* Placeholder for future content */}
+        {/* Enhanced Activity Section */}
+        <div className="mt-12 sm:mt-16">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-3">
+              🌟 Community Highlights
+            </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto"></div>
           </div>
           
-          {/* Activity Feed */}
-          <div className="lg:col-span-1">
-            <ActivityFeed 
-              title="Community Activity" 
-              maxItems={10}
-              showUserInfo={true}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{games.length}</div>
+                  <div className="text-sm text-muted-foreground">Games Available</div>
+                </div>
+                <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">24/7</div>
+                  <div className="text-sm text-muted-foreground">Active Community</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">∞</div>
+                  <div className="text-sm text-muted-foreground">Possibilities</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Activity Feed */}
+            <div className="lg:col-span-1">
+              <div className="bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-1 shadow-xl">
+                <ActivityFeed 
+                  title="🚀 Live Activity" 
+                  maxItems={8}
+                  showUserInfo={true}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </main>
