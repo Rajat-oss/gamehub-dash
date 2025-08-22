@@ -185,46 +185,7 @@ export const GameDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Enhanced Activity Section */}
-        <div className="mt-12 sm:mt-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-3">
-              🌟 Community Highlights
-            </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{games.length}</div>
-                  <div className="text-sm text-muted-foreground">Games Available</div>
-                </div>
-                <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">24/7</div>
-                  <div className="text-sm text-muted-foreground">Active Community</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">∞</div>
-                  <div className="text-sm text-muted-foreground">Possibilities</div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Activity Feed */}
-            <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-1 shadow-xl">
-                <ActivityFeed 
-                  title="🚀 Live Activity" 
-                  maxItems={8}
-                  showUserInfo={true}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+
       </main>
 
       <GameRequestModal
