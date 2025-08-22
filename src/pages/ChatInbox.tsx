@@ -8,13 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { subscribeToChats, ChatRoom } from '@/lib/chat';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { FaUser, FaArrowLeft, FaComments } from 'react-icons/fa';
+import { FaUser, FaArrowLeft, FaComments, FaRobot } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { AIChat } from '@/components/chat/AIChat';
 
 const ChatInbox = () => {
   const [chats, setChats] = useState<ChatRoom[]>([]);
   const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
   const [loading, setLoading] = useState(true);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
@@ -93,6 +95,38 @@ const ChatInbox = () => {
             Your conversations with other gamers
           </p>
         </div>
+
+        {/* AI Assistant Card */}
+        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    <FaRobot className="w-6 h-6" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-foreground">AI Gaming Assistant</h3>
+                  <p className="text-sm text-muted-foreground">Get game recommendations and gaming tips</p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setShowAIChat(!showAIChat)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {showAIChat ? 'Hide' : 'Chat'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Chat Interface */}
+        {showAIChat && (
+          <div className="mb-6">
+            <AIChat />
+          </div>
+        )}
 
         {/* Chat List */}
         <Card className="bg-gradient-card border-border/50">

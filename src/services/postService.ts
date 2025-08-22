@@ -137,10 +137,22 @@ export const postService = {
   async unlikePost(postId: string, userId: string): Promise<void> {
     try {
       const postRef = doc(db, 'posts', postId);
-      await updateDoc(postRef, {
-        likes: arrayRemove(userId),
-        likeCount: increment(-1)
-      });
+      
+      // Get post data to check if user actually liked it
+      const postDoc = await getDoc(postRef);
+      if (!postDoc.exists()) {
+        throw new Error('Post not found');
+      }
+      
+      const postData = postDoc.data() as Post;
+      
+      // Only unlike if user actually liked the post
+      if (postData.likes.includes(userId)) {
+        await updateDoc(postRef, {
+          likes: arrayRemove(userId),
+          likeCount: increment(-1)
+        });
+      }
     } catch (error) {
       console.error('Error unliking post:', error);
       throw error;

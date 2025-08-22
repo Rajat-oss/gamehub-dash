@@ -28,8 +28,6 @@ import "@/utils/verifyTemplate"; // Import template verification utility
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  useNotificationListener();
-  
   return (
     <BrowserRouter>
       <Routes>
@@ -53,6 +51,11 @@ const AppContent = () => {
   );
 };
 
+const NotificationWrapper = () => {
+  useNotificationListener();
+  return <AppContent />;
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -61,7 +64,7 @@ const App = () => (
           <AuthProvider>
             <Toaster />
             <Sonner />
-            <AppContent />
+            <NotificationWrapper />
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
