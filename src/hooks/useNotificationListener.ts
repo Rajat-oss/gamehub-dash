@@ -77,6 +77,8 @@ const showToastNotification = (notification: any) => {
         return '💬';
       case 'chat_message':
         return '💬';
+      case 'post_liked':
+        return '❤️';
       default:
         return '🔔';
     }
@@ -98,7 +100,9 @@ const showToastNotification = (notification: any) => {
     action: {
       label: 'View',
       onClick: () => {
-        if (notification.gameId) {
+        if (notification.postId) {
+          window.location.href = '/posts';
+        } else if (notification.gameId) {
           window.location.href = `/game/${notification.gameId}`;
         } else if (notification.fromUsername) {
           window.location.href = `/user/${notification.fromUsername}`;
@@ -108,6 +112,6 @@ const showToastNotification = (notification: any) => {
       }
     },
     duration: notification.type === 'follow' || notification.type === 'chat_message' ? 8000 : 5000,
-    className: notification.type === 'follow' ? 'border-l-4 border-l-blue-500' : notification.type === 'chat_message' ? 'border-l-4 border-l-green-500' : '',
+    className: notification.type === 'follow' ? 'border-l-4 border-l-blue-500' : notification.type === 'chat_message' ? 'border-l-4 border-l-green-500' : notification.type === 'post_liked' ? 'border-l-4 border-l-red-500' : '',
   });
 };

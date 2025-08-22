@@ -4,7 +4,7 @@ import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, Tim
 export interface Notification {
   id: string;
   userId: string;
-  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied' | 'chat_message';
+  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied' | 'chat_message' | 'post_liked';
   title: string;
   message: string;
   fromUserId?: string;
@@ -17,6 +17,7 @@ export interface Notification {
   reviewId?: string;
   replyText?: string;
   chatMessage?: string;
+  postId?: string;
   read: boolean;
   createdAt: Date;
 }
@@ -214,6 +215,27 @@ export const notificationService = {
       });
     } catch (error) {
       console.error('Error creating chat notification:', error);
+    }
+  },
+
+  // Notify when someone likes a post
+  async notifyPostLiked(postAuthorId: string, likerUserId: string, likerUsername: string, likerAvatar: string, postId: string): Promise<void> {
+    if (postAuthorId === likerUserId) return; // Don't notify if user likes their own post
+    
+    try {
+      await this.createNotification({
+        userId: postAuthorId,
+        type: 'post_liked',
+        title: 'Post Liked',
+        message: `${likerUsername} liked your post`,
+        fromUserId: likerUserId,
+        fromUsername: likerUsername,
+        fromUserAvatar: likerAvatar,
+        postId,
+        read: false
+      });
+    } catch (error) {
+      console.error('Error creating post like notification:', error);
     }
   }
 };

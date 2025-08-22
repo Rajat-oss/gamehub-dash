@@ -13,10 +13,13 @@ import {
   arrayUnion,
   arrayRemove,
   increment,
-  serverTimestamp
+  serverTimestamp,
+  getDoc
 } from 'firebase/firestore';
 import { Post, CreatePostData } from '@/types/post';
 import { cloudinaryService } from './cloudinaryService';
+import { notificationService } from './notificationService';
+import { userService } from './userService';
 
 export const postService = {
   async createPost(userId: string, username: string, userPhotoURL: string | undefined, postData: CreatePostData): Promise<string> {
@@ -93,10 +96,37 @@ export const postService = {
   async likePost(postId: string, userId: string): Promise<void> {
     try {
       const postRef = doc(db, 'posts', postId);
+      
+      // Get post data to check if user already liked and get post author info
+      const postDoc = await getDoc(postRef);
+      if (!postDoc.exists()) {
+        throw new Error('Post not found');
+      }
+      
+      const postData = postDoc.data() as Post;
+      
+      // Check if user already liked the post
+      if (postData.likes.includes(userId)) {
+        return; // Already liked, do nothing
+      }
+      
+      // Update the post
       await updateDoc(postRef, {
         likes: arrayUnion(userId),
         likeCount: increment(1)
       });
+      
+      // Get liker's profile for notification
+      const likerProfile = await userService.getUserProfile(userId);
+      
+      // Create notification for post author
+      await notificationService.notifyPostLiked(
+        postData.userId,
+        userId,
+        likerProfile?.username || 'Someone',
+        likerProfile?.photoURL || '',
+        postId
+      );
     } catch (error) {
       console.error('Error liking post:', error);
       throw error;

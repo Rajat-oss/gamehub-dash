@@ -18,6 +18,7 @@ import {
 import { db } from '@/lib/firebase';
 import { notificationService } from './notificationService';
 import { userService } from './userService';
+import { realtimeNotificationService } from './realtimeNotificationService';
 
 export interface Comment {
   id: string;
@@ -215,19 +216,31 @@ export const commentService = {
             likedBy: arrayUnion(userId)
           });
           
-          // Send notification to comment author
+          // Send real-time notification to comment author
           if (data.userId !== userId) {
             try {
               const likerProfile = await userService.getUserProfile(userId);
+              const likerName = likerProfile?.username || data.userName || 'Someone';
+              
+              // Send real-time notification
+              realtimeNotificationService.sendNotification({
+                type: 'like',
+                fromUserId: userId,
+                fromUserName: likerName,
+                toUserId: data.userId,
+                message: `${likerName} liked your comment`
+              });
+              
+              // Also send traditional notification
               if (likerProfile) {
                 await notificationService.notifyReviewLiked(
                   data.userId,
                   userId,
-                  likerProfile.username || 'A user',
+                  likerName,
                   likerProfile.photoURL || '',
                   data.gameId,
-                  'Game', // You might want to get actual game name
-                  '' // You might want to get actual game image
+                  'Game',
+                  ''
                 );
               }
             } catch (notifError) {
