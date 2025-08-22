@@ -41,7 +41,8 @@ export const postService = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         likes: [],
-        likeCount: 0
+        likeCount: 0,
+        commentCount: 0
       });
       
       return docRef.id;
