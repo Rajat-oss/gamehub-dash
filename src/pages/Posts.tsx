@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { postService } from '@/services/postService';
 import { Post } from '@/types/post';
-import { FaPlus, FaHeart, FaRegHeart, FaUser } from 'react-icons/fa';
+import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment } from 'react-icons/fa';
+import { CommentSection } from '@/components/posts/CommentSection';
 import { formatDistanceToNow } from 'date-fns';
 
 const Posts: React.FC = () => {
@@ -16,6 +17,7 @@ const Posts: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const loadPosts = async () => {
     try {
@@ -45,6 +47,16 @@ const Posts: React.FC = () => {
     } catch (error) {
       console.error('Error toggling like:', error);
     }
+  };
+
+  const toggleComments = (postId: string) => {
+    const newExpanded = new Set(expandedComments);
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId);
+    } else {
+      newExpanded.add(postId);
+    }
+    setExpandedComments(newExpanded);
   };
 
   return (
@@ -134,7 +146,26 @@ const Posts: React.FC = () => {
                         )}
                         <span>{post.likeCount}</span>
                       </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleComments(post.id)}
+                        className="flex items-center gap-2"
+                      >
+                        {expandedComments.has(post.id) ? (
+                          <FaComment className="w-4 h-4 text-blue-500" />
+                        ) : (
+                          <FaRegComment className="w-4 h-4" />
+                        )}
+                        <span>{post.commentCount || 0}</span>
+                      </Button>
                     </div>
+                    
+                    <CommentSection 
+                      postId={post.id} 
+                      isExpanded={expandedComments.has(post.id)}
+                    />
                   </CardContent>
                 </Card>
               );
