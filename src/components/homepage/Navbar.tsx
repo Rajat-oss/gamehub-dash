@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
@@ -240,6 +240,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
 
           {/* Navigation Buttons */}
           <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4">
+            <Button 
+              variant={location.pathname === '/posts' ? 'default' : 'ghost'}
+              onClick={() => navigate('/posts')}
+              size="sm"
+            >
+              <FaPlus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden lg:inline">Posts</span>
+            </Button>
+            
             <Button 
               variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
               onClick={() => navigate('/my-games')}

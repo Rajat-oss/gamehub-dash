@@ -20,6 +20,7 @@ import Notifications from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
 import Chat from "./pages/Chat";
 import ChatInbox from "./pages/ChatInbox";
+import Posts from "./pages/Posts";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
 import "@/utils/verifyTemplate"; // Import template verification utility
@@ -43,6 +44,7 @@ const AppContent = () => {
         <Route path="/community" element={<Community />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/user/:username" element={<UserProfilePage />} />
+        <Route path="/posts" element={<Posts />} />
         <Route path="/chat/:userId" element={<Chat />} />
         <Route path="/inbox" element={<ChatInbox />} />
         <Route path="*" element={<NotFound />} />
