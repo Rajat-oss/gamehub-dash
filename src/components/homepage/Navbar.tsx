@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
@@ -331,6 +331,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               <DropdownMenuItem onClick={() => navigate('/settings')}>
                 <FaCog className="mr-2 h-4 w-4" />
                 <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/contact')}>
+                <FaEnvelope className="mr-2 h-4 w-4" />
+                <span>Contact Us</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
