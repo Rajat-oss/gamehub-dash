@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
-import { FaArrowLeft, FaHeart, FaEye, FaReply, FaThumbtack } from 'react-icons/fa';
+import { FaArrowLeft, FaEye, FaReply, FaThumbtack } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -55,25 +55,7 @@ const DiscussionDetails: React.FC = () => {
     }
   };
 
-  const handleLikeDiscussion = async () => {
-    if (!user || !discussion) {
-      toast.error('Please sign in to like discussions');
-      return;
-    }
 
-    try {
-      const isLiked = discussion.likes.includes(user.uid);
-      if (isLiked) {
-        await discussionService.unlikeDiscussion(discussion.id, user.uid);
-      } else {
-        await discussionService.likeDiscussion(discussion.id, user.uid);
-      }
-      loadDiscussion();
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      toast.error('Failed to update like');
-    }
-  };
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +109,7 @@ const DiscussionDetails: React.FC = () => {
     );
   }
 
-  const isLiked = user && discussion.likes.includes(user.uid);
+
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -185,13 +167,7 @@ const DiscussionDetails: React.FC = () => {
                     <FaReply className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm">{discussion.replyCount} replies</span>
                   </div>
-                  <button
-                    onClick={handleLikeDiscussion}
-                    className="flex items-center gap-1 hover:text-red-500 transition-colors"
-                  >
-                    <FaHeart className={`w-4 h-4 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`} />
-                    <span className="text-sm">{discussion.likeCount} likes</span>
-                  </button>
+
                 </div>
               </div>
             </div>
@@ -256,12 +232,7 @@ const DiscussionDetails: React.FC = () => {
                         {reply.content}
                       </p>
                       
-                      <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-red-500 transition-colors">
-                          <FaHeart className="w-3 h-3" />
-                          <span>{reply.likeCount}</span>
-                        </button>
-                      </div>
+
                     </div>
                   </div>
                 </CardContent>

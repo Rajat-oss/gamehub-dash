@@ -97,10 +97,14 @@ export const discussionService = {
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        // Increment view count
-        await updateDoc(docRef, {
-          views: increment(1)
-        });
+        // Increment view count only once per session
+        const viewKey = `discussion_viewed_${discussionId}`;
+        if (!sessionStorage.getItem(viewKey)) {
+          await updateDoc(docRef, {
+            views: increment(1)
+          });
+          sessionStorage.setItem(viewKey, 'true');
+        }
         
         return {
           id: docSnap.id,
