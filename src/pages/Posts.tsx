@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { postService } from '@/services/postService';
 import { Post } from '@/types/post';
-import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaEdit, FaBookmark } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CommentSection } from '@/components/posts/CommentSection';
 import { ShareModal } from '@/components/posts/ShareModal';
 import { commentService } from '@/services/commentService';
@@ -97,181 +98,260 @@ const Posts: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}}></div>
+        </div>
+      </div>
+      
       <Navbar onSearch={() => {}} />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 py-6">
+        {/* Modern Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center mb-8"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Gaming Posts</h1>
-            <p className="text-muted-foreground">Share your gaming moments with the community</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+              Social Feed
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">Connect with the gaming community</p>
           </div>
-          <Button onClick={() => setIsPostModalOpen(true)} className="bg-primary hover:bg-primary/90">
-            <FaPlus className="w-4 h-4 mr-2" />
-            Create Post
-          </Button>
-        </div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button 
+              onClick={() => setIsPostModalOpen(true)}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg shadow-purple-500/25 transition-all duration-300"
+            >
+              <FaPlus className="w-4 h-4 mr-2" />
+              Create Post
+            </Button>
+          </motion.div>
+        </motion.div>
 
         {isLoading ? (
-          <div className="grid gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="bg-gradient-card border-border/50">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-muted rounded-full animate-pulse" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-muted rounded animate-pulse mb-2" />
-                      <div className="h-3 bg-muted rounded animate-pulse w-24" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-4 bg-muted rounded animate-pulse mb-2" />
-                  <div className="h-4 bg-muted rounded animate-pulse w-3/4 mb-4" />
-                  <div className="h-48 bg-muted rounded-xl animate-pulse" />
-                </CardContent>
-              </Card>
-            ))}
+          <div className="text-center py-12">
+            <div className="inline-block w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-400 mt-4">Loading posts...</p>
           </div>
         ) : posts.length === 0 ? (
-          <Card className="bg-gradient-card border-border/50">
-            <CardContent className="text-center py-12">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaComment className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
-              <p className="text-muted-foreground mb-4">Be the first to share something with the community!</p>
-              <Button onClick={() => setIsPostModalOpen(true)} className="bg-primary hover:bg-primary/90">
-                <FaPlus className="w-4 h-4 mr-2" />
-                Create Your First Post
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <div className="text-6xl mb-4">🎮</div>
+            <p className="text-gray-400 text-lg">No posts yet. Be the first to share something!</p>
+          </motion.div>
         ) : (
           <div className="space-y-6">
-            {posts.map((post) => {
-              const isLiked = user ? post.likes.includes(user.uid) : false;
-              const isOwner = user?.uid === post.userId;
-              
-              return (
-                <Card key={post.id} className="bg-gradient-card border-border/50 hover:border-primary/20 transition-all duration-300">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                          <AvatarImage src={post.userPhotoURL} alt={post.username} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {post.username.charAt(0).toUpperCase() || <FaUser />}
-                          </AvatarFallback>
-                        </Avatar>
+            <AnimatePresence>
+              {posts.map((post, index) => {
+                const isLiked = user ? post.likes.includes(user.uid) : false;
+                const isOwner = user?.uid === post.userId;
+                
+                return (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -50 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="group"
+                  >
+                    <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:border-purple-500/30">
+                      {/* Post Header */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          className="relative"
+                        >
+                          <Avatar className="h-12 w-12 ring-2 ring-purple-500/30">
+                            <AvatarImage src={post.userPhotoURL} alt={post.username} />
+                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+                              {post.username.charAt(0).toUpperCase() || <FaUser />}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                        </motion.div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-foreground">{post.username}</h3>
+                            <h3 className="font-semibold text-white">{post.username}</h3>
                             {post.gameTitle && (
-                              <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
+                              <Badge className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-200 border-purple-500/30 text-xs">
                                 {post.gameTitle}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             {formatDistanceToNow(post.createdAt, { addSuffix: true })}
                           </p>
                         </div>
-                      </div>
-                      
-                      {isOwner && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <FaEllipsisV className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-600 focus:text-red-600">
-                              <FaTrash className="mr-2 h-4 w-4" />
-                              Delete Post
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-0">
-                    {post.content && (
-                      <p className="mb-6 text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                    )}
-                    
-                    {post.mediaUrl && (
-                      <div className="mb-6">
-                        {post.mediaType === 'video' ? (
-                          <video
-                            src={post.mediaUrl}
-                            className="w-full max-h-96 object-cover rounded-xl border border-border/50"
-                            controls
-                          />
-                        ) : (
-                          <img
-                            src={post.mediaUrl}
-                            alt="Post media"
-                            className="w-full max-h-96 object-cover rounded-xl border border-border/50"
-                          />
+                        {isOwner && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
+                                <FaEllipsisV className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                              <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-400 focus:text-red-300">
+                                <FaTrash className="mr-2 h-4 w-4" />
+                                Delete Post
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between border-t border-border/50 pt-4">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleLike(post.id, isLiked)}
-                          className={`flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors ${isLiked ? 'text-red-500' : ''}`}
+                      
+                      {/* Post Content */}
+                      {post.content && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="mb-4"
                         >
-                          {isLiked ? (
-                            <FaHeart className="w-4 h-4" />
+                          <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                        </motion.div>
+                      )}
+                      
+                      {/* Post Media */}
+                      {post.mediaUrl && (
+                        <motion.div 
+                          className="mb-6 overflow-hidden rounded-xl"
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {post.mediaType === 'video' ? (
+                            <video
+                              src={post.mediaUrl}
+                              className="w-full max-h-96 object-cover"
+                              controls
+                            />
                           ) : (
-                            <FaRegHeart className="w-4 h-4" />
+                            <img
+                              src={post.mediaUrl}
+                              alt="Post media"
+                              className="w-full max-h-96 object-cover"
+                            />
                           )}
-                          <span className="font-medium">{post.likeCount}</span>
-                        </Button>
+                        </motion.div>
+                      )}
+                      
+                      {/* Interactive Buttons */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {/* Like Button - Ripple Effect */}
+                          <motion.button
+                            onClick={() => handleLike(post.id, isLiked)}
+                            className={`relative overflow-hidden px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                              isLiked 
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                                : 'bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-red-500/30 hover:text-red-400'
+                            }`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <motion.div
+                              className="absolute inset-0 bg-red-500/20 rounded-full"
+                              initial={{ scale: 0, opacity: 0 }}
+                              whileHover={{ scale: 1, opacity: 1 }}
+                              transition={{ duration: 0.3 }}
+                            />
+                            <motion.div
+                              animate={isLiked ? { scale: [1, 1.2, 1] } : {}}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {isLiked ? (
+                                <FaHeart className="w-4 h-4 relative z-10" />
+                              ) : (
+                                <FaRegHeart className="w-4 h-4 relative z-10" />
+                              )}
+                            </motion.div>
+                            <span className="text-sm font-medium relative z-10">{post.likeCount}</span>
+                          </motion.button>
+                          
+                          {/* Comment Button - Expand Effect */}
+                          <motion.button
+                            onClick={() => toggleComments(post.id)}
+                            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                              expandedComments.has(post.id)
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                : 'bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-blue-500/30 hover:text-blue-400'
+                            }`}
+                            whileHover={{ scale: 1.1, rotateZ: 5 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            {expandedComments.has(post.id) ? (
+                              <FaComment className="w-4 h-4" />
+                            ) : (
+                              <FaRegComment className="w-4 h-4" />
+                            )}
+                            <span className="text-sm font-medium">{commentCounts[post.id] || 0}</span>
+                          </motion.button>
+                        </div>
                         
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleComments(post.id)}
-                          className={`flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-colors ${expandedComments.has(post.id) ? 'text-blue-500' : ''}`}
-                        >
-                          {expandedComments.has(post.id) ? (
-                            <FaComment className="w-4 h-4" />
-                          ) : (
-                            <FaRegComment className="w-4 h-4" />
-                          )}
-                          <span className="font-medium">{commentCounts[post.id] || 0}</span>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {/* Share Button - Transform Effect */}
+                          <motion.button
+                            onClick={() => handleShare(post)}
+                            className="p-2 rounded-full bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-green-500/30 hover:text-green-400 transition-all duration-300"
+                            whileHover={{ 
+                              scale: 1.1,
+                              rotate: [0, -10, 10, 0],
+                              transition: { duration: 0.3 }
+                            }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <FaShare className="w-4 h-4" />
+                          </motion.button>
+                          
+                          {/* Bookmark Button - Glow Effect */}
+                          <motion.button
+                            className="relative p-2 rounded-full bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-yellow-500/30 hover:text-yellow-400 transition-all duration-300"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <motion.div
+                              className="absolute inset-0 bg-yellow-500/20 rounded-full blur-md"
+                              initial={{ opacity: 0 }}
+                              whileHover={{ opacity: 1 }}
+                              transition={{ duration: 0.3 }}
+                            />
+                            <FaBookmark className="w-4 h-4 relative z-10" />
+                          </motion.button>
+                        </div>
                       </div>
                       
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleShare(post)}
-                        className="flex items-center gap-2 hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
-                        <FaShare className="w-4 h-4" />
-                        <span className="font-medium">Share</span>
-                      </Button>
+                      {/* Comments Section */}
+                      <AnimatePresence>
+                        {expandedComments.has(post.id) && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <CommentSection 
+                              postId={post.id}
+                              isExpanded={expandedComments.has(post.id)}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    
-                    <CommentSection 
-                      postId={post.id}
-                      postAuthorId={post.userId}
-                      isExpanded={expandedComments.has(post.id)}
-                      onCommentAdded={loadPosts}
-                    />
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </div>

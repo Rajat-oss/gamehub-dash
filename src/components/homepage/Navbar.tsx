@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope, FaBars, FaTimes } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
@@ -35,6 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const chatUnreadCount = useChatUnreadCount();
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,20 +147,32 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     <nav className="bg-card/50 backdrop-blur-lg border-b border-border/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Mobile Hamburger Menu */}
+          <div className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2"
+            >
+              {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
+            </Button>
+          </div>
+
           {/* Logo */}
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
               src="/logofinal.png" 
               alt="GameHub" 
-              className="h-20 w-20 sm:h-28 sm:w-28 object-contain" 
+              className="h-12 w-12 lg:h-20 lg:w-20 xl:h-28 xl:w-28 object-contain" 
             />
           </div>
 
-          {/* Search - Only show on specific pages */}
+          {/* Desktop Search - Only show on specific pages */}
           {showGameSearch && (
-            <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-2 sm:mx-8">
+            <form onSubmit={handleSearchSubmit} className="hidden lg:flex flex-1 max-w-lg mx-8">
               <motion.div 
-                className="relative" 
+                className="relative w-full" 
                 ref={searchRef}
                 animate={{ 
                   scale: isSearchFocused ? 1.02 : 1,
@@ -172,9 +186,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                     color: isSearchFocused ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
                   }}
                   transition={{ duration: 0.2 }}
-                  className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 z-10"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
                 >
-                  <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <FaSearch className="w-4 h-4" />
                 </motion.div>
                 <motion.div
                   whileFocus={{ scale: 1.01 }}
@@ -187,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                     onChange={handleSearchChange}
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setIsSearchFocused(false)}
-                    className="pl-8 sm:pl-10 bg-secondary/50 border-border/50 focus:border-primary text-sm sm:text-base transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
+                    className="pl-10 bg-secondary/50 border-border/50 focus:border-primary transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
                   />
                 </motion.div>
                 
@@ -236,17 +250,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           )}
           
           {/* Spacer when search is hidden */}
-          {!showGameSearch && <div className="flex-1" />}
+          {!showGameSearch && <div className="hidden lg:flex flex-1" />}
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4">
+          {/* Mobile Search Icon */}
+          {showGameSearch && (
+            <div className="lg:hidden flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                className="p-2"
+              >
+                <FaSearch className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Desktop Navigation Buttons */}
+          <div className="hidden lg:flex items-center gap-2 mr-4">
             <Button 
               variant={location.pathname === '/posts' ? 'default' : 'ghost'}
               onClick={() => navigate('/posts')}
               size="sm"
             >
-              <FaPlus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden lg:inline">Posts</span>
+              Social
             </Button>
             
             <Button 
@@ -254,8 +281,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               onClick={() => navigate('/my-games')}
               size="sm"
             >
-              <FaGamepad className="w-4 h-4 sm:mr-2" />
-              <span className="hidden lg:inline">My Games</span>
+              <FaGamepad className="w-4 h-4 mr-2" />
+              My Games
             </Button>
             
             <Button 
@@ -263,8 +290,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               onClick={() => navigate('/favorites')}
               size="sm"
             >
-              <FaHeart className="w-4 h-4 sm:mr-2" />
-              <span className="hidden lg:inline">Favorites</span>
+              <FaHeart className="w-4 h-4 mr-2" />
+              Favorites
             </Button>
             
             <Button 
@@ -273,8 +300,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               size="sm"
               className="relative"
             >
-              <FaComments className="w-4 h-4 sm:mr-2" />
-              <span className="hidden lg:inline">Chat</span>
+              <FaComments className="w-4 h-4 mr-2" />
+              Chat
               {chatUnreadCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-green-500 text-white">
                   {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
@@ -283,8 +310,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </Button>
           </div>
 
-          {/* Notifications */}
-          <div className="mr-4">
+          {/* Desktop Notifications */}
+          <div className="hidden lg:block mr-4">
             <Button
               variant="ghost"
               size="sm"
@@ -344,6 +371,218 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Mobile Expanded Search */}
+        <AnimatePresence>
+          {isSearchExpanded && showGameSearch && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="lg:hidden pb-4"
+            >
+              <form onSubmit={handleSearchSubmit} className="w-full">
+                <motion.div 
+                  className="relative" 
+                  ref={searchRef}
+                >
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                    <FaSearch className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Search games..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    className="pl-10 bg-secondary/50 border-border/50 focus:border-primary transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
+                    autoFocus
+                  />
+                  
+                  {/* Mobile Search Suggestions */}
+                  <AnimatePresence>
+                    {showSuggestions && suggestions.length > 0 && (
+                      <motion.div 
+                        className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto"
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {suggestions.map((game, index) => (
+                          <motion.div
+                            key={game.id}
+                            className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer border-b border-border/20 last:border-b-0"
+                            onClick={() => {
+                              handleSuggestionClick(game);
+                              setIsSearchExpanded(false);
+                            }}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.2, delay: index * 0.05 }}
+                          >
+                            <div className="w-10 h-12 flex-shrink-0 bg-secondary/30 rounded overflow-hidden">
+                              <img
+                                src={game.box_art_url.replace('{width}', '40').replace('{height}', '48')}
+                                alt={game.name}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-foreground truncate">{game.name}</div>
+                              <div className="text-xs text-muted-foreground">Game</div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Sidebar Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
+              
+              {/* Sidebar */}
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="fixed top-0 left-0 h-full w-64 bg-background border-r border-border shadow-2xl z-50 lg:hidden"
+              >
+                <div className="p-4">
+                  {/* Close Button */}
+                  <div className="flex justify-end mb-6">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-2"
+                    >
+                      <FaTimes className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  
+                  {/* Navigation Items */}
+                  <div className="space-y-2">
+                    <Button 
+                      variant={location.pathname === '/posts' ? 'default' : 'ghost'}
+                      onClick={() => {
+                        navigate('/posts');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      Social
+                    </Button>
+                    
+                    <Button 
+                      variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
+                      onClick={() => {
+                        navigate('/my-games');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      <FaGamepad className="w-4 h-4 mr-2" />
+                      My Games
+                    </Button>
+                    
+                    <Button 
+                      variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
+                      onClick={() => {
+                        navigate('/favorites');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      <FaHeart className="w-4 h-4 mr-2" />
+                      Favorites
+                    </Button>
+                    
+                    <Button 
+                      variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
+                      onClick={() => {
+                        navigate('/inbox');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start relative"
+                    >
+                      <FaComments className="w-4 h-4 mr-2" />
+                      Chat
+                      {chatUnreadCount > 0 && (
+                        <Badge className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-green-500 text-white">
+                          {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      variant={location.pathname === '/notifications' ? 'default' : 'ghost'}
+                      onClick={() => {
+                        navigate('/notifications');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start relative"
+                    >
+                      <FaBell className="w-4 h-4 mr-2" />
+                      Notifications
+                      {unreadCount > 0 && (
+                        <Badge className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                    
+                    <div className="border-t border-border/50 my-4" />
+                    
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigate('/profile');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      <FaUser className="w-4 h-4 mr-2" />
+                      Profile
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigate('/settings');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      <FaCog className="w-4 h-4 mr-2" />
+                      Settings
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );
