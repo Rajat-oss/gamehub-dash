@@ -64,7 +64,26 @@ export async function markMessagesAsSeen(userId1: string, userId2: string, curre
 }
 
 // Send a message
-export async function sendMessage(receiverId: string, receiverName: string, senderId: string, senderName: string, message: string): Promise<void> {
+export async function sendMessage(senderId: string, receiverId: string, message: string): Promise<void> {
+  try {
+    // Get user profiles for names
+    const [senderProfile, receiverProfile] = await Promise.all([
+      userService.getUserProfile(senderId),
+      userService.getUserProfile(receiverId)
+    ]);
+    
+    const senderName = senderProfile?.username || 'Unknown';
+    const receiverName = receiverProfile?.username || 'Unknown';
+    
+    await sendMessageWithNames(senderId, receiverId, senderName, receiverName, message);
+  } catch (error) {
+    console.error('Error in sendMessage:', error);
+    throw error;
+  }
+}
+
+// Send a message with names
+export async function sendMessageWithNames(senderId: string, receiverId: string, senderName: string, receiverName: string, message: string): Promise<void> {
   try {
     const chatRoomId = getChatRoomId(senderId, receiverId);
     
@@ -106,20 +125,7 @@ export async function sendMessage(receiverId: string, receiverName: string, send
     
   } catch (error) {
     console.error('Error sending message:', error);
-    // Fallback to localStorage if Firebase fails
-    const messages = JSON.parse(localStorage.getItem('chat_messages') || '[]');
-    messages.push({
-      id: Date.now().toString(),
-      senderId,
-      receiverId,
-      senderName,
-      receiverName,
-      message,
-      timestamp: Date.now(),
-      read: false
-    });
-    localStorage.setItem('chat_messages', JSON.stringify(messages));
-    window.dispatchEvent(new CustomEvent('chatUpdate'));
+    throw error;
   }
 }
 

@@ -79,6 +79,8 @@ const showToastNotification = (notification: any) => {
         return '💬';
       case 'post_liked':
         return '❤️';
+      case 'post_commented':
+        return '💬';
       default:
         return '🔔';
     }
@@ -112,6 +114,6 @@ const showToastNotification = (notification: any) => {
       }
     },
     duration: notification.type === 'follow' || notification.type === 'chat_message' ? 8000 : 5000,
-    className: notification.type === 'follow' ? 'border-l-4 border-l-blue-500' : notification.type === 'chat_message' ? 'border-l-4 border-l-green-500' : notification.type === 'post_liked' ? 'border-l-4 border-l-red-500' : '',
+    className: notification.type === 'follow' ? 'border-l-4 border-l-blue-500' : notification.type === 'chat_message' ? 'border-l-4 border-l-green-500' : notification.type === 'post_liked' ? 'border-l-4 border-l-red-500' : notification.type === 'post_commented' ? 'border-l-4 border-l-blue-500' : '',
   });
 };

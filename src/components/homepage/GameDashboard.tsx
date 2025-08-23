@@ -4,6 +4,7 @@ import { GameCard } from './GameCard';
 import { GameRequestModal } from './GameRequestModal';
 import { GameLogModal } from '@/components/game/GameLogModal';
 import { ActivityFeed } from './ActivityFeed';
+import { GameRecommendations } from './GameRecommendations';
 
 
 import { Button } from '@/components/ui/button';
@@ -125,9 +126,7 @@ export const GameDashboard: React.FC = () => {
               <span className="hidden sm:inline">🔥 Trending Now</span>
               <span className="sm:hidden">🔥 Hot</span>
             </Badge>
-            <div className="text-sm text-muted-foreground animate-fade-in">
-              {games.length} games available
-            </div>
+            
           </div>
           
           <Link to="/community">
@@ -139,6 +138,11 @@ export const GameDashboard: React.FC = () => {
           </Link>
         </div>
 
+
+        {/* Game Recommendations */}
+        <div className="mb-8">
+          <GameRecommendations />
+        </div>
 
         {/* Enhanced Games Grid */}
         {loading ? (

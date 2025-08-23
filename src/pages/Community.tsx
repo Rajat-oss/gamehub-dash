@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaUsers, FaSearch, FaHeart, FaGamepad, FaUser, FaArrowLeft } from 'react-icons/fa';
+import { FaUsers, FaSearch, FaHeart, FaGamepad, FaUser, FaArrowLeft, FaUserFriends } from 'react-icons/fa';
 import { AnimatedFollowButton } from '@/components/ui/animated-button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -120,6 +120,17 @@ const Community: React.FC = () => {
             <div className="flex items-center space-x-3">
               <FaUsers className="text-primary text-3xl" />
               <h1 className="text-3xl font-bold text-foreground">Gaming Community</h1>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/discussions')}
+                className="flex items-center gap-2"
+              >
+                <FaUserFriends className="w-4 h-4" />
+                Discussions
+              </Button>
+              
             </div>
             <Button 
               variant="outline" 

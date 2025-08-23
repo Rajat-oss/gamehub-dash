@@ -1,40 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all operations for authenticated users (temporary for development)
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Allow public read access for certain collections
+    // Posts collection
     match /posts/{document} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // Post comments collection
     match /postComments/{document} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // Game comments collection
     match /gameComments/{document} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // User activities collection
     match /userActivities/{document} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // Users collection
     match /users/{document} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // User profiles collection
     match /userProfiles/{document} {
       allow read: if true;
       allow write: if request.auth != null;
+    }
+    
+    // Default rule for other collections (authenticated users only)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }

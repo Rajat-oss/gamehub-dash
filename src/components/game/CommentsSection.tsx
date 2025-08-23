@@ -113,14 +113,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
   const loadComments = async () => {
     try {
       setLoading(true);
-      const [gameComments, ratingData] = await Promise.all([
+      const [gameComments, averageRating] = await Promise.all([
         commentService.getGameComments(gameId),
         commentService.getGameAverageRating(gameId)
       ]);
       
       setComments(gameComments);
-      setAverageRating(ratingData.average);
-      setRatingCount(ratingData.count);
+      setAverageRating(averageRating || 0);
+      setRatingCount(gameComments.filter(c => c.rating).length);
     } catch (error) {
       console.error('Error loading comments:', error);
       toast({
@@ -222,14 +222,29 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
     }
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDate = (timestamp: any) => {
+    try {
+      let date;
+      if (timestamp?.toDate) {
+        date = timestamp.toDate();
+      } else if (timestamp instanceof Date) {
+        date = timestamp;
+      } else if (typeof timestamp === 'number') {
+        date = new Date(timestamp);
+      } else {
+        return 'Just now';
+      }
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Just now';
+    }
   };
 
   const renderStars = (rating: number, interactive = false, onRate?: (rating: number) => void) => {
@@ -254,7 +269,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
       <div className="bg-gradient-card border border-border/50 rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Community Rating</h3>
         <div className="flex items-center space-x-4">
-          <div className="text-3xl font-bold text-primary">{averageRating.toFixed(1)}</div>
+          <div className="text-3xl font-bold text-primary">{(averageRating || 0).toFixed(1)}</div>
           {renderStars(Math.round(averageRating))}
           <div className="text-muted-foreground">
             ({ratingCount} ratings)
@@ -333,7 +348,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                   </Avatar>
                   <div>
                     <div className="font-semibold">{comment.userName}</div>
-                    <div className="text-sm text-muted-foreground">{formatDate(comment.timestamp)}</div>
+                    <div className="text-sm text-muted-foreground">{formatDate(comment.createdAt)}</div>
                   </div>
                 </div>
                 {comment.rating && (
@@ -450,7 +465,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                           </Avatar>
                           <div>
                             <div className="font-medium text-sm">{reply.userName}</div>
-                            <div className="text-xs text-muted-foreground">{formatDate(reply.timestamp)}</div>
+                            <div className="text-xs text-muted-foreground">{formatDate(reply.createdAt)}</div>
                           </div>
                         </div>
                         <p className="text-sm">{reply.comment}</p>

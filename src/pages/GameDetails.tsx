@@ -66,19 +66,27 @@ const GameDetails = () => {
     if (!gameId) return;
     
     try {
-      const [ratingData, comments] = await Promise.all([
+      const [averageRating, comments] = await Promise.all([
         commentService.getGameAverageRating(gameId),
         commentService.getGameComments(gameId)
       ]);
       
+      const ratingsCount = comments.filter(c => c.rating).length;
+      
       setGameStats({
-        averageRating: ratingData.average,
-        ratingCount: ratingData.count,
+        averageRating: averageRating || 0,
+        ratingCount: ratingsCount,
         commentCount: comments.length,
         ratingDistribution: calculateRatingDistribution(comments)
       });
     } catch (error) {
       console.error('Error loading game stats:', error);
+      setGameStats({
+        averageRating: 0,
+        ratingCount: 0,
+        commentCount: 0,
+        ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      });
     }
   };
   
@@ -138,7 +146,7 @@ const GameDetails = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold mb-4">Game not found</h1>
-            <Link to="/dashboard">
+            <Link to="/homepage">
               <Button>Back to Marketplace</Button>
             </Link>
           </div>
@@ -153,7 +161,7 @@ const GameDetails = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link to="/dashboard">
+        <Link to="/homepage">
           <Button variant="ghost" className="mb-6">
             <FaArrowLeft className="w-4 h-4 mr-2" />
             Back to Marketplace
@@ -224,7 +232,7 @@ const GameDetails = () => {
                       <FaStar className="text-yellow-400" />
                     </motion.div>
                     <span className="text-2xl font-bold text-primary">
-                      {gameStats?.averageRating.toFixed(1) || '0.0'}
+                      {(gameStats?.averageRating || 0).toFixed(1)}
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">Rating</div>
@@ -281,17 +289,11 @@ const GameDetails = () => {
         {/* Content Tabs */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <Tabs defaultValue="comments" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <TabsTrigger value="comments" className="flex items-center gap-2 w-full">
                   <FaComment className="w-4 h-4" />
                   Comments & Reviews
-                </TabsTrigger>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <TabsTrigger value="activity" className="flex items-center gap-2 w-full">
-                  <FaClock className="w-4 h-4" />
-                  Game Activity
                 </TabsTrigger>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -308,15 +310,7 @@ const GameDetails = () => {
               </motion.div>
             </TabsContent>
           
-          <TabsContent value="activity" className="mt-6">
-            <ActivityFeed 
-              gameId={game.id}
-              title={`Recent Activity for ${game.name}`}
-              maxItems={20}
-              showUserInfo={true}
-            />
-          </TabsContent>
-          
+
           <TabsContent value="stats" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card className="bg-gradient-card border-border/50">
@@ -373,7 +367,7 @@ const GameDetails = () => {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Avg Rating</span>
                       <span className="font-semibold">
-                        {gameStats?.averageRating.toFixed(1) || '0.0'}/5
+                        {(gameStats?.averageRating || 0).toFixed(1)}/5
                       </span>
                     </div>
                   </div>

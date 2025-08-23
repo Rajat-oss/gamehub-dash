@@ -4,7 +4,7 @@ import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, Tim
 export interface Notification {
   id: string;
   userId: string;
-  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied' | 'chat_message' | 'post_liked';
+  type: 'follow' | 'game_added' | 'review_posted' | 'game_favorited' | 'review_liked' | 'review_replied' | 'chat_message' | 'post_liked' | 'post_commented';
   title: string;
   message: string;
   fromUserId?: string;
@@ -27,8 +27,13 @@ const NOTIFICATIONS_COLLECTION = 'notifications';
 export const notificationService = {
   async createNotification(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<void> {
     try {
+      // Filter out undefined values
+      const cleanNotification = Object.fromEntries(
+        Object.entries(notification).filter(([_, value]) => value !== undefined)
+      );
+      
       await addDoc(collection(db, NOTIFICATIONS_COLLECTION), {
-        ...notification,
+        ...cleanNotification,
         createdAt: Timestamp.now()
       });
     } catch (error) {

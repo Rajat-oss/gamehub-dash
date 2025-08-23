@@ -9,14 +9,13 @@ import { subscribeToChats, ChatRoom } from '@/lib/chat';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { FaUser, FaArrowLeft, FaComments, FaRobot } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { AIChat } from '@/components/chat/AIChat';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ChatInbox = () => {
   const [chats, setChats] = useState<ChatRoom[]>([]);
   const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
   const [loading, setLoading] = useState(true);
-  const [showAIChat, setShowAIChat] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
@@ -112,21 +111,14 @@ const ChatInbox = () => {
                 </div>
               </div>
               <Button 
-                onClick={() => setShowAIChat(!showAIChat)}
+                onClick={() => navigate('/chat/ai-assistant')}
                 className="bg-primary hover:bg-primary/90"
               >
-                {showAIChat ? 'Hide' : 'Chat'}
+                Chat with AI
               </Button>
             </div>
           </CardContent>
         </Card>
-
-        {/* AI Chat Interface */}
-        {showAIChat && (
-          <div className="mb-6">
-            <AIChat />
-          </div>
-        )}
 
         {/* Chat List */}
         <Card className="bg-gradient-card border-border/50">

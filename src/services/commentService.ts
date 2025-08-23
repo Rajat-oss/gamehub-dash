@@ -1,311 +1,151 @@
+import { db } from '@/lib/firebase';
 import { 
   collection, 
-  doc, 
   addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
-  getDoc, 
   query, 
   where, 
   orderBy, 
-  Timestamp,
-  limit,
-  arrayUnion,
-  increment,
-  onSnapshot
+  onSnapshot, 
+  serverTimestamp,
+  getDocs
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { PostComment, CreateCommentData } from '@/types/post';
 import { notificationService } from './notificationService';
-import { userService } from './userService';
-import { realtimeNotificationService } from './realtimeNotificationService';
 
-export interface Comment {
-  id: string;
-  gameId: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  comment: string;
-  rating?: number;
-  timestamp: Date;
-  replies: Reply[];
-  likes: number;
-  likedBy: string[];
-}
-
-export interface Reply {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  comment: string;
-  timestamp: Date;
-  likes: number;
-  likedBy: string[];
-}
-
-export interface CommentInput {
-  gameId: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  comment: string;
-  rating?: number;
-}
-
-export interface ReplyInput {
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  comment: string;
-}
-
-const COMMENTS_COLLECTION = 'gameComments';
-
-// Convert Firestore timestamp to Date
-const timestampToDate = (timestamp: any): Date => {
-  return timestamp?.toDate ? timestamp.toDate() : new Date();
-};
-
-// Convert Comment document from Firestore
-const convertCommentDocument = (doc: any): Comment => {
-  const data = doc.data();
-  return {
-    id: doc.id,
-    gameId: data.gameId,
-    userId: data.userId,
-    userName: data.userName,
-    userAvatar: data.userAvatar,
-    comment: data.comment,
-    rating: data.rating,
-    timestamp: timestampToDate(data.timestamp),
-    replies: (data.replies || []).map((reply: any) => ({
-      id: reply.id,
-      userId: reply.userId,
-      userName: reply.userName,
-      userAvatar: reply.userAvatar,
-      comment: reply.comment,
-      timestamp: timestampToDate(reply.timestamp),
-      likes: reply.likes || 0,
-      likedBy: reply.likedBy || []
-    })),
-    likes: data.likes || 0,
-    likedBy: data.likedBy || []
-  };
-};
+const COMMENTS_COLLECTION = 'postComments';
+const GAME_COMMENTS_COLLECTION = 'gameComments';
 
 export const commentService = {
-  // Add a new comment
-  async addComment(commentInput: CommentInput): Promise<string> {
+  async addComment(
+    postId: string,
+    postAuthorId: string,
+    userId: string,
+    username: string,
+    userPhotoURL: string | undefined,
+    commentData: CreateCommentData
+  ): Promise<void> {
     try {
-      const data: any = {
-        gameId: commentInput.gameId,
-        userId: commentInput.userId,
-        userName: commentInput.userName,
-        comment: commentInput.comment,
-        timestamp: Timestamp.now(),
-        replies: [],
-        likes: 0,
-        likedBy: []
-      };
-      
-      if (commentInput.rating && commentInput.rating > 0) {
-        data.rating = commentInput.rating;
+      await addDoc(collection(db, COMMENTS_COLLECTION), {
+        postId,
+        userId,
+        username,
+        userPhotoURL: userPhotoURL || '',
+        content: commentData.content,
+        createdAt: serverTimestamp()
+      });
+
+      // Create notification for post author
+      if (postAuthorId !== userId) {
+        await notificationService.createNotification({
+          userId: postAuthorId,
+          type: 'post_commented',
+          title: 'New Comment',
+          message: `${username} commented on your post`,
+          fromUserId: userId,
+          fromUsername: username,
+          fromUserAvatar: userPhotoURL || '',
+          postId,
+          read: false
+        });
       }
-      
-      if (commentInput.userAvatar) {
-        data.userAvatar = commentInput.userAvatar;
-      }
-      
-      const docRef = await addDoc(collection(db, COMMENTS_COLLECTION), data);
-      return docRef.id;
     } catch (error) {
       console.error('Error adding comment:', error);
       throw error;
     }
   },
 
-  // Get comments for a game
-  async getGameComments(gameId: string): Promise<Comment[]> {
+  subscribeToComments(postId: string, callback: (comments: PostComment[]) => void) {
+    const q = query(
+      collection(db, COMMENTS_COLLECTION),
+      where('postId', '==', postId),
+      orderBy('createdAt', 'asc')
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const comments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date()
+      })) as PostComment[];
+      callback(comments);
+    });
+  },
+
+  async getCommentCount(postId: string): Promise<number> {
     try {
       const q = query(
         collection(db, COMMENTS_COLLECTION),
-        where('gameId', '==', gameId),
-        orderBy('timestamp', 'desc')
+        where('postId', '==', postId)
       );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertCommentDocument);
+      const snapshot = await getDocs(q);
+      return snapshot.size;
     } catch (error) {
-      console.error('Error fetching game comments:', error);
-      throw error;
+      console.error('Error getting comment count:', error);
+      return 0;
     }
   },
 
-  // Add a reply to a comment
-  async addReply(commentId: string, replyInput: ReplyInput): Promise<void> {
+  // Game comment functions
+  async addGameComment(
+    gameId: string,
+    userId: string,
+    username: string,
+    userPhotoURL: string | undefined,
+    content: string,
+    rating: number
+  ): Promise<void> {
     try {
-      const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-      const commentDoc = await getDoc(commentRef);
-      
-      const newReply = {
-        id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        userId: replyInput.userId,
-        userName: replyInput.userName,
-        userAvatar: replyInput.userAvatar || '',
-        comment: replyInput.comment,
-        timestamp: Timestamp.now(),
-        likes: 0,
-        likedBy: []
-      };
-      
-      await updateDoc(commentRef, {
-        replies: arrayUnion(newReply)
+      await addDoc(collection(db, GAME_COMMENTS_COLLECTION), {
+        gameId,
+        userId,
+        username,
+        userPhotoURL: userPhotoURL || '',
+        content,
+        rating,
+        createdAt: serverTimestamp()
       });
-      
-      // Send notification to original comment author
-      if (commentDoc.exists()) {
-        const originalComment = commentDoc.data();
-        if (originalComment.userId !== replyInput.userId) {
-          try {
-            const replierProfile = await userService.getUserProfile(replyInput.userId);
-            if (replierProfile) {
-              await notificationService.notifyReviewReplied(
-                originalComment.userId,
-                replyInput.userId,
-                replierProfile.username || replyInput.userName,
-                replierProfile.photoURL || replyInput.userAvatar || '',
-                originalComment.gameId,
-                'Game', // You might want to get actual game name
-                '', // You might want to get actual game image
-                replyInput.comment
-              );
-            }
-          } catch (notifError) {
-            console.error('Error sending reply notification:', notifError);
-          }
-        }
-      }
     } catch (error) {
-      console.error('Error adding reply:', error);
+      console.error('Error adding game comment:', error);
       throw error;
     }
   },
 
-  // Like/unlike a comment
-  async toggleCommentLike(commentId: string, userId: string): Promise<void> {
-    try {
-      const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-      const commentDoc = await getDoc(commentRef);
-      
-      if (commentDoc.exists()) {
-        const data = commentDoc.data();
-        const likedBy = data.likedBy || [];
-        const isLiked = likedBy.includes(userId);
-        
-        if (isLiked) {
-          // Unlike
-          await updateDoc(commentRef, {
-            likes: increment(-1),
-            likedBy: likedBy.filter((id: string) => id !== userId)
-          });
-        } else {
-          // Like
-          await updateDoc(commentRef, {
-            likes: increment(1),
-            likedBy: arrayUnion(userId)
-          });
-          
-          // Send real-time notification to comment author
-          if (data.userId !== userId) {
-            try {
-              const likerProfile = await userService.getUserProfile(userId);
-              const likerName = likerProfile?.username || data.userName || 'Someone';
-              
-              // Send real-time notification
-              realtimeNotificationService.sendNotification({
-                type: 'like',
-                fromUserId: userId,
-                fromUserName: likerName,
-                toUserId: data.userId,
-                message: `${likerName} liked your comment`
-              });
-              
-              // Also send traditional notification
-              if (likerProfile) {
-                await notificationService.notifyReviewLiked(
-                  data.userId,
-                  userId,
-                  likerName,
-                  likerProfile.photoURL || '',
-                  data.gameId,
-                  'Game',
-                  ''
-                );
-              }
-            } catch (notifError) {
-              console.error('Error sending like notification:', notifError);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling comment like:', error);
-      throw error;
-    }
-  },
-
-  // Delete a comment
-  async deleteComment(commentId: string, userId: string): Promise<void> {
-    try {
-      const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-      const commentDoc = await getDoc(commentRef);
-      
-      if (commentDoc.exists() && commentDoc.data().userId === userId) {
-        await deleteDoc(commentRef);
-      } else {
-        throw new Error('Unauthorized to delete this comment');
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      throw error;
-    }
-  },
-
-  // Get average rating for a game
-  async getGameAverageRating(gameId: string): Promise<{ average: number; count: number }> {
-    try {
-      const comments = await this.getGameComments(gameId);
-      const ratingsOnly = comments.filter(c => c.rating).map(c => c.rating!);
-      
-      if (ratingsOnly.length === 0) {
-        return { average: 0, count: 0 };
-      }
-      
-      const sum = ratingsOnly.reduce((acc, rating) => acc + rating, 0);
-      const average = Math.round((sum / ratingsOnly.length) * 10) / 10;
-      
-      return { average, count: ratingsOnly.length };
-    } catch (error) {
-      console.error('Error calculating average rating:', error);
-      throw error;
-    }
-  },
-
-  // Get user's comments
-  async getUserComments(userId: string, limitCount: number = 10): Promise<Comment[]> {
+  async getGameComments(gameId: string) {
     try {
       const q = query(
-        collection(db, COMMENTS_COLLECTION),
-        where('userId', '==', userId),
-        orderBy('timestamp', 'desc'),
-        limit(limitCount)
+        collection(db, GAME_COMMENTS_COLLECTION),
+        where('gameId', '==', gameId)
       );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertCommentDocument);
+      const snapshot = await getDocs(q);
+      const comments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date()
+      }));
+      // Sort in memory to avoid index requirement
+      return comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } catch (error) {
-      console.error('Error fetching user comments:', error);
-      throw error;
+      console.error('Error getting game comments:', error);
+      return [];
+    }
+  },
+
+  async getGameAverageRating(gameId: string): Promise<number> {
+    try {
+      const q = query(
+        collection(db, GAME_COMMENTS_COLLECTION),
+        where('gameId', '==', gameId)
+      );
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) return 0;
+      
+      const ratings = snapshot.docs.map(doc => doc.data().rating || 0);
+      const average = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+      return Math.round(average * 10) / 10;
+    } catch (error) {
+      console.error('Error getting game average rating:', error);
+      return 0;
     }
   }
 };

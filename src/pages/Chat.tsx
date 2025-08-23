@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { sendMessage, subscribeToMessages, setTypingStatus, markMessagesAsSeen, subscribeToTypingStatus } from '@/lib/chat';
 import { userService } from '@/services/userService';
+import { aiChatService, AIMessage } from '@/services/aiChatService';
 import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaArrowLeft, FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaEllipsisV, FaRobot } from 'react-icons/fa';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
@@ -27,6 +28,7 @@ const Chat: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -34,12 +36,42 @@ const Chat: React.FC = () => {
   const [otherUserPhoto, setOtherUserPhoto] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [isAIChat, setIsAIChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!otherUserId || !user) return;
 
+    // Check if this is an AI chat
+    if (otherUserId === 'ai-assistant') {
+      setIsAIChat(true);
+      setOtherUserName('AI Gaming Assistant');
+      setOtherUserPhoto('');
+      setLoading(false);
+      
+      // Load AI messages from localStorage
+      const savedAiMessages = localStorage.getItem(`ai_chat_${user.uid}`);
+      if (savedAiMessages) {
+        const parsedMessages = JSON.parse(savedAiMessages).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setAiMessages(parsedMessages);
+      } else {
+        // Initialize with welcome message
+        const welcomeMessage: AIMessage = {
+          id: '1',
+          content: "Hi! I'm your gaming assistant. Ask me about games, get recommendations, or chat about anything gaming-related!",
+          isUser: false,
+          timestamp: new Date()
+        };
+        setAiMessages([welcomeMessage]);
+      }
+      return;
+    }
+
+    setIsAIChat(false);
     const loadOtherUser = async () => {
       try {
         const otherUserProfile = await userService.getUserProfile(otherUserId);
@@ -70,7 +102,7 @@ const Chat: React.FC = () => {
 
     return () => {
       // Clean up typing status when leaving chat
-      if (isTyping) {
+      if (isTyping && !isAIChat) {
         setTypingStatus(user.uid, otherUserId, false);
       }
       if (typingTimeoutRef.current) {
@@ -99,24 +131,64 @@ const Chat: React.FC = () => {
     if (!newMessage.trim() || !otherUserId || !user || sending) return;
 
     setSending(true);
-    // Stop typing when sending
-    setTypingStatus(user.uid, otherUserId, false);
-    setIsTyping(false);
     
-    try {
-      await sendMessage(
-        otherUserId,
-        otherUserName,
-        user.uid,
-        user.displayName || 'User',
-        newMessage.trim()
-      );
+    if (isAIChat) {
+      // Handle AI chat
+      const userMessage: AIMessage = {
+        id: Date.now().toString(),
+        content: newMessage.trim(),
+        isUser: true,
+        timestamp: new Date()
+      };
+
+      const updatedMessages = [...aiMessages, userMessage];
+      setAiMessages(updatedMessages);
       setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    } finally {
-      setSending(false);
+      setOtherUserTyping(true);
+
+      try {
+        const aiResponse = await aiChatService.sendMessage(newMessage.trim(), aiMessages);
+        
+        const aiMessage: AIMessage = {
+          id: (Date.now() + 1).toString(),
+          content: aiResponse,
+          isUser: false,
+          timestamp: new Date()
+        };
+
+        const finalMessages = [...updatedMessages, aiMessage];
+        setAiMessages(finalMessages);
+        
+        // Save to localStorage
+        localStorage.setItem(`ai_chat_${user.uid}`, JSON.stringify(finalMessages));
+      } catch (error) {
+        toast.error('Failed to get AI response');
+        console.error('AI chat error:', error);
+      } finally {
+        setOtherUserTyping(false);
+        setSending(false);
+      }
+    } else {
+      // Handle regular chat
+      // Stop typing when sending
+      setTypingStatus(user.uid, otherUserId, false);
+      setIsTyping(false);
+      
+      try {
+        await sendMessage(
+          otherUserId,
+          otherUserName,
+          user.uid,
+          user.displayName || 'User',
+          newMessage.trim()
+        );
+        setNewMessage('');
+      } catch (error) {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message');
+      } finally {
+        setSending(false);
+      }
     }
   };
 
@@ -124,9 +196,9 @@ const Chat: React.FC = () => {
     const value = e.target.value;
     setNewMessage(value);
     
-    if (!otherUserId || !user) return;
+    if (!otherUserId || !user || isAIChat) return;
     
-    // Set typing status
+    // Set typing status (only for regular chats)
     if (value.trim()) {
       if (!isTyping) {
         setIsTyping(true);
@@ -165,18 +237,9 @@ const Chat: React.FC = () => {
   };
 
   const getLastSeenStatus = () => {
-    if (messages.length === 0) return 'Last seen recently';
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage.timestamp) return 'Last seen recently';
-    
-    const lastMessageDate = lastMessage.timestamp.toDate ? lastMessage.timestamp.toDate() : new Date(lastMessage.timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - lastMessageDate.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 5) return 'Active now';
-    if (diffInMinutes < 60) return `Last seen ${diffInMinutes}m ago`;
-    if (diffInMinutes < 1440) return `Last seen ${Math.floor(diffInMinutes / 60)}h ago`;
-    return `Last seen ${Math.floor(diffInMinutes / 1440)}d ago`;
+    if (isAIChat) return 'Always available';
+    // For now, show generic status since we don't track real-time presence
+    return 'Last seen recently';
   };
 
   if (!user) {
@@ -213,8 +276,8 @@ const Chat: React.FC = () => {
                 </Button>
                 <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                   <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                  <AvatarFallback className="bg-blue-500 text-white text-sm">
-                    {otherUserName.charAt(0).toUpperCase()}
+                  <AvatarFallback className={`text-white text-sm ${isAIChat ? 'bg-primary' : 'bg-blue-500'}`}>
+                    {isAIChat ? <FaRobot className="w-4 h-4" /> : otherUserName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
@@ -241,14 +304,19 @@ const Chat: React.FC = () => {
                   </div>
                 ))}
               </div>
-            ) : messages.length > 0 ? (
+            ) : (isAIChat ? aiMessages.length > 0 : messages.length > 0) ? (
               <div className="space-y-1">
-                {messages.map((message, index) => {
-                  const isOwn = message.senderId === user.uid;
-                  const prevMessage = messages[index - 1];
-                  const nextMessage = messages[index + 1];
-                  const showAvatar = !nextMessage || nextMessage.senderId !== message.senderId;
-                  const isFirstInGroup = !prevMessage || prevMessage.senderId !== message.senderId;
+                {(isAIChat ? aiMessages : messages).map((message, index) => {
+                  const isOwn = isAIChat ? message.isUser : message.senderId === user.uid;
+                  const currentMessages = isAIChat ? aiMessages : messages;
+                  const prevMessage = currentMessages[index - 1];
+                  const nextMessage = currentMessages[index + 1];
+                  const showAvatar = isAIChat ? 
+                    (!nextMessage || nextMessage.isUser !== message.isUser) :
+                    (!nextMessage || nextMessage.senderId !== message.senderId);
+                  const isFirstInGroup = isAIChat ?
+                    (!prevMessage || prevMessage.isUser !== message.isUser) :
+                    (!prevMessage || prevMessage.senderId !== message.senderId);
                   
                   return (
                     <div key={message.id} className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} ${isFirstInGroup ? 'mt-3 sm:mt-4' : 'mt-1'}`}>
@@ -257,8 +325,8 @@ const Chat: React.FC = () => {
                           {showAvatar ? (
                             <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                               <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                              <AvatarFallback className="bg-slate-300 text-slate-700 text-xs sm:text-sm">
-                                {otherUserName.charAt(0).toUpperCase()}
+                              <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'}`}>
+                                {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                           ) : null}
@@ -271,7 +339,7 @@ const Chat: React.FC = () => {
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md'
                         }`}>
                           <p className="text-sm leading-relaxed break-words">
-                            {message.message}
+                            {isAIChat ? message.content : message.message}
                           </p>
                         </div>
                         {showAvatar && (
@@ -279,9 +347,12 @@ const Chat: React.FC = () => {
                             isOwn ? 'justify-end' : 'justify-start'
                           }`}>
                             <p className="text-xs text-slate-500">
-                              {formatTime(message.timestamp)}
+                              {isAIChat ? 
+                                (message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
+                                formatTime(message.timestamp)
+                              }
                             </p>
-                            {isOwn && (
+                            {isOwn && !isAIChat && (
                               <span className="text-xs text-slate-400 ml-1">
                                 {message.read ? '✓✓' : '✓'}
                               </span>
@@ -297,8 +368,8 @@ const Chat: React.FC = () => {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
                       <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                         <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                        <AvatarFallback className="bg-slate-300 text-slate-700 text-xs sm:text-sm">
-                          {otherUserName.charAt(0).toUpperCase()}
+                        <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'}`}>
+                          {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </div>
@@ -319,7 +390,9 @@ const Chat: React.FC = () => {
                   <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                      <AvatarFallback>{otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className={isAIChat ? 'bg-primary text-white' : ''}>
+                        {isAIChat ? <FaRobot className="w-6 h-6" /> : otherUserName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </div>
                   <p className="text-lg font-medium mb-2">No messages yet</p>
@@ -335,7 +408,7 @@ const Chat: React.FC = () => {
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
-                placeholder={`Message ${otherUserName}...`}
+placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
                 className="flex-1 rounded-full border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
                 disabled={sending}
               />

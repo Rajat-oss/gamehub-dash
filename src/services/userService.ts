@@ -84,16 +84,26 @@ export const userService = {
         getDoc(followingRef)
       ]);
       
-      if (!followerDoc.exists() || !followingDoc.exists()) {
-        throw new Error('One or both users do not exist');
+      // Create user profiles if they don't exist
+      if (!followerDoc.exists()) {
+        await this.createUserProfile(followerId, {});
       }
+      if (!followingDoc.exists()) {
+        await this.createUserProfile(followingId, {});
+      }
+      
+      // Initialize arrays if they don't exist
+      const followerData = followerDoc.exists() ? followerDoc.data() : {};
+      const followingData = followingDoc.exists() ? followingDoc.data() : {};
       
       await Promise.all([
         updateDoc(followerRef, {
-          following: arrayUnion(followingId)
+          following: arrayUnion(followingId),
+          ...(followerData.following ? {} : { following: [] })
         }),
         updateDoc(followingRef, {
-          followers: arrayUnion(followerId)
+          followers: arrayUnion(followerId),
+          ...(followingData.followers ? {} : { followers: [] })
         })
       ]);
       

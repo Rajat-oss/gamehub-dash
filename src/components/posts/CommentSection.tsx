@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { localCommentService } from '@/services/localCommentService';
+import { commentService } from '@/services/commentService';
 import { PostComment } from '@/types/post';
 import { FaUser, FaPaperPlane } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
@@ -11,29 +11,17 @@ import { toast } from 'sonner';
 
 interface CommentSectionProps {
   postId: string;
+  postAuthorId: string;
   isExpanded: boolean;
+  onCommentAdded?: () => void;
 }
 
-export const CommentSection: React.FC<CommentSectionProps> = ({ postId, isExpanded }) => {
+export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuthorId, isExpanded, onCommentAdded }) => {
   const { user } = useAuth();
   const [comments, setComments] = useState<PostComment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const loadComments = () => {
-    if (!isExpanded) return;
-    
-    setIsLoading(true);
-    try {
-      const fetchedComments = localCommentService.getPostComments(postId);
-      setComments(fetchedComments);
-    } catch (error) {
-      console.error('Error loading comments:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
     if (!isExpanded) {
@@ -41,27 +29,24 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, isExpand
       return;
     }
     
-    loadComments();
+    setIsLoading(true);
+    const unsubscribe = commentService.subscribeToComments(postId, (newComments) => {
+      setComments(newComments);
+      setIsLoading(false);
+    });
     
-    // Listen for storage changes (comments from other tabs)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'gamehub_post_comments') {
-        loadComments();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return unsubscribe;
   }, [postId, isExpanded]);
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newComment.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      localCommentService.addComment(
+      await commentService.addComment(
         postId,
+        postAuthorId,
         user.uid,
         user.displayName || 'Anonymous',
         user.photoURL || undefined,
@@ -69,13 +54,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, isExpand
       );
       setNewComment('');
       toast.success('Comment added!');
-      loadComments();
-      
-      // Trigger storage event for other tabs
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gamehub_post_comments',
-        newValue: localStorage.getItem('gamehub_post_comments')
-      }));
+      onCommentAdded?.();
     } catch (error) {
       toast.error('Failed to add comment');
     } finally {
