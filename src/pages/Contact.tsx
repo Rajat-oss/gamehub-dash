@@ -70,10 +70,11 @@ const Contact: React.FC = () => {
         {
           from_name: formData.name,
           from_email: formData.email,
-          subject: formData.subject || `${contactTypes.find(t => t.value === formData.type)?.label} - GameHub`,
+          subject: formData.subject || `${contactTypes.find(t => t.value === formData.type)?.label} - GameHub Contact`,
           message: formData.message,
-          type: formData.type,
-          to_email: import.meta.env.VITE_ADMIN_EMAIL
+          to_name: 'GameHub Support Team',
+          to_email: import.meta.env.VITE_ADMIN_EMAIL,
+          reply_to: formData.email
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
