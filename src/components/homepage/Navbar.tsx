@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             <img 
               src="/logofinal.png" 
               alt="GameHub" 
-              className="h-12 w-12 lg:h-20 lg:w-20 xl:h-28 xl:w-28 object-contain" 
+              className="h-16 w-16 lg:h-20 lg:w-20 xl:h-28 xl:w-28 object-contain" 
             />
           </div>
 
@@ -469,8 +469,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                 className="fixed top-0 left-0 h-full w-64 bg-background border-r border-border shadow-2xl z-50 lg:hidden"
               >
                 <div className="p-4">
-                  {/* Close Button */}
-                  <div className="flex justify-end mb-6">
+                  {/* Header with Logo and Close Button */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="cursor-pointer" onClick={() => {
+                      navigate('/');
+                      setIsMobileMenuOpen(false);
+                    }}>
+                      <img 
+                        src="/logofinal.png" 
+                        alt="GameHub" 
+                        className="h-16 w-16 object-contain" 
+                      />
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -552,31 +562,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                       )}
                     </Button>
                     
-                    <div className="border-t border-border/50 my-4" />
-                    
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        navigate('/profile');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start"
-                    >
-                      <FaUser className="w-4 h-4 mr-2" />
-                      Profile
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        navigate('/settings');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start"
-                    >
-                      <FaCog className="w-4 h-4 mr-2" />
-                      Settings
-                    </Button>
+
                   </div>
                 </div>
               </motion.div>
