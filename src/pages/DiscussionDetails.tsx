@@ -86,11 +86,11 @@ const DiscussionDetails: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <Navbar onSearch={() => {}} />
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/4" />
-            <div className="h-32 bg-muted rounded" />
-            <div className="h-64 bg-muted rounded" />
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+          <div className="animate-pulse space-y-3 sm:space-y-4">
+            <div className="h-6 sm:h-8 bg-muted rounded w-1/4" />
+            <div className="h-24 sm:h-32 bg-muted rounded" />
+            <div className="h-48 sm:h-64 bg-muted rounded" />
           </div>
         </div>
       </div>
@@ -101,9 +101,9 @@ const DiscussionDetails: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <Navbar onSearch={() => {}} />
-        <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Discussion not found</h1>
-          <Button onClick={() => navigate('/discussions')}>Back to Discussions</Button>
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold mb-4">Discussion not found</h1>
+          <Button onClick={() => navigate('/discussions')} size="sm">Back to Discussions</Button>
         </div>
       </div>
     );
@@ -115,41 +115,43 @@ const DiscussionDetails: React.FC = () => {
     <div className="min-h-screen bg-gradient-hero">
       <Navbar onSearch={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button variant="ghost" onClick={() => navigate('/discussions')} className="mb-6">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <Button variant="ghost" onClick={() => navigate('/discussions')} className="mb-4 sm:mb-6" size="sm">
           <FaArrowLeft className="w-4 h-4 mr-2" />
-          Back to Discussions
+          <span className="hidden xs:inline">Back to Discussions</span>
+          <span className="xs:hidden">Back</span>
         </Button>
 
         {/* Discussion */}
-        <Card className="bg-gradient-card border-border/50 mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4 mb-4">
-              <Avatar className="w-12 h-12 flex-shrink-0">
+        <Card className="bg-gradient-card border-border/50 mb-6 sm:mb-8">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start gap-3 sm:gap-4 mb-4">
+              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                 <AvatarImage src={discussion.authorPhotoURL} alt={discussion.authorName} />
-                <AvatarFallback>{discussion.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-sm">{discussion.authorName.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  {discussion.isPinned && <FaThumbtack className="text-primary w-4 h-4" />}
-                  <h1 className="text-2xl font-bold">{discussion.title}</h1>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-2 mb-2">
+                  {discussion.isPinned && <FaThumbtack className="text-primary w-3 h-3 sm:w-4 sm:h-4 mt-1 flex-shrink-0" />}
+                  <h1 className="text-lg sm:text-2xl font-bold leading-tight">{discussion.title}</h1>
                 </div>
                 
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 text-xs sm:text-sm text-muted-foreground mb-4">
                   <span>by {discussion.authorName}</span>
+                  <span className="hidden xs:inline">•</span>
                   <span>{formatDistanceToNow(discussion.createdAt, { addSuffix: true })}</span>
-                  <Badge variant="secondary">{discussion.category}</Badge>
+                  <Badge variant="secondary" className="text-xs w-fit">{discussion.category}</Badge>
                 </div>
                 
                 <div className="prose max-w-none mb-4">
-                  <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                  <p className="text-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                     {discussion.content}
                   </p>
                 </div>
                 
                 {discussion.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                     {discussion.tags.map(tag => (
                       <Badge key={tag} variant="outline" className="text-xs">
                         #{tag}
@@ -158,16 +160,15 @@ const DiscussionDetails: React.FC = () => {
                   </div>
                 )}
                 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                   <div className="flex items-center gap-1">
-                    <FaEye className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{discussion.views} views</span>
+                    <FaEye className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="text-xs sm:text-sm">{discussion.views} views</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <FaReply className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{discussion.replyCount} replies</span>
+                    <FaReply className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="text-xs sm:text-sm">{discussion.replyCount} replies</span>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -176,63 +177,61 @@ const DiscussionDetails: React.FC = () => {
 
         {/* Reply Form */}
         {user ? (
-          <Card className="bg-gradient-card border-border/50 mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Post a Reply</h3>
-              <form onSubmit={handleSubmitReply} className="space-y-4">
+          <Card className="bg-gradient-card border-border/50 mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Post a Reply</h3>
+              <form onSubmit={handleSubmitReply} className="space-y-3 sm:space-y-4">
                 <Textarea
                   value={newReply}
                   onChange={(e) => setNewReply(e.target.value)}
                   placeholder="Share your thoughts..."
-                  className="min-h-[100px]"
+                  className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
                 />
-                <Button type="submit" disabled={!newReply.trim() || submitting}>
+                <Button type="submit" disabled={!newReply.trim() || submitting} size="sm" className="w-full sm:w-auto">
                   {submitting ? 'Posting...' : 'Post Reply'}
                 </Button>
               </form>
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-card border-border/50 mb-8">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">Please sign in to post a reply</p>
+          <Card className="bg-gradient-card border-border/50 mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6 text-center">
+              <p className="text-muted-foreground text-sm sm:text-base">Please sign in to post a reply</p>
             </CardContent>
           </Card>
         )}
 
         {/* Replies */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Replies ({replies.length})</h3>
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-lg sm:text-xl font-semibold">Replies ({replies.length})</h3>
           
           {replies.length === 0 ? (
             <Card className="bg-gradient-card border-border/50">
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No replies yet. Be the first to reply!</p>
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-muted-foreground text-sm sm:text-base">No replies yet. Be the first to reply!</p>
               </CardContent>
             </Card>
           ) : (
             replies.map((reply) => (
               <Card key={reply.id} className="bg-gradient-card border-border/50">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="w-10 h-10 flex-shrink-0">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                       <AvatarImage src={reply.authorPhotoURL} alt={reply.authorName} />
-                      <AvatarFallback>{reply.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="text-xs sm:text-sm">{reply.authorName.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-medium">{reply.authorName}</span>
-                        <span className="text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 mb-2">
+                        <span className="font-medium text-sm sm:text-base">{reply.authorName}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           {formatDistanceToNow(reply.createdAt, { addSuffix: true })}
                         </span>
                       </div>
                       
-                      <p className="text-foreground leading-relaxed whitespace-pre-wrap mb-3">
+                      <p className="text-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap mb-3">
                         {reply.content}
                       </p>
-                      
-
                     </div>
                   </div>
                 </CardContent>

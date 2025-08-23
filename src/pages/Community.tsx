@@ -110,36 +110,151 @@ const Community: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <Navbar onSearch={() => {}} />
-      
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      {/* Mobile Instagram-style Search UI */}
+      <div className="min-h-screen bg-black text-white sm:hidden">
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+          <button onClick={() => navigate('/homepage')} className="p-2">
+            <FaArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          
+          <div className="flex-1 mx-4">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/discussions')} className="p-2">
+              <FaUserFriends className="w-5 h-5 text-white" />
+            </button>
+            {user && (
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user.photoURL} alt={user.displayName} />
+                <AvatarFallback className="bg-gray-700 text-white text-xs">
+                  {user.displayName?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            )}
+          </div>
+        </div>
+
+        {/* Search Results */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="p-4 space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gray-800 rounded-full animate-pulse" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-800 rounded w-24 mb-1 animate-pulse" />
+                    <div className="h-3 bg-gray-800 rounded w-32 animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : users.length > 0 ? (
+            <div className="divide-y divide-gray-800">
+              {users.map((userProfile) => (
+                <div
+                  key={userProfile.uid}
+                  onClick={() => handleUserClick(userProfile)}
+                  className="flex items-center space-x-3 p-4 hover:bg-gray-900 active:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
+                    <AvatarFallback className="bg-gray-700 text-white">
+                      {userProfile.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-1">
+                      <p className="font-semibold text-white truncate">@{userProfile.username}</p>
+                      {userProfile.isPublic && (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-gray-400 text-sm truncate">
+                      {userProfile.displayName || `${userProfile.followers.length} followers`}
+                    </p>
+                  </div>
+                  
+                  {user && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFollowToggle(userProfile);
+                      }}
+                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        followingUsers.has(userProfile.uid)
+                          ? 'bg-gray-800 text-white border border-gray-600'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {followingUsers.has(userProfile.uid) ? 'Following' : 'Follow'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <FaUsers className="w-16 h-16 text-gray-600 mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">No users found</h3>
+              <p className="text-gray-400 text-center">
+                {searchQuery ? 'Try a different search term' : 'Start typing to search for users'}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop View - Original Layout */}
+      <div className="hidden sm:block min-h-screen bg-gradient-hero">
+        <Navbar onSearch={() => {}} />
+        
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center space-x-3">
-              <FaUsers className="text-primary text-3xl" />
-              <h1 className="text-3xl font-bold text-foreground">Gaming Community</h1>
+              <FaUsers className="text-primary text-2xl sm:text-3xl" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gaming Community</h1>
             </div>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/discussions')}
                 className="flex items-center gap-2"
+                size="sm"
               >
                 <FaUserFriends className="w-4 h-4" />
                 Discussions
               </Button>
-              
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/homepage')}
+                className="flex items-center gap-2"
+                size="sm"
+              >
+                <FaArrowLeft className="w-4 h-4" />
+                Back to Marketplace
+              </Button>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/homepage')}
-              className="flex items-center gap-2"
-            >
-              <FaArrowLeft className="w-4 h-4" />
-              Back to Marketplace
-            </Button>
           </div>
           <p className="text-muted-foreground text-lg">
             Connect with fellow gamers and discover new friends
@@ -180,7 +295,7 @@ const Community: React.FC = () => {
             ))}
           </div>
         ) : users.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {users.map((userProfile) => (
               <Card 
                 key={userProfile.uid} 
@@ -255,8 +370,9 @@ const Community: React.FC = () => {
             </p>
           </div>
         )}
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 
