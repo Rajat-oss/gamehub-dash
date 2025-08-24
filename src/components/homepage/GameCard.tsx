@@ -110,7 +110,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
             >
               <FaDownload className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
               <span className="hidden xs:inline sm:hidden md:inline">Request</span>
-              <span className="xs:hidden sm:inline md:hidden">Add</span>
+              <span className="xs:hidden sm:inline md:hidden">Request</span>
             </button>
             
             <button

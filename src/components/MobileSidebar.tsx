@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { createPortal } from 'react-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   FaHome, FaFileAlt, FaCog, FaUser, FaLightbulb, FaUsers, 
@@ -36,6 +37,19 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleLogout = async () => {
     try {
@@ -73,7 +87,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
     return 0;
   };
 
-  return (
+  const sidebarContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -82,8 +96,18 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-[60] lg:hidden"
-            onClick={onClose}
+            className="fixed inset-0 bg-black/80 z-[99999] lg:hidden"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            style={{ touchAction: 'none' }}
           />
 
           {/* Sidebar */}
@@ -92,7 +116,8 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 min-h-screen h-full w-80 bg-black border-l border-gray-800 z-[70] shadow-2xl lg:hidden"
+            className="fixed right-0 top-0 h-screen w-80 bg-black border-l border-gray-800 z-[100000] shadow-2xl lg:hidden"
+            style={{ height: '100vh' }}
           >
             <div className="flex flex-col min-h-screen h-full">
               {/* User Profile Section */}
@@ -179,4 +204,6 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(sidebarContent, document.body);
 };

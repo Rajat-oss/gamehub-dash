@@ -14,7 +14,7 @@ export const aiChatService = {
     try {
       // Check if API key is available
       const apiKey = import.meta.env.VITE_GOOGLE_GENAI_API_KEY;
-      if (!apiKey || apiKey === 'your_api_key_here') {
+      if (!apiKey || apiKey.includes('your_') || apiKey.length < 10) {
         return this.getFallbackResponse(message);
       }
 

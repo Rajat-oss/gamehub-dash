@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { UserProfile } from '@/types/user';
 import { notificationService } from './notificationService';
 
@@ -212,6 +212,38 @@ export const userService = {
     return users;
   },
 
+  // Delete all user data from Firestore
+  async deleteUserData(uid: string): Promise<void> {
+    try {
+      // Delete user profile
+      const userRef = doc(db, USERS_COLLECTION, uid);
+      await deleteDoc(userRef);
+
+      // Delete user's notifications
+      const notificationsQuery = query(collection(db, 'notifications'), where('userId', '==', uid));
+      const notificationsSnapshot = await getDocs(notificationsQuery);
+      const deleteNotifications = notificationsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deleteNotifications);
+
+      // Delete user's posts
+      const postsQuery = query(collection(db, 'posts'), where('userId', '==', uid));
+      const postsSnapshot = await getDocs(postsQuery);
+      const deletePosts = postsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePosts);
+
+      // Delete user's stories
+      const storiesQuery = query(collection(db, 'stories'), where('userId', '==', uid));
+      const storiesSnapshot = await getDocs(storiesQuery);
+      const deleteStories = storiesSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deleteStories);
+
+      console.log(`Deleted all data for user: ${uid}`);
+    } catch (error) {
+      console.error('Error deleting user data:', error);
+      throw error;
+    }
+  },
+
   // Cleanup function - remove user document by username (for testing)
   async deleteUserByUsername(username: string): Promise<void> {
     try {
@@ -220,7 +252,7 @@ export const userService = {
       
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
-        await userDoc.ref.delete();
+        await deleteDoc(userDoc.ref);
         console.log(`Deleted user document for username: ${username}`);
       }
     } catch (error) {

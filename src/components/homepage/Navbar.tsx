@@ -158,9 +158,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             />
           </div>
 
+          {/* Spacer */}
+          <div className="flex-1" />
+
           {/* Desktop Search - Only show on specific pages */}
           {showGameSearch && (
-            <form onSubmit={handleSearchSubmit} className="hidden lg:flex flex-1 max-w-lg mx-8">
+            <form onSubmit={handleSearchSubmit} className="hidden lg:flex max-w-sm mr-4">
               <motion.div 
                 className="relative w-full" 
                 ref={searchRef}
@@ -238,13 +241,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               </motion.div>
             </form>
           )}
-          
-          {/* Spacer when search is hidden */}
-          {!showGameSearch && <div className="hidden lg:flex flex-1" />}
+
 
           {/* Mobile Search Icon */}
           {showGameSearch && (
-            <div className="lg:hidden flex items-center gap-2">
+            <div className="lg:hidden flex items-center gap-2 mr-2">
               <Button
                 variant="ghost"
                 size="sm"

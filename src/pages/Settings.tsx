@@ -5,10 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { userService } from '@/services/userService';
+import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { FaUser, FaBell, FaEye, FaTrash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { Navbar } from '@/components/homepage/Navbar';
 
 export const Settings: React.FC = () => {
   const { user, logout } = useAuth();
@@ -18,6 +22,10 @@ export const Settings: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [password, setPassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSaveProfile = () => {
     toast({
@@ -26,60 +34,63 @@ export const Settings: React.FC = () => {
     });
   };
 
-  const handleDeleteAccount = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+  const handleDeleteAccount = async () => {
+    if (!password.trim()) {
       toast({
-        title: 'Account Deletion',
-        description: 'Account deletion is not implemented yet.',
+        title: 'Password Required',
+        description: 'Please enter your password to verify account deletion.',
         variant: 'destructive'
       });
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      if (!user || !user.email) {
+        throw new Error('User not found');
+      }
+
+      // Re-authenticate user before deletion
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Delete user data from Firestore
+      await userService.deleteUserData(user.uid);
+
+      // Delete Firebase Auth user
+      await deleteUser(user);
+
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account has been permanently deleted.'
+      });
+
+      // Redirect to landing page
+      navigate('/');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: 'Deletion Failed',
+        description: error.message || 'Failed to delete account. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteDialog(false);
+      setPassword('');
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-background">
+      <Navbar onSearch={() => {}} />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
         <p className="text-muted-foreground">Manage your account and preferences</p>
       </div>
 
       <div className="space-y-6">
-        {/* Profile Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FaUser className="w-5 h-5" />
-              Profile Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Enter your display name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  type="email"
-                />
-              </div>
-            </div>
-            <Button onClick={handleSaveProfile} className="bg-gradient-primary">
-              Save Profile
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Notification Settings */}
         <Card>
           <CardHeader>
@@ -122,7 +133,7 @@ export const Settings: React.FC = () => {
                 </p>
                 <Button 
                   variant="destructive" 
-                  onClick={handleDeleteAccount}
+                  onClick={() => setShowDeleteDialog(true)}
                   className="w-full md:w-auto"
                 >
                   Delete Account
@@ -131,6 +142,50 @@ export const Settings: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Account</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+            </p>
+            <div>
+              <Label htmlFor="password">Enter your password to confirm</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setPassword('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading || !password.trim()}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete Account'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );

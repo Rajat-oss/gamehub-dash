@@ -5,6 +5,7 @@ import { GameRequestModal } from './GameRequestModal';
 import { GameLogModal } from '@/components/game/GameLogModal';
 import { ActivityFeed } from './ActivityFeed';
 import { GameRecommendations } from './GameRecommendations';
+import { motion } from 'framer-motion';
 
 
 import { Button } from '@/components/ui/button';
@@ -97,52 +98,101 @@ export const GameDashboard: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Enhanced Header with Animation */}
-        <div className="mb-8 sm:mb-12 relative overflow-hidden">
+        <motion.div 
+          className="mb-8 sm:mb-12 relative overflow-hidden"
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-3xl blur-3xl animate-pulse"></div>
           <div className="relative bg-[#000000] border border-[#9A9A9A]/20 rounded-2xl p-6 sm:p-8 shadow-2xl">
             <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
-              <div className="relative">
-                <FaGamepad className="text-primary text-3xl sm:text-4xl animate-bounce" />
+              <motion.div 
+                className="relative"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <FaGamepad className="text-primary text-3xl sm:text-4xl" />
                 <div className="absolute -inset-1 bg-primary/20 rounded-full blur animate-ping"></div>
-              </div>
+              </motion.div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] animate-fade-in">
+                <motion.h1 
+                  className="text-3xl sm:text-4xl font-bold text-[#FFFFFF]"
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
                   Game Marketplace
-                </h1>
-                <div className="h-1 w-20 bg-gradient-to-r from-primary to-secondary rounded-full mt-2 animate-slide-in"></div>
+                </motion.h1>
+                <motion.div 
+                  className="h-1 w-20 bg-gradient-to-r from-primary to-secondary rounded-full mt-2"
+                  initial={{ width: 0 }}
+                  animate={{ width: 80 }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
+                ></motion.div>
               </div>
             </div>
-            <p className="text-[#9A9A9A] text-lg sm:text-xl leading-relaxed animate-fade-in-up">
+            <motion.p 
+              className="text-[#9A9A9A] text-lg sm:text-xl leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+            >
               🎮 Discover amazing games • 🚀 Request your favorites • 🌟 Join the community
-            </p>
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Enhanced Action Bar */}
-        <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+        <motion.div 
+          className="mb-8 sm:mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+        >
           <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="text-sm px-4 py-2 bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] animate-pulse">
-              <FaFire className="w-4 h-4 mr-2 animate-bounce" />
-              <span className="hidden sm:inline">🔥 Trending Now</span>
-              <span className="sm:hidden">🔥 Hot</span>
-            </Badge>
-            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Badge variant="secondary" className="text-sm px-4 py-2 bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] animate-pulse">
+                <motion.div
+                  animate={{ rotate: [0, 15, -15, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <FaFire className="w-4 h-4 mr-2" />
+                </motion.div>
+                <span className="hidden sm:inline">🔥 Trending Now</span>
+                <span className="sm:hidden">🔥 Hot</span>
+              </Badge>
+            </motion.div>
           </div>
           
           <Link to="/community">
-            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full sm:w-auto">
-              <FaUser className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Join Community</span>
-              <span className="sm:hidden">Community</span>
-            </Button>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
+                <FaUser className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Join Community</span>
+                <span className="sm:hidden">Community</span>
+              </Button>
+            </motion.div>
           </Link>
-        </div>
+        </motion.div>
 
 
         {/* Game Recommendations */}
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.6 }}
+        >
           <GameRecommendations />
-        </div>
+        </motion.div>
 
         {/* Enhanced Games Grid */}
         {loading ? (
@@ -156,21 +206,37 @@ export const GameDashboard: React.FC = () => {
             ))}
           </div>
         ) : games.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.8, duration: 0.6 }}
+          >
             {games.map((game, index) => (
-              <div 
+              <motion.div 
                 key={`${game.id}-${refreshKey}`}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${index * 50}ms` }}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  delay: 2 + (index * 0.1), 
+                  duration: 0.5,
+                  type: "spring",
+                  stiffness: 100
+                }}
+                whileHover={{ 
+                  y: -5, 
+                  transition: { duration: 0.2 } 
+                }}
+                whileTap={{ scale: 0.95 }}
               >
                 <GameCard
                   game={game}
                   onRequest={handleGameRequest}
                   onLogGame={handleGameLog}
                 />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <div className="text-center py-16 animate-fade-in">
             <div className="relative mb-6">
