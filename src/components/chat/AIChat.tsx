@@ -28,6 +28,14 @@ export const AIChat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Scroll to bottom when component mounts with delay
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -69,7 +77,7 @@ export const AIChat: React.FC = () => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className="h-[400px] sm:h-[600px] flex flex-col">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center">
           <FaRobot className="w-5 h-5 mr-2 text-primary" />
@@ -96,7 +104,13 @@ export const AIChat: React.FC = () => {
                     ? 'bg-primary text-primary-foreground' 
                     : 'bg-secondary text-secondary-foreground'
                 }`}>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{
+                    __html: message.content
+                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                      .replace(/•/g, '•')
+                      .replace(/\n/g, '<br>')
+                  }} />
                   <span className="text-xs opacity-70 mt-1 block">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>

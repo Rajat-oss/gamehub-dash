@@ -217,51 +217,47 @@ const Posts: React.FC = () => {
             
             {stories.length > 0 ? (
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {stories.map((story) => {
-                  const isOwnStory = story.userId === user?.uid;
-                  const hasViewed = user ? story.views.includes(user.uid) : false;
+                {Object.entries(
+                  stories.reduce((acc, story) => {
+                    if (!acc[story.userId]) {
+                      acc[story.userId] = [];
+                    }
+                    acc[story.userId].push(story);
+                    return acc;
+                  }, {} as Record<string, Story[]>)
+                ).map(([userId, userStories]) => {
+                  const latestStory = userStories[0];
+                  const isOwnStory = userId === user?.uid;
+                  const hasUnviewedStories = !isOwnStory && userStories.some(story => 
+                    user && !story.views.includes(user.uid)
+                  );
                   
                   return (
                     <motion.div
-                      key={story.id}
+                      key={userId}
                       whileHover={{ scale: 1.05 }}
                       className="cursor-pointer flex-shrink-0"
                       onClick={() => {
-                        const storyIndex = stories.findIndex(s => s.id === story.id);
-                        setSelectedStoryIndex(storyIndex);
+                        const firstStoryIndex = stories.findIndex(s => s.userId === userId);
+                        setSelectedStoryIndex(firstStoryIndex);
                         setIsStoryViewerOpen(true);
                       }}
                     >
-                      <div className={`relative p-1 rounded-2xl ${
-                        !hasViewed && !isOwnStory
-                          ? 'bg-white border-2 border-white' 
-                          : 'bg-white/10 border-2 border-white/20'
+                      <div className={`relative p-0.5 rounded-full ${
+                        hasUnviewedStories && !isOwnStory
+                          ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500' 
+                          : 'bg-gray-500'
                       }`}>
-                        <div className="w-16 h-20 bg-black rounded-xl overflow-hidden">
-                          {story.mediaType === 'image' ? (
-                            <img
-                              src={story.mediaUrl}
-                              alt="Story"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <video
-                              src={story.mediaUrl}
-                              className="w-full h-full object-cover"
-                              muted
-                            />
-                          )}
-                        </div>
-                        <div className="absolute bottom-1 left-1">
-                          <Avatar className="w-5 h-5 border border-black">
-                            <AvatarImage src={story.userPhotoURL} />
-                            <AvatarFallback className="bg-white text-black text-xs">
-                              {story.username.slice(0, 2)}
+                        <div className="p-0.5 bg-black rounded-full">
+                          <Avatar className="w-16 h-16">
+                            <AvatarImage src={latestStory.userPhotoURL} />
+                            <AvatarFallback className="bg-white text-black">
+                              {latestStory.username.slice(0, 2)}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                       </div>
-                      <p className="text-xs text-[#9A9A9A] text-center mt-1 truncate w-16">{story.username}</p>
+                      <p className="text-xs text-[#9A9A9A] text-center mt-1 truncate w-16">{latestStory.username}</p>
                     </motion.div>
                   );
                 })}
@@ -519,7 +515,7 @@ const Posts: React.FC = () => {
             </div>
             
             {stories.length > 0 ? (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-wrap gap-4 justify-center">
                 {Object.entries(
                   stories.reduce((acc, story) => {
                     if (!acc[story.userId]) {
@@ -531,7 +527,7 @@ const Posts: React.FC = () => {
                 ).map(([userId, userStories]) => {
                   const latestStory = userStories[0];
                   const isOwnStory = userId === user?.uid;
-                  const hasUnviewedStories = userStories.some(story => 
+                  const hasUnviewedStories = !isOwnStory && userStories.some(story => 
                     user && !story.views.includes(user.uid)
                   );
                   
@@ -546,41 +542,21 @@ const Posts: React.FC = () => {
                         setIsStoryViewerOpen(true);
                       }}
                     >
-                      <div className={`relative p-1 rounded-2xl ${
+                      <div className={`relative p-0.5 rounded-full ${
                         hasUnviewedStories && !isOwnStory
-                          ? 'bg-white border-2 border-white' 
-                          : 'bg-white/10 border-2 border-white/20'
+                          ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500' 
+                          : 'bg-gray-500'
                       }`}>
-                        <div className="w-full h-20 bg-black rounded-xl overflow-hidden">
-                          {latestStory.mediaType === 'image' ? (
-                            <img
-                              src={latestStory.mediaUrl}
-                              alt="Story"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <video
-                              src={latestStory.mediaUrl}
-                              className="w-full h-full object-cover"
-                              muted
-                            />
-                          )}
-                        </div>
-                        <div className="absolute bottom-1 left-1">
-                          <Avatar className="w-6 h-6 border border-black">
+                        <div className="p-0.5 bg-black rounded-full">
+                          <Avatar className="w-14 h-14">
                             <AvatarImage src={latestStory.userPhotoURL} />
-                            <AvatarFallback className="bg-white text-black text-xs">
+                            <AvatarFallback className="bg-white text-black">
                               {latestStory.username.slice(0, 2)}
                             </AvatarFallback>
                           </Avatar>
                         </div>
-                        {userStories.length > 1 && (
-                          <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 rounded">
-                            {userStories.length}
-                          </div>
-                        )}
                       </div>
-                      <p className="text-xs text-[#9A9A9A] text-center mt-2 truncate">{latestStory.username}</p>
+                      <p className="text-xs text-[#9A9A9A] text-center mt-2 truncate w-16">{latestStory.username}</p>
                     </motion.div>
                   );
                 })}
@@ -666,10 +642,10 @@ const Posts: React.FC = () => {
       <StoryViewer
         isOpen={isStoryViewerOpen}
         onClose={() => setIsStoryViewerOpen(false)}
-        stories={stories.filter(story => {
+        stories={(() => {
           const selectedUserId = stories[selectedStoryIndex]?.userId;
-          return story.userId === selectedUserId;
-        })}
+          return stories.filter(story => story.userId === selectedUserId);
+        })()}
         initialStoryIndex={0}
       />
     </div>

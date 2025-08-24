@@ -8,7 +8,7 @@ import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaArrowLeft, FaPaperPlane, FaEllipsisV, FaRobot } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaEllipsisV, FaRobot, FaImage, FaTimes } from 'react-icons/fa';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
@@ -40,6 +40,8 @@ const Chat: React.FC = () => {
   const [connectionError, setConnectionError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!otherUserId || !user) return;
@@ -195,6 +197,42 @@ const Chat: React.FC = () => {
         setSending(false);
       }
     }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !otherUserId || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const imageData = event.target?.result as string;
+      
+      if (isAIChat) {
+        const imageMessage: AIMessage = {
+          id: Date.now().toString(),
+          content: imageData,
+          isUser: true,
+          timestamp: new Date()
+        };
+        const updatedMessages = [...aiMessages, imageMessage];
+        setAiMessages(updatedMessages);
+        localStorage.setItem(`ai_chat_${user.uid}`, JSON.stringify(updatedMessages));
+      } else {
+        try {
+          await sendMessage(user.uid, otherUserId, imageData);
+          toast.success('Image sent!');
+        } catch (error) {
+          toast.error('Failed to send image');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -357,13 +395,35 @@ const Chat: React.FC = () => {
                       )}
                       
                       <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
-                        <div className={`px-3 sm:px-4 py-2 rounded-2xl ${isOwn 
+                        <div className={`${(isAIChat ? message.content : message.message).startsWith('data:image/') ? 'p-1' : 'px-3 sm:px-4 py-2'} rounded-2xl ${isOwn 
                           ? 'bg-primary text-primary-foreground rounded-br-md' 
                           : 'bg-secondary text-secondary-foreground rounded-bl-md'
                         }`}>
-                          <p className="text-sm leading-relaxed break-words">
-                            {isAIChat ? message.content : message.message}
-                          </p>
+                          {(isAIChat ? message.content : message.message).startsWith('data:image/') ? (
+                            <div 
+                              className="relative group cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Image clicked');
+                                const imageUrl = isAIChat ? message.content : message.message;
+                                console.log('Setting fullscreen image:', imageUrl);
+                                setFullscreenImage(imageUrl);
+                              }}
+                            >
+                              <img 
+                                src={isAIChat ? message.content : message.message} 
+                                alt="Shared image" 
+                                className="max-w-[200px] sm:max-w-[250px] h-auto rounded-lg transition-all duration-200 hover:opacity-90 shadow-md"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200" />
+                            </div>
+                          ) : (
+                            <p className="text-sm leading-relaxed break-words">
+                              {isAIChat ? message.content : message.message}
+                            </p>
+                          )}
                         </div>
                         {showAvatar && (
                           <div className={`flex items-center gap-1 mt-1 px-1 sm:px-2 ${
@@ -436,10 +496,24 @@ const Chat: React.FC = () => {
           {/* Input */}
           <div className="bg-background border-t border-border px-3 sm:px-6 py-3 sm:py-4">
             <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 bg-primary hover:bg-primary/80 text-white flex-shrink-0"
+              >
+                <FaImage className="w-3 h-3 sm:w-4 sm:h-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
-placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
+                placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
                 className="flex-1 rounded-full bg-secondary focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
                 disabled={sending}
               />
@@ -458,6 +532,29 @@ placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {fullscreenImage && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full w-12 h-12 p-0 shadow-lg"
+            >
+              <FaTimes className="w-5 h-5" />
+            </Button>
+            <img 
+              src={fullscreenImage} 
+              alt="Fullscreen image" 
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

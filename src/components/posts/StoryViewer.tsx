@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { storyService } from '@/services/storyService';
 import { Story } from '@/types/story';
-import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash, FaEye, FaPlay, FaPause } from 'react-icons/fa';
+import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash, FaEye, FaPlay } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -16,6 +16,8 @@ interface StoryViewerProps {
   stories: Story[];
   initialStoryIndex: number;
 }
+
+const STORY_DURATION = { image: 5000, video: 15000 };
 
 export const StoryViewer: React.FC<StoryViewerProps> = ({ 
   isOpen, 
@@ -33,61 +35,25 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const currentStory = stories[currentIndex];
   const isOwnStory = currentStory?.userId === user?.uid;
 
-  useEffect(() => {
-    if (!isOpen || !currentStory) return;
-
-    // Mark story as viewed
-    if (user && !currentStory.views.includes(user.uid)) {
-      storyService.viewStory(currentStory.id, user.uid);
-    }
-
-    // Load viewers for own stories
-    if (isOwnStory && currentStory.views.length > 0) {
-      storyService.getStoryViewers(currentStory.id).then(setViewers);
-    }
-
-    // Auto-progress timer
-    const duration = currentStory.mediaType === 'video' ? 15000 : 5000; // 15s for video, 5s for image
-    let startTime = Date.now();
-    
-    const timer = setInterval(() => {
-      if (isPaused) return;
-      
-      const elapsed = Date.now() - startTime;
-      const newProgress = (elapsed / duration) * 100;
-      
-      if (newProgress >= 100) {
-        nextStory();
-      } else {
-        setProgress(newProgress);
-      }
-    }, 50);
-
-    return () => clearInterval(timer);
-  }, [currentIndex, isPaused, isOpen, currentStory]);
-
-  useEffect(() => {
-    setCurrentIndex(initialStoryIndex);
-    setProgress(0);
-  }, [initialStoryIndex, isOpen]);
-
-  const nextStory = () => {
+  const nextStory = useCallback(() => {
     if (currentIndex < stories.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(prev => prev + 1);
       setProgress(0);
     } else {
       onClose();
     }
-  };
+  }, [currentIndex, stories.length, onClose]);
 
-  const prevStory = () => {
+  const prevStory = useCallback(() => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      setCurrentIndex(prev => prev - 1);
       setProgress(0);
     }
-  };
+  }, [currentIndex]);
 
-  const deleteStory = async () => {
+  const togglePause = useCallback(() => setIsPaused(prev => !prev), []);
+
+  const deleteStory = useCallback(async () => {
     if (!currentStory || !isOwnStory) return;
     
     if (window.confirm('Delete this story?')) {
@@ -99,15 +65,72 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
         toast.error('Failed to delete story');
       }
     }
-  };
+  }, [currentStory, isOwnStory, onClose]);
+
+  const showViewersModal = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowViewers(true);
+    setIsPaused(true);
+  }, []);
+
+  const hideViewersModal = useCallback(() => {
+    setShowViewers(false);
+    setIsPaused(false);
+  }, []);
+
+  // Initialize story and handle viewing
+  useEffect(() => {
+    if (!isOpen || !currentStory) return;
+
+    if (user && !currentStory.views.includes(user.uid) && !isOwnStory) {
+      storyService.viewStory(currentStory.id, user.uid);
+    }
+
+    if (isOwnStory) {
+      storyService.getStoryViewers(currentStory.id).then(setViewers);
+    } else {
+      setViewers([]);
+    }
+  }, [currentIndex, isOpen, currentStory, user, isOwnStory]);
+
+  // Auto-progress timer
+  useEffect(() => {
+    if (!isOpen || !currentStory || isPaused) return;
+
+    const duration = STORY_DURATION[currentStory.mediaType];
+    let startTime = Date.now();
+    
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = (elapsed / duration) * 100;
+      
+      if (newProgress >= 100) {
+        nextStory();
+      } else {
+        setProgress(newProgress);
+      }
+    }, 50);
+
+    return () => clearInterval(timer);
+  }, [currentIndex, isPaused, isOpen, currentStory, nextStory]);
+
+  // Reset on open/close
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialStoryIndex);
+      setProgress(0);
+      setIsPaused(false);
+      setShowViewers(false);
+    }
+  }, [initialStoryIndex, isOpen]);
 
   if (!currentStory) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-black border-none p-0 max-w-lg w-full h-[90vh] overflow-hidden">
+      <DialogContent className="bg-black border-none p-0 max-w-lg w-full h-[85vh] overflow-hidden">
         <div className="relative w-full h-full">
-          {/* Progress bars */}
+          {/* Progress Indicators */}
           <div className="absolute top-2 left-2 right-2 z-20 flex gap-1">
             {stories.map((_, index) => (
               <div key={index} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
@@ -141,27 +164,22 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             
             <div className="flex items-center gap-2">
               {isOwnStory && (
-                <Button
-                  onClick={deleteStory}
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 text-white hover:bg-white/20"
-                >
+                <Button onClick={showViewersModal} variant="ghost" size="sm" className="p-2 text-white hover:bg-white/20">
+                  <FaEye className="w-4 h-4" />
+                </Button>
+              )}
+              {isOwnStory && (
+                <Button onClick={deleteStory} variant="ghost" size="sm" className="p-2 text-white hover:bg-white/20">
                   <FaTrash className="w-4 h-4" />
                 </Button>
               )}
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                size="sm"
-                className="p-2 text-white hover:bg-white/20"
-              >
+              <Button onClick={onClose} variant="ghost" size="sm" className="p-2 text-white hover:bg-white/20">
                 <FaTimes className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
-          {/* Story content */}
+          {/* Story Content */}
           <div className="w-full h-full flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
@@ -173,25 +191,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
                 className="w-full h-full"
               >
                 {currentStory.mediaType === 'image' ? (
-                  <img
-                    src={currentStory.mediaUrl}
-                    alt="Story"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={currentStory.mediaUrl} alt="Story" className="w-full h-full object-cover" />
                 ) : (
-                  <video
-                    src={currentStory.mediaUrl}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                  />
+                  <video src={currentStory.mediaUrl} className="w-full h-full object-cover" autoPlay muted loop />
                 )}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Pause/Play indicator */}
+          {/* Pause Indicator */}
           {isPaused && (
             <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
               <div className="bg-black/50 rounded-full p-4">
@@ -200,56 +208,30 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             </div>
           )}
 
-          {/* Navigation and pause areas */}
+          {/* Touch Areas */}
           <div className="absolute inset-0 flex z-10">
             <div className="w-1/3 h-full" onClick={prevStory} />
-            <div className="w-1/3 h-full" onClick={() => setIsPaused(!isPaused)} />
+            <div className="w-1/3 h-full" onClick={togglePause} />
             <div className="w-1/3 h-full" onClick={nextStory} />
           </div>
 
-          {/* Navigation arrows */}
+          {/* Navigation Arrows */}
           {currentIndex > 0 && (
-            <Button
-              onClick={prevStory}
-              variant="ghost"
-              size="sm"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 text-white hover:bg-white/20 z-10"
-            >
+            <Button onClick={prevStory} variant="ghost" size="sm" className="absolute left-2 top-1/2 -translate-y-1/2 p-2 text-white hover:bg-white/20 z-10">
               <FaChevronLeft className="w-4 h-4" />
             </Button>
           )}
           
           {currentIndex < stories.length - 1 && (
-            <Button
-              onClick={nextStory}
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white hover:bg-white/20 z-10"
-            >
+            <Button onClick={nextStory} variant="ghost" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white hover:bg-white/20 z-10">
               <FaChevronRight className="w-4 h-4" />
             </Button>
           )}
 
-          {/* Story info */}
+          {/* Story Info */}
           <div className="absolute bottom-4 left-4 right-4 z-20">
-            <div className="bg-black/50 rounded-lg p-3 backdrop-blur-sm">
-              {isOwnStory ? (
-                <button 
-                  onClick={() => {
-                    setShowViewers(true);
-                    setIsPaused(true);
-                  }}
-                  className="flex items-center gap-2 text-white/90 text-sm hover:text-white transition-colors"
-                >
-                  <FaEye className="w-3 h-3" />
-                  Views: {currentStory.views.length}
-                </button>
-              ) : (
-                <p className="text-white/90 text-sm">
-                  Views: {currentStory.views.length}
-                </p>
-              )}
-              <div className="mt-1 text-xs text-white/70">
+            <div className="bg-black/50 rounded-lg p-2 backdrop-blur-sm">
+              <div className="text-xs text-white/70 text-center">
                 Expires {formatDistanceToNow(currentStory.expiresAt, { addSuffix: true })}
               </div>
             </div>
@@ -261,15 +243,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
               <div className="w-full bg-black rounded-t-lg max-h-[60%] overflow-hidden">
                 <div className="p-4 border-b border-white/20 flex items-center justify-between">
                   <h3 className="font-semibold text-white">Viewers ({viewers.length})</h3>
-                  <Button
-                    onClick={() => {
-                      setShowViewers(false);
-                      setIsPaused(false);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 text-white hover:bg-white/20"
-                  >
+                  <Button onClick={hideViewersModal} variant="ghost" size="sm" className="p-1 text-white hover:bg-white/20">
                     <FaTimes className="w-4 h-4" />
                   </Button>
                 </div>

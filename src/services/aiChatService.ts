@@ -26,7 +26,7 @@ export const aiChatService = {
         .map(msg => `${msg.isUser ? 'User' : 'AI'}: ${msg.content}`)
         .join('\n');
       
-      const prompt = `You are a helpful gaming assistant for GameHub, a gaming community platform. You help users with game recommendations, gaming tips, and general gaming discussions. Keep responses concise and gaming-focused.
+      const prompt = `You are an expert gaming assistant for GameHub. You help with game recommendations, walkthroughs, cheats, tips, and strategies. Keep responses concise and helpful. Only provide detailed lists or guides when specifically asked for "detailed", "list", "guide", or "walkthrough".
 
 ${context ? `Previous conversation:\n${context}\n\n` : ''}User: ${message}`;
 
@@ -42,7 +42,23 @@ ${context ? `Previous conversation:\n${context}\n\n` : ''}User: ${message}`;
   getFallbackResponse(message: string): string {
     const lowerMessage = message.toLowerCase();
     
-    // Gaming-related responses
+    // Gaming-specific responses
+    if (lowerMessage.includes('cheat') || lowerMessage.includes('code')) {
+      return "I can help with cheat codes! For example:\n\n**GTA V:**\n• Invincibility: PAINKILLER\n• Weapons: TOOLUP\n• Fast Run: CATCHME\n\n**Skyrim:**\n• God Mode: tgm\n• Add Gold: player.additem 0000000f 1000\n\nWhat game are you looking for cheats for?";
+    }
+    
+    if (lowerMessage.includes('mission') || lowerMessage.includes('walkthrough') || lowerMessage.includes('guide')) {
+      return "I can provide mission guides and walkthroughs! Here are some popular ones:\n\n**The Witcher 3:**\n• Main Quest: Find Ciri\n• Side Quest: Bloody Baron\n\n**Elden Ring:**\n• Boss Guide: Margit Strategy\n• Area Guide: Limgrave Secrets\n\nWhich game mission do you need help with?";
+    }
+    
+    if (lowerMessage.includes('secret') || lowerMessage.includes('hidden') || lowerMessage.includes('easter egg')) {
+      return "I love sharing secrets and easter eggs! Here are some classics:\n\n**Minecraft:**\n• Herobrine references\n• End Poem secrets\n\n**GTA Series:**\n• Bigfoot sightings\n• UFO locations\n\n**Portal:**\n• Cake references\n• Hidden rooms\n\nWhat game secrets are you curious about?";
+    }
+    
+    if (lowerMessage.includes('tip') || lowerMessage.includes('strategy') || lowerMessage.includes('build')) {
+      return "Here are some universal gaming tips:\n\n**RPG Builds:**\n• Balanced: STR/DEX hybrid\n• Magic: INT/FAITH focus\n• Tank: VIT/END priority\n\n**FPS Tips:**\n• Crosshair placement\n• Sound awareness\n• Map control\n\nWhat specific tips do you need?";
+    }
+    
     if (lowerMessage.includes('recommend') || lowerMessage.includes('suggestion')) {
       return "I'd love to help with game recommendations! Some popular games right now include Cyberpunk 2077, Elden Ring, and The Witcher 3. What genre are you interested in?";
     }
@@ -51,23 +67,11 @@ ${context ? `Previous conversation:\n${context}\n\n` : ''}User: ${message}`;
       return "For FPS games, I recommend Counter-Strike 2, Valorant, or Call of Duty. Each offers different gameplay styles - tactical, hero-based, or arcade respectively.";
     }
     
-    if (lowerMessage.includes('rpg') || lowerMessage.includes('role playing')) {
-      return "Great RPG choices include The Witcher 3, Baldur's Gate 3, Elden Ring, and Cyberpunk 2077. Each offers deep storytelling and character progression.";
-    }
-    
-    if (lowerMessage.includes('multiplayer') || lowerMessage.includes('online')) {
-      return "Popular multiplayer games include Fortnite, Apex Legends, Rocket League, and Among Us. What type of multiplayer experience are you looking for?";
-    }
-    
-    if (lowerMessage.includes('indie')) {
-      return "Indie games have some gems! Try Hades, Celeste, Hollow Knight, or Stardew Valley. They offer unique experiences you won't find in AAA titles.";
-    }
-    
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      return "Hello! I'm your gaming assistant. I can help you discover new games, get gaming tips, or just chat about your favorite titles. What would you like to know?";
+      return "Hello! I'm your expert gaming assistant. I can help with:\n\n• Game recommendations\n• Mission walkthroughs\n• Cheat codes & secrets\n• Gaming tips & strategies\n• Achievement guides\n\nWhat gaming help do you need today?";
     }
     
     // Default response
-    return "I'm here to help with all things gaming! Ask me about game recommendations, tips, or anything gaming-related. Note: I'm currently running in offline mode, so responses may be limited.";
+    return "I'm your gaming expert! I can help with game missions, secret locations, cheat codes, tips, strategies, and more. Ask me about any game and I'll provide detailed guides and information!";
   }
 };

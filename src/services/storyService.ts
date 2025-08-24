@@ -54,7 +54,13 @@ export const storyService = {
         // Filter stories from followed users in memory
         const filteredStories = allStories
           .filter(story => followingIds.includes(story.userId))
-          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+          .sort((a, b) => {
+            // Prioritize current user's stories first
+            if (a.userId === userId && b.userId !== userId) return -1;
+            if (b.userId === userId && a.userId !== userId) return 1;
+            // Then sort by creation time (oldest first)
+            return a.createdAt.getTime() - b.createdAt.getTime();
+          });
 
         callback(filteredStories);
       });
