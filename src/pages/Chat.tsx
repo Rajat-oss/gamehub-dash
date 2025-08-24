@@ -254,7 +254,7 @@ const Chat: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-background">
       <div className="hidden sm:block">
         <Navbar onSearch={() => {}} />
       </div>
@@ -263,7 +263,7 @@ const Chat: React.FC = () => {
         {/* Chat Container */}
         <div className="flex-1 flex flex-col w-full">
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="sticky top-0 z-10 bg-background border-b border-border px-3 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                 <Button 
@@ -282,7 +282,7 @@ const Chat: React.FC = () => {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <h1 className="font-semibold text-base sm:text-lg truncate">{otherUserName}</h1>
-                  <p className="text-xs sm:text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {otherUserTyping ? 'Typing...' : getLastSeenStatus()}
                   </p>
                 </div>
@@ -294,7 +294,7 @@ const Chat: React.FC = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-800 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex-1 overflow-y-auto bg-background px-3 sm:px-6 py-3 sm:py-4">
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -325,7 +325,7 @@ const Chat: React.FC = () => {
                           {showAvatar ? (
                             <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                               <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                              <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'}`}>
+                              <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}>
                                 {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -335,8 +335,8 @@ const Chat: React.FC = () => {
                       
                       <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
                         <div className={`px-3 sm:px-4 py-2 rounded-2xl ${isOwn 
-                          ? 'bg-blue-500 text-white rounded-br-md' 
-                          : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md'
+                          ? 'bg-primary text-primary-foreground rounded-br-md' 
+                          : 'bg-secondary text-secondary-foreground rounded-bl-md'
                         }`}>
                           <p className="text-sm leading-relaxed break-words">
                             {isAIChat ? message.content : message.message}
@@ -346,14 +346,14 @@ const Chat: React.FC = () => {
                           <div className={`flex items-center gap-1 mt-1 px-1 sm:px-2 ${
                             isOwn ? 'justify-end' : 'justify-start'
                           }`}>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted-foreground">
                               {isAIChat ? 
                                 (message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
                                 formatTime(message.timestamp)
                               }
                             </p>
                             {isOwn && !isAIChat && (
-                              <span className="text-xs text-slate-400 ml-1">
+                              <span className="text-xs text-muted-foreground ml-1">
                                 {message.read ? '✓✓' : '✓'}
                               </span>
                             )}
@@ -368,16 +368,16 @@ const Chat: React.FC = () => {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
                       <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                         <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                        <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'}`}>
+                        <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}>
                           {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-bl-md px-3 sm:px-4 py-2">
+                    <div className="bg-secondary rounded-2xl rounded-bl-md px-3 sm:px-4 py-2">
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   </div>
@@ -386,8 +386,8 @@ const Chat: React.FC = () => {
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center text-slate-500">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-center text-muted-foreground">
+                  <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={otherUserPhoto} alt={otherUserName} />
                       <AvatarFallback className={isAIChat ? 'bg-primary text-white' : ''}>
@@ -403,19 +403,19 @@ const Chat: React.FC = () => {
           </div>
 
           {/* Input */}
-          <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="bg-background border-t border-border px-3 sm:px-6 py-3 sm:py-4">
             <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
 placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
-                className="flex-1 rounded-full border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
+                className="flex-1 rounded-full bg-secondary focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
                 disabled={sending}
               />
               <Button 
                 type="submit" 
                 disabled={!newMessage.trim() || sending}
-                className="rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 flex-shrink-0"
+                className="rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 bg-primary hover:bg-primary/90 disabled:opacity-50 flex-shrink-0"
               >
                 {sending ? (
                   <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

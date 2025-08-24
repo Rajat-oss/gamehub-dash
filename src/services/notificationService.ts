@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, Timestamp, deleteDoc } from 'firebase/firestore';
 
 export interface Notification {
   id: string;
@@ -241,6 +241,29 @@ export const notificationService = {
       });
     } catch (error) {
       console.error('Error creating post like notification:', error);
+    }
+  },
+
+  // Delete notifications older than 7 days
+  async deleteOldNotifications(): Promise<void> {
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const q = query(
+        collection(db, NOTIFICATIONS_COLLECTION),
+        where('createdAt', '<', Timestamp.fromDate(sevenDaysAgo))
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const deletePromises = querySnapshot.docs.map(docSnapshot =>
+        deleteDoc(docSnapshot.ref)
+      );
+      
+      await Promise.all(deletePromises);
+      console.log(`Deleted ${querySnapshot.docs.length} old notifications`);
+    } catch (error) {
+      console.error('Error deleting old notifications:', error);
     }
   }
 };

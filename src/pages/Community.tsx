@@ -112,35 +112,35 @@ const Community: React.FC = () => {
   return (
     <>
       {/* Mobile Instagram-style Search UI */}
-      <div className="min-h-screen bg-black text-white sm:hidden">
+      <div className="min-h-screen bg-[#000000] text-[#FFFFFF] sm:hidden">
         {/* Top Navigation */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-[#9A9A9A]/20">
           <button onClick={() => navigate('/homepage')} className="p-2">
-            <FaArrowLeft className="w-5 h-5 text-white" />
+            <FaArrowLeft className="w-5 h-5 text-[#FFFFFF]" />
           </button>
           
           <div className="flex-1 mx-4">
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9A9A9A] w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500"
+                className="w-full pl-10 pr-4 py-2 bg-[#000000] border border-[#9A9A9A]/40 rounded-lg text-[#FFFFFF] placeholder-[#9A9A9A] focus:outline-none focus:border-[#9A9A9A]/60"
               />
             </div>
           </div>
           
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/discussions')} className="p-2">
-              <FaUserFriends className="w-5 h-5 text-white" />
+              <FaUserFriends className="w-5 h-5 text-[#FFFFFF]" />
             </button>
             {user && (
               <Avatar className="w-8 h-8">
                 <AvatarImage src={user.photoURL} alt={user.displayName} />
-                <AvatarFallback className="bg-gray-700 text-white text-xs">
+                <AvatarFallback className="bg-[#9A9A9A] text-[#FFFFFF] text-xs">
                   {user.displayName?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -154,32 +154,32 @@ const Community: React.FC = () => {
             <div className="p-4 space-y-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gray-800 rounded-full animate-pulse" />
+                  <div className="w-12 h-12 bg-[#9A9A9A]/20 rounded-full animate-pulse" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-800 rounded w-24 mb-1 animate-pulse" />
-                    <div className="h-3 bg-gray-800 rounded w-32 animate-pulse" />
+                    <div className="h-4 bg-[#9A9A9A]/20 rounded w-24 mb-1 animate-pulse" />
+                    <div className="h-3 bg-[#9A9A9A]/20 rounded w-32 animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           ) : users.length > 0 ? (
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-[#9A9A9A]/20">
               {users.map((userProfile) => (
                 <div
                   key={userProfile.uid}
                   onClick={() => handleUserClick(userProfile)}
-                  className="flex items-center space-x-3 p-4 hover:bg-gray-900 active:bg-gray-800 transition-colors cursor-pointer"
+                  className="flex items-center space-x-3 p-4 hover:bg-[#9A9A9A]/10 active:bg-[#9A9A9A]/20 transition-colors cursor-pointer"
                 >
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
-                    <AvatarFallback className="bg-gray-700 text-white">
+                    <AvatarFallback className="bg-[#9A9A9A] text-[#FFFFFF]">
                       {userProfile.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-1">
-                      <p className="font-semibold text-white truncate">@{userProfile.username}</p>
+                      <p className="font-semibold text-[#FFFFFF] truncate">@{userProfile.username}</p>
                       {userProfile.isPublic && (
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -188,7 +188,7 @@ const Community: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <p className="text-gray-400 text-sm truncate">
+                    <p className="text-[#9A9A9A] text-sm truncate">
                       {userProfile.displayName || `${userProfile.followers.length} followers`}
                     </p>
                   </div>
@@ -201,8 +201,8 @@ const Community: React.FC = () => {
                       }}
                       className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                         followingUsers.has(userProfile.uid)
-                          ? 'bg-gray-800 text-white border border-gray-600'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-[#9A9A9A]/20 text-[#FFFFFF] border border-[#9A9A9A]/40'
+                          : 'bg-blue-600 text-[#FFFFFF] hover:bg-blue-700'
                       }`}
                     >
                       {followingUsers.has(userProfile.uid) ? 'Following' : 'Follow'}
@@ -213,9 +213,9 @@ const Community: React.FC = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 px-4">
-              <FaUsers className="w-16 h-16 text-gray-600 mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No users found</h3>
-              <p className="text-gray-400 text-center">
+              <FaUsers className="w-16 h-16 text-[#9A9A9A] mb-4" />
+              <h3 className="text-lg font-medium text-[#FFFFFF] mb-2">No users found</h3>
+              <p className="text-[#9A9A9A] text-center">
                 {searchQuery ? 'Try a different search term' : 'Start typing to search for users'}
               </p>
             </div>
@@ -224,7 +224,7 @@ const Community: React.FC = () => {
       </div>
 
       {/* Desktop View - Original Layout */}
-      <div className="hidden sm:block min-h-screen bg-gradient-hero">
+      <div className="hidden sm:block min-h-screen bg-[#000000]">
         <Navbar onSearch={() => {}} />
         
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -233,7 +233,7 @@ const Community: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center space-x-3">
               <FaUsers className="text-primary text-2xl sm:text-3xl" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gaming Community</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#FFFFFF]">Gaming Community</h1>
             </div>
             <div className="flex gap-2">
               <Button 
@@ -256,7 +256,7 @@ const Community: React.FC = () => {
               </Button>
             </div>
           </div>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-[#9A9A9A] text-lg">
             Connect with fellow gamers and discover new friends
           </p>
         </div>
@@ -264,14 +264,14 @@ const Community: React.FC = () => {
         {/* Search */}
         <div className="mb-8">
           <div className="relative max-w-md">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9A9A9A] w-4 h-4" />
             <Input
               type="text"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-              className="pl-10 bg-secondary/50 border-border/50 focus:border-primary"
+              className="pl-10 bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] placeholder-[#9A9A9A] focus:border-[#9A9A9A]/60"
             />
           </div>
         </div>
@@ -280,7 +280,7 @@ const Community: React.FC = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-gradient-card border-border/50">
+              <Card key={i} className="bg-[#000000] border-[#9A9A9A]/20">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <Skeleton className="w-16 h-16 rounded-full" />
@@ -299,7 +299,7 @@ const Community: React.FC = () => {
             {users.map((userProfile) => (
               <Card 
                 key={userProfile.uid} 
-                className="bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer"
+                className="bg-[#000000] border-[#9A9A9A]/20 hover:border-[#9A9A9A]/40 transition-all duration-300 cursor-pointer"
                 onClick={() => handleUserClick(userProfile)}
               >
                 <CardContent className="p-6">
@@ -312,13 +312,13 @@ const Community: React.FC = () => {
                     </Avatar>
                     
                     <div className="flex-1 min-w-0 text-center sm:text-left">
-                      <h3 className="font-semibold text-lg truncate">@{userProfile.username}</h3>
+                      <h3 className="font-semibold text-lg truncate text-[#FFFFFF]">@{userProfile.username}</h3>
                       {userProfile.displayName && (
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-[#9A9A9A] truncate">
                           {userProfile.displayName}
                         </p>
                       )}
-                      <div className="flex items-center justify-center sm:justify-start gap-3 mt-1 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-center sm:justify-start gap-3 mt-1 text-xs text-[#9A9A9A]">
                         <span>{userProfile.followers.length} followers</span>
                         <span>{userProfile.following.length} following</span>
                       </div>
@@ -326,7 +326,7 @@ const Community: React.FC = () => {
                   </div>
 
                   {userProfile.bio && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    <p className="text-sm text-[#9A9A9A] mb-4 line-clamp-2">
                       {userProfile.bio}
                     </p>
                   )}
@@ -363,9 +363,9 @@ const Community: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <FaUsers className="text-6xl text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No users found</h3>
-            <p className="text-muted-foreground">
+            <FaUsers className="text-6xl text-[#9A9A9A] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-[#FFFFFF]">No users found</h3>
+            <p className="text-[#9A9A9A]">
               {searchQuery ? 'Try a different search term' : 'Be the first to join the community!'}
             </p>
           </div>

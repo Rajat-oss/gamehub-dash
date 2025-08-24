@@ -91,7 +91,7 @@ export const GameDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-[#000000]">
       <Navbar onSearch={handleSearch} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -99,20 +99,20 @@ export const GameDashboard: React.FC = () => {
         {/* Enhanced Header with Animation */}
         <div className="mb-8 sm:mb-12 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-3xl blur-3xl animate-pulse"></div>
-          <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <div className="relative bg-[#000000] border border-[#9A9A9A]/20 rounded-2xl p-6 sm:p-8 shadow-2xl">
             <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
               <div className="relative">
                 <FaGamepad className="text-primary text-3xl sm:text-4xl animate-bounce" />
                 <div className="absolute -inset-1 bg-primary/20 rounded-full blur animate-ping"></div>
               </div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent animate-fade-in">
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] animate-fade-in">
                   Game Marketplace
                 </h1>
                 <div className="h-1 w-20 bg-gradient-to-r from-primary to-secondary rounded-full mt-2 animate-slide-in"></div>
               </div>
             </div>
-            <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed animate-fade-in-up">
+            <p className="text-[#9A9A9A] text-lg sm:text-xl leading-relaxed animate-fade-in-up">
               🎮 Discover amazing games • 🚀 Request your favorites • 🌟 Join the community
             </p>
           </div>
@@ -121,7 +121,7 @@ export const GameDashboard: React.FC = () => {
         {/* Enhanced Action Bar */}
         <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
           <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="text-sm px-4 py-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20 text-red-600 dark:text-red-400 animate-pulse">
+            <Badge variant="secondary" className="text-sm px-4 py-2 bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] animate-pulse">
               <FaFire className="w-4 h-4 mr-2 animate-bounce" />
               <span className="hidden sm:inline">🔥 Trending Now</span>
               <span className="sm:hidden">🔥 Hot</span>
@@ -177,10 +177,10 @@ export const GameDashboard: React.FC = () => {
               <FaGamepad className="text-6xl text-muted-foreground mx-auto animate-bounce" />
               <div className="absolute inset-0 text-6xl text-primary/20 mx-auto animate-ping">🎮</div>
             </div>
-            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h3 className="text-2xl font-bold mb-3 text-[#FFFFFF]">
               No games found
             </h3>
-            <p className="text-muted-foreground text-lg mb-6">
+            <p className="text-[#9A9A9A] text-lg mb-6">
               Try a different search or explore our trending games
             </p>
             <Button onClick={loadGames} className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg transition-all duration-300">

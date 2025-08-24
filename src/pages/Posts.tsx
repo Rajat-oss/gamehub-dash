@@ -201,6 +201,86 @@ const Posts: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 max-w-2xl mx-auto px-4 py-6">
+          {/* Mobile Stories */}
+          <div className="xl:hidden mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Stories</h3>
+              <motion.button
+                onClick={() => setIsStoryModalOpen(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+              >
+                <FaCamera className="w-4 h-4" />
+              </motion.button>
+            </div>
+            
+            {stories.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {stories.map((story) => {
+                  const isOwnStory = story.userId === user?.uid;
+                  const hasViewed = user ? story.views.includes(user.uid) : false;
+                  
+                  return (
+                    <motion.div
+                      key={story.id}
+                      whileHover={{ scale: 1.05 }}
+                      className="cursor-pointer flex-shrink-0"
+                      onClick={() => {
+                        const storyIndex = stories.findIndex(s => s.id === story.id);
+                        setSelectedStoryIndex(storyIndex);
+                        setIsStoryViewerOpen(true);
+                      }}
+                    >
+                      <div className={`relative p-1 rounded-2xl ${
+                        !hasViewed && !isOwnStory
+                          ? 'bg-white border-2 border-white' 
+                          : 'bg-white/10 border-2 border-white/20'
+                      }`}>
+                        <div className="w-16 h-20 bg-black rounded-xl overflow-hidden">
+                          {story.mediaType === 'image' ? (
+                            <img
+                              src={story.mediaUrl}
+                              alt="Story"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <video
+                              src={story.mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                            />
+                          )}
+                        </div>
+                        <div className="absolute bottom-1 left-1">
+                          <Avatar className="w-5 h-5 border border-black">
+                            <AvatarImage src={story.userPhotoURL} />
+                            <AvatarFallback className="bg-white text-black text-xs">
+                              {story.username.slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </div>
+                      <p className="text-xs text-[#9A9A9A] text-center mt-1 truncate w-16">{story.username}</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-[#9A9A9A] text-sm mb-3">No stories yet</p>
+                <motion.button
+                  onClick={() => setIsStoryModalOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-white text-black rounded-full text-sm font-medium hover:bg-white/90 transition-colors"
+                >
+                  Add Your Story
+                </motion.button>
+              </div>
+            )}
+          </div>
+
           {/* Share Box */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-6">
             <div className="flex items-center gap-4">
@@ -372,14 +452,7 @@ const Posts: React.FC = () => {
                           <span className="text-sm font-medium">{commentCounts[post.id] || 0}</span>
                         </motion.button>
 
-                        <motion.button
-                          whileHover={{ scale: 1.1, rotate: 5 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
-                        >
-                          <FaSurprise className="w-4 h-4" />
-                          <span className="text-sm font-medium">Wow</span>
-                        </motion.button>
+
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -428,7 +501,7 @@ const Posts: React.FC = () => {
 
         {/* Right Sidebar */}
         <div className="hidden xl:block w-80 p-6 sticky top-0 h-screen overflow-y-auto">
-          {/* Stories */}
+          {/* Desktop Stories */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-white">Stories</h3>

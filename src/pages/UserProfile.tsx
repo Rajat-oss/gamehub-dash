@@ -117,7 +117,7 @@ const UserProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+      <div className="min-h-screen bg-[#000000] relative overflow-hidden">
         {/* Animated background accent */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
@@ -132,7 +132,7 @@ const UserProfile: React.FC = () => {
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Loading skeleton with glassmorphism */}
-          <div className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 mb-8">
+          <div className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 mb-8">
             <div className="flex items-center gap-6 mb-6">
               <Skeleton className="w-32 h-32 rounded-full" />
               <div className="flex-1 space-y-3">
@@ -145,7 +145,7 @@ const UserProfile: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-2xl p-6">
+              <div key={i} className="bg-[#000000] border border-[#9A9A9A]/20 rounded-2xl p-6">
                 <Skeleton className="h-12 w-12 rounded-xl mb-4" />
                 <Skeleton className="h-8 w-16 mb-2" />
                 <Skeleton className="h-4 w-24" />
@@ -153,7 +153,7 @@ const UserProfile: React.FC = () => {
             ))}
           </div>
           
-          <div className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8">
+          <div className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8">
             <div className="flex gap-4 mb-6">
               <Skeleton className="h-10 w-32 rounded-full" />
               <Skeleton className="h-10 w-32 rounded-full" />
@@ -171,7 +171,7 @@ const UserProfile: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+      <div className="min-h-screen bg-[#000000] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
           <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
@@ -187,10 +187,10 @@ const UserProfile: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-16"
           >
-            <div className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-12 max-w-md mx-auto">
+            <div className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-12 max-w-md mx-auto">
               <FaUser className="text-6xl text-white/40 mx-auto mb-6" />
-              <h1 className="text-2xl font-bold mb-3 text-white tracking-tight">User not found</h1>
-              <p className="text-white/70 text-sm">The user @{username} doesn't exist.</p>
+              <h1 className="text-2xl font-bold mb-3 text-[#FFFFFF] tracking-tight">User not found</h1>
+              <p className="text-[#9A9A9A] text-sm">The user @{username} doesn't exist.</p>
             </div>
           </motion.div>
         </main>
@@ -203,7 +203,7 @@ const UserProfile: React.FC = () => {
   // Check if profile is private and user is not the owner
   if (!isOwnProfile && profile.isPublic === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+      <div className="min-h-screen bg-[#000000] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
           <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
@@ -219,10 +219,10 @@ const UserProfile: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-16"
           >
-            <div className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-12 max-w-md mx-auto">
+            <div className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-12 max-w-md mx-auto">
               <FaUser className="text-6xl text-white/40 mx-auto mb-6" />
-              <h1 className="text-2xl font-bold mb-3 text-white tracking-tight">Private Profile</h1>
-              <p className="text-white/70 text-sm">This user has set their profile to private.</p>
+              <h1 className="text-2xl font-bold mb-3 text-[#FFFFFF] tracking-tight">Private Profile</h1>
+              <p className="text-[#9A9A9A] text-sm">This user has set their profile to private.</p>
             </div>
           </motion.div>
         </main>
@@ -231,7 +231,7 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+    <div className="min-h-screen bg-[#000000] relative overflow-hidden">
       {/* Animated background accent */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
@@ -256,7 +256,7 @@ const UserProfile: React.FC = () => {
           <Button 
             variant="ghost" 
             onClick={() => navigate('/community')}
-            className="flex items-center gap-2 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-200 rounded-2xl px-4 py-2 text-sm font-medium"
+            className="flex items-center gap-2 text-[#9A9A9A] hover:text-[#FFFFFF] hover:bg-[#9A9A9A]/10 transition-all duration-200 rounded-2xl px-4 py-2 text-sm font-medium"
           >
             <FaArrowLeft className="w-3 h-3" />
             Back to Community
@@ -268,7 +268,7 @@ const UserProfile: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 mb-8 relative overflow-hidden"
+          className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 mb-8 relative overflow-hidden"
         >
           {/* Subtle top-edge glow */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
@@ -302,30 +302,30 @@ const UserProfile: React.FC = () => {
             {/* Profile Info */}
             <div className="lg:col-span-6 space-y-4">
               <div>
-                <h1 className="text-3xl font-bold text-white tracking-tight leading-tight mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                <h1 className="text-3xl font-bold text-[#FFFFFF] tracking-tight leading-tight mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   @{profile.username}
                 </h1>
                 {profile.displayName && (
-                  <p className="text-lg text-white/70 font-medium mb-3">{profile.displayName}</p>
+                  <p className="text-lg text-[#9A9A9A] font-medium mb-3">{profile.displayName}</p>
                 )}
               </div>
               
               {profile.bio && (
-                <p className="text-white/80 text-base leading-relaxed max-w-2xl">{profile.bio}</p>
+                <p className="text-[#9A9A9A] text-base leading-relaxed max-w-2xl">{profile.bio}</p>
               )}
               
               <div className="flex flex-wrap gap-6 text-sm">
-                <div className="flex items-center gap-2 text-white/70">
+                <div className="flex items-center gap-2 text-[#9A9A9A]">
                   <FaCalendar className="w-4 h-4 text-[#F59E0B]" />
                   <span>Joined {profile.joinDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-white/70">
+                <div className="flex items-center gap-2 text-[#9A9A9A]">
                   <FaUsers className="w-4 h-4 text-[#22D3EE]" />
-                  <span><strong className="text-white font-semibold">{profile.followers.length}</strong> followers</span>
+                  <span><strong className="text-[#FFFFFF] font-semibold">{profile.followers.length}</strong> followers</span>
                 </div>
-                <div className="flex items-center gap-2 text-white/70">
+                <div className="flex items-center gap-2 text-[#9A9A9A]">
                   <FaUsers className="w-4 h-4 text-[#8B5CF6]" />
-                  <span><strong className="text-white font-semibold">{profile.following.length}</strong> following</span>
+                  <span><strong className="text-[#FFFFFF] font-semibold">{profile.following.length}</strong> following</span>
                 </div>
               </div>
             </div>
@@ -359,7 +359,7 @@ const UserProfile: React.FC = () => {
                       toast.success(`Starting chat with ${profile.username}`);
                     }}
                     variant="outline"
-                    className="w-full rounded-2xl py-3 px-6 font-semibold text-sm border-white/20 text-white/90 hover:bg-white/5 hover:border-white/30 transition-all duration-200 focus:ring-2 focus:ring-[#22D3EE] focus:ring-offset-2 focus:ring-offset-[#0F1220]"
+                    className="w-full rounded-2xl py-3 px-6 font-semibold text-sm border-[#9A9A9A]/40 text-[#FFFFFF] hover:bg-[#9A9A9A]/10 hover:border-[#9A9A9A]/60 transition-all duration-200 focus:ring-2 focus:ring-[#22D3EE] focus:ring-offset-2 focus:ring-offset-[#000000]"
                   >
                     <FaComments className="w-4 h-4 mr-2" />
                     Message
@@ -415,10 +415,10 @@ const UserProfile: React.FC = () => {
                       style={{ color: stat.color }}
                     />
                   </div>
-                  <div className="text-3xl font-bold text-white mb-2 tabular-nums tracking-tight">
+                  <div className="text-3xl font-bold text-[#FFFFFF] mb-2 tabular-nums tracking-tight">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-white/70 font-medium">{stat.label}</div>
+                  <div className="text-sm text-[#9A9A9A] font-medium">{stat.label}</div>
                 </div>
                 
                 {/* Hover glow effect */}
@@ -436,23 +436,23 @@ const UserProfile: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 relative overflow-hidden"
+          className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
           
           <Tabs defaultValue="games" className="w-full">
             <div className="flex justify-center mb-8">
-              <TabsList className="bg-white/5 border border-white/10 rounded-2xl p-1 backdrop-blur-sm">
+              <TabsList className="bg-[#000000] border border-[#9A9A9A]/20 rounded-2xl p-1">
                 <TabsTrigger 
                   value="games" 
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#8B5CF6] data-[state=active]:to-[#22D3EE] data-[state=active]:text-white data-[state=active]:shadow-lg text-white/70 hover:text-white/90"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#8B5CF6] data-[state=active]:to-[#22D3EE] data-[state=active]:text-white data-[state=active]:shadow-lg text-[#9A9A9A] hover:text-[#FFFFFF]"
                 >
                   <FaGamepad className="w-4 h-4" />
                   Overview ({userGames.length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="favorites" 
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#8B5CF6] data-[state=active]:to-[#22D3EE] data-[state=active]:text-white data-[state=active]:shadow-lg text-white/70 hover:text-white/90"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#8B5CF6] data-[state=active]:to-[#22D3EE] data-[state=active]:text-white data-[state=active]:shadow-lg text-[#9A9A9A] hover:text-[#FFFFFF]"
                 >
                   <FaHeart className="w-4 h-4" />
                   Favorites ({userFavorites.length})
