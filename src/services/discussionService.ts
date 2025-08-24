@@ -23,12 +23,24 @@ const REPLIES_COLLECTION = 'discussionReplies';
 export const discussionService = {
   async createDiscussion(userId: string, username: string, userPhotoURL: string | undefined, discussionData: CreateDiscussionData): Promise<string> {
     try {
+      // Try to get user profile for better photo URL
+      let photoURL = userPhotoURL || '';
+      try {
+        const { userService } = await import('@/services/userService');
+        const userProfile = await userService.getUserProfile(userId);
+        if (userProfile?.photoURL) {
+          photoURL = userProfile.photoURL;
+        }
+      } catch (error) {
+        console.log('Could not fetch user profile, using provided photo URL');
+      }
+      
       const docRef = await addDoc(collection(db, DISCUSSIONS_COLLECTION), {
         title: discussionData.title,
         content: discussionData.content,
         authorId: userId,
         authorName: username,
-        authorPhotoURL: userPhotoURL || '',
+        authorPhotoURL: photoURL,
         category: discussionData.category,
         tags: discussionData.tags,
         replies: [],
@@ -148,12 +160,24 @@ export const discussionService = {
 
   async addReply(discussionId: string, userId: string, username: string, userPhotoURL: string | undefined, content: string): Promise<void> {
     try {
+      // Try to get user profile for better photo URL
+      let photoURL = userPhotoURL || '';
+      try {
+        const { userService } = await import('@/services/userService');
+        const userProfile = await userService.getUserProfile(userId);
+        if (userProfile?.photoURL) {
+          photoURL = userProfile.photoURL;
+        }
+      } catch (error) {
+        console.log('Could not fetch user profile, using provided photo URL');
+      }
+      
       await addDoc(collection(db, REPLIES_COLLECTION), {
         discussionId,
         content,
         authorId: userId,
         authorName: username,
-        authorPhotoURL: userPhotoURL || '',
+        authorPhotoURL: photoURL,
         likes: [],
         likeCount: 0,
         createdAt: serverTimestamp()

@@ -354,7 +354,10 @@ const Posts: React.FC = () => {
                   >
                     {/* Post Header */}
                     <div className="flex items-center gap-4 mb-4">
-                      <Avatar className="w-12 h-12">
+                      <Avatar 
+                        className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all"
+                        onClick={() => window.location.href = `/user/${post.username}`}
+                      >
                         <AvatarImage src={post.userPhotoURL} alt={post.username} />
                         <AvatarFallback className="bg-white text-black">
                           {post.username.charAt(0).toUpperCase() || <FaUser />}
@@ -607,7 +610,10 @@ const Posts: React.FC = () => {
               <div className="space-y-4">
                 {suggestions.map((suggestion) => (
                   <div key={suggestion.uid} className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10">
+                    <Avatar 
+                      className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all"
+                      onClick={() => window.location.href = `/user/${suggestion.username}`}
+                    >
                       <AvatarImage src={suggestion.photoURL} />
                       <AvatarFallback className="bg-white text-black text-xs">
                         {suggestion.username?.slice(0, 2) || 'U'}

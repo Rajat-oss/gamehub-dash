@@ -108,7 +108,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
-              <Avatar className="h-8 w-8 flex-shrink-0">
+              <Avatar 
+                className="h-8 w-8 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                onClick={() => window.location.href = `/user/${comment.username}`}
+              >
                 <AvatarImage src={comment.userPhotoURL} alt={comment.username} />
                 <AvatarFallback className="text-xs">
                   {comment.username.charAt(0).toUpperCase() || <FaUser className="w-3 h-3" />}

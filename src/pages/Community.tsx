@@ -179,7 +179,15 @@ const Community: React.FC = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-1">
-                      <p className="font-semibold text-[#FFFFFF] truncate">@{userProfile.username}</p>
+                      <p 
+                        className="font-semibold text-[#FFFFFF] truncate cursor-pointer hover:text-blue-400 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/user/${userProfile.username}`);
+                        }}
+                      >
+                        @{userProfile.username}
+                      </p>
                       {userProfile.isPublic && (
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -312,7 +320,15 @@ const Community: React.FC = () => {
                     </Avatar>
                     
                     <div className="flex-1 min-w-0 text-center sm:text-left">
-                      <h3 className="font-semibold text-lg truncate text-[#FFFFFF]">@{userProfile.username}</h3>
+                      <h3 
+                        className="font-semibold text-lg truncate text-[#FFFFFF] cursor-pointer hover:text-blue-400 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/user/${userProfile.username}`);
+                        }}
+                      >
+                        @{userProfile.username}
+                      </h3>
                       {userProfile.displayName && (
                         <p className="text-sm text-[#9A9A9A] truncate">
                           {userProfile.displayName}
