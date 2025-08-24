@@ -2,20 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/homepage/Navbar';
 import { PostModal } from '@/components/posts/PostModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { postService } from '@/services/postService';
 import { Post } from '@/types/post';
-import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaEdit, FaBookmark } from 'react-icons/fa';
+import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaBookmark, FaHome, FaGamepad, FaUsers, FaBell, FaComments, FaFire, FaTrendingUp, FaUserPlus, FaSmile, FaThumbsUp, FaSurprise, FaCamera } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CommentSection } from '@/components/posts/CommentSection';
 import { ShareModal } from '@/components/posts/ShareModal';
 import { commentService } from '@/services/commentService';
+import { storyService } from '@/services/storyService';
+import { userService } from '@/services/userService';
 import { formatDistanceToNow } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { Story } from '@/types/story';
+import { UserProfile } from '@/types/user';
+import { StoryModal } from '@/components/posts/StoryModal';
+import { StoryViewer } from '@/components/posts/StoryViewer';
 
 const Posts: React.FC = () => {
   const { user } = useAuth();
@@ -26,13 +31,17 @@ const Posts: React.FC = () => {
   const [sharePost, setSharePost] = useState<Post | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<{[key: string]: number}>({});
+  const [stories, setStories] = useState<Story[]>([]);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
+  const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
+  const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
 
   const loadPosts = async () => {
     try {
       const fetchedPosts = await postService.getPosts();
       setPosts(fetchedPosts);
       
-      // Load comment counts for each post
       fetchedPosts.forEach(post => {
         commentService.subscribeToComments(post.id, (comments) => {
           setCommentCounts(prev => ({
@@ -50,7 +59,57 @@ const Posts: React.FC = () => {
 
   useEffect(() => {
     loadPosts();
-  }, []);
+    if (user) {
+      loadStories();
+      loadSuggestions();
+    }
+  }, [user]);
+
+  const loadStories = async () => {
+    if (!user) return;
+    
+    try {
+      const unsubscribe = await storyService.subscribeToFollowedUsersStories(user.uid, (userStories) => {
+        setStories(userStories);
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.error('Error loading stories:', error);
+    }
+  };
+
+  const loadSuggestions = async () => {
+    if (!user) return;
+    
+    try {
+      const userProfile = await userService.getUserProfile(user.uid);
+      if (!userProfile) return;
+      
+      const allUsers = await userService.getAllPublicUsers();
+      const filteredSuggestions = allUsers.filter(u => 
+        u.uid !== user.uid && 
+        !userProfile.following?.includes(u.uid) &&
+        u.isPublic !== false
+      ).slice(0, 3);
+      
+      setSuggestions(filteredSuggestions);
+    } catch (error) {
+      console.error('Error loading suggestions:', error);
+    }
+  };
+
+  const handleFollowUser = async (targetUserId: string) => {
+    if (!user) return;
+    
+    try {
+      await userService.followUser(user.uid, targetUserId);
+      loadSuggestions(); // Refresh suggestions
+      toast.success('User followed successfully');
+    } catch (error) {
+      console.error('Error following user:', error);
+      toast.error('Failed to follow user');
+    }
+  };
 
   const handleLike = async (postId: string, isLiked: boolean) => {
     if (!user) return;
@@ -97,63 +156,109 @@ const Posts: React.FC = () => {
     }
   };
 
+  const sidebarItems = [
+    { icon: FaHome, label: 'Home', active: true },
+    { icon: FaGamepad, label: 'Gaming', active: false },
+    { icon: FaUsers, label: 'Community', active: false },
+    { icon: FaFire, label: 'Trending', active: false },
+    { icon: FaBell, label: 'Notifications', active: false },
+    { icon: FaComments, label: 'Messages', active: false },
+  ];
+
+
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}}></div>
-        </div>
-      </div>
-      
+    <div className="min-h-screen bg-black relative">
       <Navbar onSearch={() => {}} />
       
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-6">
-        {/* Modern Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8"
-        >
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
-              Social Feed
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">Connect with the gaming community</p>
+      <div className="flex max-w-7xl mx-auto">
+        {/* Left Sidebar */}
+        <div className="hidden lg:block w-64 p-6 sticky top-0 h-screen">
+          <div className="space-y-2">
+            {sidebarItems.map((item) => (
+              <motion.div
+                key={item.label}
+                whileHover={{ scale: 1.02, x: 4 }}
+                className={`flex items-center gap-4 p-4 rounded-full cursor-pointer transition-all duration-200 ${
+                  item.active 
+                    ? 'bg-white/10 border border-white/20' 
+                    : 'hover:bg-white/5'
+                }`}
+              >
+                <div className={`p-2 rounded-xl ${item.active ? 'bg-white' : 'bg-white/10'}`}>
+                  <item.icon className={`w-5 h-5 ${item.active ? 'text-black' : 'text-white'}`} />
+                </div>
+                <span className={`font-medium ${item.active ? 'text-white' : 'text-[#9A9A9A]'}`}>
+                  {item.label}
+                </span>
+                {item.active && (
+                  <div className="ml-auto w-2 h-2 bg-white rounded-full" />
+                )}
+              </motion.div>
+            ))}
           </div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button 
-              onClick={() => setIsPostModalOpen(true)}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg shadow-purple-500/25 transition-all duration-300"
-            >
-              <FaPlus className="w-4 h-4 mr-2" />
-              Create Post
-            </Button>
-          </motion.div>
-        </motion.div>
+        </div>
 
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-400 mt-4">Loading posts...</p>
+        {/* Main Content */}
+        <div className="flex-1 max-w-2xl mx-auto px-4 py-6">
+          {/* Share Box */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={user?.photoURL} />
+                <AvatarFallback className="bg-white text-black">
+                  {user?.displayName?.charAt(0) || <FaUser />}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => setIsPostModalOpen(true)}
+                className="flex-1 bg-black border border-white/10 rounded-full px-6 py-3 text-left text-[#9A9A9A] hover:border-white/30 transition-all duration-200"
+              >
+                What's on your mind?
+              </button>
+              <motion.button
+                onClick={() => setIsPostModalOpen(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 bg-white rounded-full text-black"
+              >
+                <FaPlus className="w-5 h-5" />
+              </motion.button>
+            </div>
           </div>
-        ) : posts.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <div className="text-6xl mb-4">🎮</div>
-            <p className="text-gray-400 text-lg">No posts yet. Be the first to share something!</p>
-          </motion.div>
-        ) : (
-          <div className="space-y-6">
-            <AnimatePresence>
+
+          {/* Posts Feed */}
+          {isLoading ? (
+            <div className="space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white/5 rounded-3xl p-6 border border-white/10">
+                  <div className="animate-pulse">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-white/10 rounded-full" />
+                      <div className="space-y-2">
+                        <div className="h-4 bg-white/10 rounded w-32" />
+                        <div className="h-3 bg-white/10 rounded w-24" />
+                      </div>
+                    </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="h-4 bg-white/10 rounded" />
+                      <div className="h-4 bg-white/10 rounded w-3/4" />
+                    </div>
+                    <div className="h-48 bg-white/10 rounded-2xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-white/5 rounded-3xl p-12 border border-white/10">
+                <div className="text-6xl mb-4">🎮</div>
+                <h3 className="text-xl font-bold text-white mb-2">No posts yet</h3>
+                <p className="text-[#9A9A9A]">Be the first to share something with the community!</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
               {posts.map((post, index) => {
                 const isLiked = user ? post.likes.includes(user.uid) : false;
                 const isOwner = user?.uid === post.userId;
@@ -163,197 +268,280 @@ const Posts: React.FC = () => {
                     key={post.id}
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -50 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="group"
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                    whileHover={{ y: -2 }}
+                    className="bg-white/5 rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300"
                   >
-                    <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:border-purple-500/30">
-                      {/* Post Header */}
-                      <div className="flex items-center gap-4 mb-4">
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          className="relative"
-                        >
-                          <Avatar className="h-12 w-12 ring-2 ring-purple-500/30">
-                            <AvatarImage src={post.userPhotoURL} alt={post.username} />
-                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                              {post.username.charAt(0).toUpperCase() || <FaUser />}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
-                        </motion.div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">{post.username}</h3>
-                            {post.gameTitle && (
-                              <Badge className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-200 border-purple-500/30 text-xs">
-                                {post.gameTitle}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-400">
-                            {formatDistanceToNow(post.createdAt, { addSuffix: true })}
-                          </p>
+                    {/* Post Header */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={post.userPhotoURL} alt={post.username} />
+                        <AvatarFallback className="bg-white text-black">
+                          {post.username.charAt(0).toUpperCase() || <FaUser />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-white">{post.username}</h3>
+                          {post.gameTitle && (
+                            <Badge className="bg-white/10 text-white border-white/20 text-xs">
+                              {post.gameTitle}
+                            </Badge>
+                          )}
                         </div>
-                        {isOwner && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
-                                <FaEllipsisV className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                              <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-400 focus:text-red-300">
-                                <FaTrash className="mr-2 h-4 w-4" />
-                                Delete Post
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <p className="text-sm text-[#9A9A9A]">
+                          {formatDistanceToNow(post.createdAt, { addSuffix: true })}
+                        </p>
+                      </div>
+                      {isOwner && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#9A9A9A] hover:text-white">
+                              <FaEllipsisV className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-black border-white/20">
+                            <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-400 focus:text-red-300">
+                              <FaTrash className="mr-2 h-4 w-4" />
+                              Delete Post
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                    
+                    {/* Post Content */}
+                    {post.content && (
+                      <div className="mb-4">
+                        <p className="text-white leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                      </div>
+                    )}
+                    
+                    {/* Post Media */}
+                    {post.mediaUrl && (
+                      <div className="mb-6 overflow-hidden rounded-2xl">
+                        {post.mediaType === 'video' ? (
+                          <video
+                            src={post.mediaUrl}
+                            className="w-full max-h-96 object-cover"
+                            controls
+                          />
+                        ) : (
+                          <img
+                            src={post.mediaUrl}
+                            alt="Post media"
+                            className="w-full max-h-96 object-cover"
+                          />
                         )}
                       </div>
-                      
-                      {/* Post Content */}
-                      {post.content && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="mb-4"
+                    )}
+                    
+                    {/* Reactions */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <motion.button
+                          onClick={() => handleLike(post.id, isLiked)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
+                            isLiked 
+                              ? 'bg-white/20 text-white border border-white/30' 
+                              : 'bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white'
+                          }`}
                         >
-                          <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                        </motion.div>
-                      )}
-                      
-                      {/* Post Media */}
-                      {post.mediaUrl && (
-                        <motion.div 
-                          className="mb-6 overflow-hidden rounded-xl"
-                          whileHover={{ scale: 1.02 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {post.mediaType === 'video' ? (
-                            <video
-                              src={post.mediaUrl}
-                              className="w-full max-h-96 object-cover"
-                              controls
-                            />
-                          ) : (
-                            <img
-                              src={post.mediaUrl}
-                              alt="Post media"
-                              className="w-full max-h-96 object-cover"
-                            />
-                          )}
-                        </motion.div>
-                      )}
-                      
-                      {/* Interactive Buttons */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {/* Like Button - Ripple Effect */}
-                          <motion.button
-                            onClick={() => handleLike(post.id, isLiked)}
-                            className={`relative overflow-hidden px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                              isLiked 
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                                : 'bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-red-500/30 hover:text-red-400'
-                            }`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <motion.div
-                              className="absolute inset-0 bg-red-500/20 rounded-full"
-                              initial={{ scale: 0, opacity: 0 }}
-                              whileHover={{ scale: 1, opacity: 1 }}
-                              transition={{ duration: 0.3 }}
-                            />
-                            <motion.div
-                              animate={isLiked ? { scale: [1, 1.2, 1] } : {}}
-                              transition={{ duration: 0.3 }}
-                            >
-                              {isLiked ? (
-                                <FaHeart className="w-4 h-4 relative z-10" />
-                              ) : (
-                                <FaRegHeart className="w-4 h-4 relative z-10" />
-                              )}
-                            </motion.div>
-                            <span className="text-sm font-medium relative z-10">{post.likeCount}</span>
-                          </motion.button>
-                          
-                          {/* Comment Button - Expand Effect */}
-                          <motion.button
-                            onClick={() => toggleComments(post.id)}
-                            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                              expandedComments.has(post.id)
-                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                : 'bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-blue-500/30 hover:text-blue-400'
-                            }`}
-                            whileHover={{ scale: 1.1, rotateZ: 5 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            {expandedComments.has(post.id) ? (
-                              <FaComment className="w-4 h-4" />
-                            ) : (
-                              <FaRegComment className="w-4 h-4" />
-                            )}
-                            <span className="text-sm font-medium">{commentCounts[post.id] || 0}</span>
-                          </motion.button>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          {/* Share Button - Transform Effect */}
-                          <motion.button
-                            onClick={() => handleShare(post)}
-                            className="p-2 rounded-full bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-green-500/30 hover:text-green-400 transition-all duration-300"
-                            whileHover={{ 
-                              scale: 1.1,
-                              rotate: [0, -10, 10, 0],
-                              transition: { duration: 0.3 }
-                            }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <FaShare className="w-4 h-4" />
-                          </motion.button>
-                          
-                          {/* Bookmark Button - Glow Effect */}
-                          <motion.button
-                            className="relative p-2 rounded-full bg-slate-700/50 text-gray-400 border border-slate-600/50 hover:border-yellow-500/30 hover:text-yellow-400 transition-all duration-300"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <motion.div
-                              className="absolute inset-0 bg-yellow-500/20 rounded-full blur-md"
-                              initial={{ opacity: 0 }}
-                              whileHover={{ opacity: 1 }}
-                              transition={{ duration: 0.3 }}
-                            />
-                            <FaBookmark className="w-4 h-4 relative z-10" />
-                          </motion.button>
-                        </div>
-                      </div>
-                      
-                      {/* Comments Section */}
-                      <AnimatePresence>
-                        {expandedComments.has(post.id) && (
                           <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
+                            animate={isLiked ? { scale: [1, 1.3, 1] } : {}}
                             transition={{ duration: 0.3 }}
                           >
-                            <CommentSection 
-                              postId={post.id}
-                              isExpanded={expandedComments.has(post.id)}
-                            />
+                            {isLiked ? <FaHeart className="w-4 h-4" /> : <FaRegHeart className="w-4 h-4" />}
                           </motion.div>
-                        )}
-                      </AnimatePresence>
+                          <span className="text-sm font-medium">{post.likeCount}</span>
+                        </motion.button>
+                        
+                        <motion.button
+                          onClick={() => toggleComments(post.id)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
+                            expandedComments.has(post.id)
+                              ? 'bg-white/20 text-white border border-white/30'
+                              : 'bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white'
+                          }`}
+                        >
+                          {expandedComments.has(post.id) ? <FaComment className="w-4 h-4" /> : <FaRegComment className="w-4 h-4" />}
+                          <span className="text-sm font-medium">{commentCounts[post.id] || 0}</span>
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
+                        >
+                          <FaSurprise className="w-4 h-4" />
+                          <span className="text-sm font-medium">Wow</span>
+                        </motion.button>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <motion.button
+                          onClick={() => handleShare(post)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
+                        >
+                          <FaShare className="w-4 h-4" />
+                        </motion.button>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
+                        >
+                          <FaBookmark className="w-4 h-4" />
+                        </motion.button>
+                      </div>
                     </div>
+                    
+                    {/* Comments Section */}
+                    <AnimatePresence>
+                      {expandedComments.has(post.id) && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="border-t border-white/10 pt-4"
+                        >
+                          <CommentSection 
+                            postId={post.id}
+                            isExpanded={expandedComments.has(post.id)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}
-            </AnimatePresence>
+            </div>
+          )}
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="hidden xl:block w-80 p-6 sticky top-0 h-screen overflow-y-auto">
+          {/* Stories */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Stories</h3>
+              <motion.button
+                onClick={() => setIsStoryModalOpen(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+              >
+                <FaCamera className="w-4 h-4" />
+              </motion.button>
+            </div>
+            
+            {stories.length > 0 ? (
+              <div className="grid grid-cols-3 gap-3">
+                {stories.map((story) => {
+                  const isOwnStory = story.userId === user?.uid;
+                  const hasViewed = user ? story.views.includes(user.uid) : false;
+                  
+                  return (
+                    <motion.div
+                      key={story.id}
+                      whileHover={{ scale: 1.05 }}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        const storyIndex = stories.findIndex(s => s.id === story.id);
+                        setSelectedStoryIndex(storyIndex);
+                        setIsStoryViewerOpen(true);
+                      }}
+                    >
+                      <div className={`relative p-1 rounded-2xl ${
+                        !hasViewed && !isOwnStory
+                          ? 'bg-white border-2 border-white' 
+                          : 'bg-white/10 border-2 border-white/20'
+                      }`}>
+                        <div className="w-full h-20 bg-black rounded-xl overflow-hidden">
+                          {story.mediaType === 'image' ? (
+                            <img
+                              src={story.mediaUrl}
+                              alt="Story"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <video
+                              src={story.mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                            />
+                          )}
+                        </div>
+                        <div className="absolute bottom-1 left-1">
+                          <Avatar className="w-6 h-6 border border-black">
+                            <AvatarImage src={story.userPhotoURL} />
+                            <AvatarFallback className="bg-white text-black text-xs">
+                              {story.username.slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </div>
+                      <p className="text-xs text-[#9A9A9A] text-center mt-2 truncate">{story.username}</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-[#9A9A9A] text-sm mb-4">No stories yet</p>
+                <motion.button
+                  onClick={() => setIsStoryModalOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-white text-black rounded-full text-sm font-medium hover:bg-white/90 transition-colors"
+                >
+                  Add Your Story
+                </motion.button>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Suggestions */}
+          {suggestions.length > 0 && (
+            <div className="bg-white/5 rounded-3xl p-6 border border-white/10">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <FaUserPlus className="w-5 h-5 text-white" />
+                Suggestions
+              </h3>
+              <div className="space-y-4">
+                {suggestions.map((suggestion) => (
+                  <div key={suggestion.uid} className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={suggestion.photoURL} />
+                      <AvatarFallback className="bg-white text-black text-xs">
+                        {suggestion.username?.slice(0, 2) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-white font-medium text-sm">{suggestion.username}</p>
+                      <p className="text-[#9A9A9A] text-xs">{suggestion.followers?.length || 0} followers</p>
+                    </div>
+                    <motion.button
+                      onClick={() => handleFollowUser(suggestion.uid)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-4 py-2 bg-white text-black text-xs font-medium rounded-full hover:bg-white/90 transition-all duration-200"
+                    >
+                      Follow
+                    </motion.button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <PostModal
@@ -369,6 +557,22 @@ const Posts: React.FC = () => {
           setSharePost(null);
         }}
         post={sharePost}
+      />
+      
+      <StoryModal
+        isOpen={isStoryModalOpen}
+        onClose={() => setIsStoryModalOpen(false)}
+        onStoryCreated={() => {
+          loadStories();
+          toast.success('Story added successfully!');
+        }}
+      />
+      
+      <StoryViewer
+        isOpen={isStoryViewerOpen}
+        onClose={() => setIsStoryViewerOpen(false)}
+        stories={stories}
+        initialStoryIndex={selectedStoryIndex}
       />
     </div>
   );
