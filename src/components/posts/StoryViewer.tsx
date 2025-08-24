@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { storyService } from '@/services/storyService';
 import { Story } from '@/types/story';
-import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash, FaEye, FaPlay, FaPause } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -27,6 +27,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const [currentIndex, setCurrentIndex] = useState(initialStoryIndex);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showViewers, setShowViewers] = useState(false);
+  const [viewers, setViewers] = useState<Array<{uid: string, username: string, photoURL?: string}>>([]);
 
   const currentStory = stories[currentIndex];
   const isOwnStory = currentStory?.userId === user?.uid;
@@ -37,6 +39,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     // Mark story as viewed
     if (user && !currentStory.views.includes(user.uid)) {
       storyService.viewStory(currentStory.id, user.uid);
+    }
+
+    // Load viewers for own stories
+    if (isOwnStory && currentStory.views.length > 0) {
+      storyService.getStoryViewers(currentStory.id).then(setViewers);
     }
 
     // Auto-progress timer
@@ -98,7 +105,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-black border-none p-0 max-w-md w-full h-[80vh] overflow-hidden">
+      <DialogContent className="bg-black border-none p-0 max-w-lg w-full h-[90vh] overflow-hidden">
         <div className="relative w-full h-full">
           {/* Progress bars */}
           <div className="absolute top-2 left-2 right-2 z-20 flex gap-1">
@@ -155,13 +162,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
           </div>
 
           {/* Story content */}
-          <div 
-            className="w-full h-full flex items-center justify-center"
-            onMouseDown={() => setIsPaused(true)}
-            onMouseUp={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
-          >
+          <div className="w-full h-full flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStory.id}
@@ -190,18 +191,20 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Navigation */}
-          <div className="absolute inset-0 flex">
-            {/* Previous area */}
-            <div 
-              className="flex-1 cursor-pointer"
-              onClick={prevStory}
-            />
-            {/* Next area */}
-            <div 
-              className="flex-1 cursor-pointer"
-              onClick={nextStory}
-            />
+          {/* Pause/Play indicator */}
+          {isPaused && (
+            <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
+              <div className="bg-black/50 rounded-full p-4">
+                <FaPlay className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          )}
+
+          {/* Navigation and pause areas */}
+          <div className="absolute inset-0 flex z-10">
+            <div className="w-1/3 h-full" onClick={prevStory} />
+            <div className="w-1/3 h-full" onClick={() => setIsPaused(!isPaused)} />
+            <div className="w-1/3 h-full" onClick={nextStory} />
           </div>
 
           {/* Navigation arrows */}
@@ -230,14 +233,62 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
           {/* Story info */}
           <div className="absolute bottom-4 left-4 right-4 z-20">
             <div className="bg-black/50 rounded-lg p-3 backdrop-blur-sm">
-              <p className="text-white/90 text-sm">
-                Views: {currentStory.views.length}
-              </p>
+              {isOwnStory ? (
+                <button 
+                  onClick={() => {
+                    setShowViewers(true);
+                    setIsPaused(true);
+                  }}
+                  className="flex items-center gap-2 text-white/90 text-sm hover:text-white transition-colors"
+                >
+                  <FaEye className="w-3 h-3" />
+                  Views: {currentStory.views.length}
+                </button>
+              ) : (
+                <p className="text-white/90 text-sm">
+                  Views: {currentStory.views.length}
+                </p>
+              )}
               <div className="mt-1 text-xs text-white/70">
                 Expires {formatDistanceToNow(currentStory.expiresAt, { addSuffix: true })}
               </div>
             </div>
           </div>
+
+          {/* Viewers Modal */}
+          {showViewers && (
+            <div className="absolute inset-0 bg-black/80 z-30 flex items-end">
+              <div className="w-full bg-black rounded-t-lg max-h-[60%] overflow-hidden">
+                <div className="p-4 border-b border-white/20 flex items-center justify-between">
+                  <h3 className="font-semibold text-white">Viewers ({viewers.length})</h3>
+                  <Button
+                    onClick={() => {
+                      setShowViewers(false);
+                      setIsPaused(false);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 text-white hover:bg-white/20"
+                  >
+                    <FaTimes className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="overflow-y-auto max-h-80">
+                  {viewers.map((viewer) => (
+                    <div key={viewer.uid} className="flex items-center gap-3 p-3 hover:bg-white/10">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={viewer.photoURL} />
+                        <AvatarFallback className="bg-gray-600 text-white">
+                          {viewer.username.slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-white">{viewer.username}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

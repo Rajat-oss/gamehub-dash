@@ -84,5 +84,28 @@ export const storyService = {
     const snapshot = await getDocs(q);
     const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(deletePromises);
+  },
+
+  async getStoryViewers(storyId: string) {
+    const storyRef = doc(db, 'stories', storyId);
+    const storyDoc = await getDocs(query(collection(db, 'stories'), where('__name__', '==', storyId)));
+    
+    if (storyDoc.empty) return [];
+    
+    const story = storyDoc.docs[0].data();
+    const viewerIds = story.views || [];
+    
+    const viewers = await Promise.all(
+      viewerIds.map(async (uid: string) => {
+        const user = await userService.getUserProfile(uid);
+        return user ? {
+          uid,
+          username: user.username,
+          photoURL: user.photoURL
+        } : null;
+      })
+    );
+    
+    return viewers.filter(Boolean);
   }
 };
