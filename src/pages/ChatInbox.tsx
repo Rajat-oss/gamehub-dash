@@ -152,7 +152,7 @@ const ChatInbox = () => {
                   
                   return (
                     <Link key={chat.id} to={`/chat/${otherUserId}`}>
-                      <div className="flex items-center space-x-4 p-4 bg-secondary/20 rounded-lg border border-border/30 hover:bg-secondary/30 transition-colors cursor-pointer">
+                      <div className="flex items-center space-x-4 p-4 bg-secondary/10 rounded-lg border border-border/30 hover:bg-secondary/20 transition-colors cursor-pointer">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={profile?.photoURL} alt={otherUserName} />
                           <AvatarFallback className="bg-primary text-primary-foreground">

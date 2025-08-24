@@ -112,7 +112,7 @@ const Profile = () => {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+      <div className="min-h-screen bg-[#000000] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
           <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
@@ -123,7 +123,7 @@ const Profile = () => {
         <div className="sticky top-0 z-40 h-1 bg-gradient-to-r from-[#8B5CF6] to-[#22D3EE] opacity-20" />
         
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center text-white/70">Loading profile...</div>
+          <div className="text-center text-[#9A9A9A]">Loading profile...</div>
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ const Profile = () => {
   const favoriteGames = getFavorites();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B0F1A] via-[#0F1220] to-[#0A021F] relative overflow-hidden">
+    <div className="min-h-screen bg-[#000000] relative overflow-hidden">
       {/* Animated background accent */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
@@ -153,7 +153,7 @@ const Profile = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 mb-8 relative overflow-hidden"
+          className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 mb-8 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
           
@@ -200,10 +200,10 @@ const Profile = () => {
             </div>
             
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white tracking-tight leading-tight mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+              <h1 className="text-3xl font-bold text-[#FFFFFF] tracking-tight leading-tight mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {profile.username || profile.displayName}
               </h1>
-              <div className="flex items-center gap-2 mt-2 text-white/70">
+              <div className="flex items-center gap-2 mt-2 text-[#9A9A9A]">
                 <FaCalendar className="text-[#F59E0B] w-4 h-4" />
                 <span className="text-sm">Joined {profile.joinDate ? formatDate(profile.joinDate.getTime()) : 'Recently'}</span>
               </div>
@@ -219,21 +219,21 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 relative overflow-hidden"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
               
-              <h2 className="text-xl font-bold text-white mb-6">About</h2>
+              <h2 className="text-xl font-bold text-[#FFFFFF] mb-6">About</h2>
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-white/80">Email</label>
-                  <p className="text-white/70">{profile.email || 'No email provided'}</p>
+                  <label className="block text-sm font-medium mb-2 text-[#FFFFFF]">Email</label>
+                  <p className="text-[#9A9A9A]">{profile.email || 'No email provided'}</p>
                 </div>
                 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <label className="block text-sm font-medium text-white/80">Bio</label>
+                    <label className="block text-sm font-medium text-[#FFFFFF]">Bio</label>
                     {isEditingBio ? (
                       <div className="flex space-x-2">
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -273,17 +273,17 @@ const Profile = () => {
                       value={bioText}
                       onChange={(e) => setBioText(e.target.value)}
                       placeholder="Tell us about yourself..."
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-[100px] rounded-2xl focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent"
+                      className="bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] placeholder:text-[#9A9A9A] min-h-[100px] rounded-2xl focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent"
                     />
                   ) : (
-                    <p className="text-white/70 leading-relaxed">{profile.bio || 'No bio provided'}</p>
+                    <p className="text-[#9A9A9A] leading-relaxed">{profile.bio || 'No bio provided'}</p>
                   )}
                 </div>
                 
                 {/* Privacy Setting */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <Label className="flex items-center gap-2 text-white/80">
+                    <Label className="flex items-center gap-2 text-[#FFFFFF]">
                       {isPublic ? <FaEye className="w-4 h-4 text-[#22D3EE]" /> : <FaEyeSlash className="w-4 h-4 text-white/50" />}
                       Profile Visibility
                     </Label>
@@ -300,7 +300,7 @@ const Profile = () => {
                       }}
                     />
                   </div>
-                  <p className="text-sm text-white/60">
+                  <p className="text-sm text-[#9A9A9A]">
                     {isPublic ? 'Your profile is visible to everyone' : 'Your profile is private and hidden from others'}
                   </p>
                 </div>
@@ -312,11 +312,11 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 relative overflow-hidden"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
               
-              <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+              <h2 className="text-xl font-bold text-[#FFFFFF] mb-6 flex items-center">
                 <FaGamepad className="w-5 h-5 mr-3 text-[#8B5CF6]" />
                 Favorite Games ({favoriteGames.length})
               </h2>
@@ -339,7 +339,7 @@ const Profile = () => {
                           className="w-full h-16 sm:h-20 object-cover rounded-xl mb-2 border border-white/10"
                           loading="lazy"
                         />
-                        <p className="text-xs sm:text-sm font-medium truncate text-white">{game.name}</p>
+                        <p className="text-xs sm:text-sm font-medium truncate text-[#FFFFFF]">{game.name}</p>
                       </motion.div>
                     </Link>
                   ))}
@@ -348,7 +348,7 @@ const Profile = () => {
                 <div className="text-center py-12">
                   <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
                     <FaGamepad className="text-4xl text-white/30 mx-auto mb-4" />
-                    <p className="text-white/70">No favorite games yet. Start exploring!</p>
+                    <p className="text-[#9A9A9A]">No favorite games yet. Start exploring!</p>
                   </div>
                 </div>
               )}
@@ -356,7 +356,7 @@ const Profile = () => {
               {favoriteGames.length > 6 && (
                 <div className="mt-6">
                   <Link to="/favorites">
-                    <Button variant="outline" className="w-full border-white/20 text-white/80 hover:bg-white/5 rounded-2xl">
+                    <Button variant="outline" className="w-full border-[#9A9A9A]/40 text-[#FFFFFF] hover:bg-[#9A9A9A]/10 rounded-2xl">
                       View All Favorites
                     </Button>
                   </Link>
@@ -372,37 +372,37 @@ const Profile = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-8 relative overflow-hidden"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-8 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
               
-              <h2 className="text-xl font-bold text-white mb-6">Stats</h2>
+              <h2 className="text-xl font-bold text-[#FFFFFF] mb-6">Stats</h2>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/10">
+                <div className="flex items-center justify-between p-3 bg-[#000000] rounded-2xl border border-[#9A9A9A]/20">
                   <div className="flex items-center space-x-3">
                     <FaGamepad className="text-[#8B5CF6] w-4 h-4" />
-                    <span className="text-sm text-white/80">Favorite Games</span>
+                    <span className="text-sm text-[#FFFFFF]">Favorite Games</span>
                   </div>
                   <Badge className="bg-[#8B5CF6]/20 text-[#8B5CF6] border-[#8B5CF6]/30 font-semibold tabular-nums">
                     {favoriteGames.length}
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/10">
+                <div className="flex items-center justify-between p-3 bg-[#000000] rounded-2xl border border-[#9A9A9A]/20">
                   <div className="flex items-center space-x-3">
                     <FaComments className="text-[#22D3EE] w-4 h-4" />
-                    <span className="text-sm text-white/80">Comments</span>
+                    <span className="text-sm text-[#FFFFFF]">Comments</span>
                   </div>
                   <Badge className="bg-[#22D3EE]/20 text-[#22D3EE] border-[#22D3EE]/30 font-semibold tabular-nums">
                     {profile.totalComments || 0}
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/10">
+                <div className="flex items-center justify-between p-3 bg-[#000000] rounded-2xl border border-[#9A9A9A]/20">
                   <div className="flex items-center space-x-3">
                     <FaStar className="text-[#F59E0B] w-4 h-4" />
-                    <span className="text-sm text-white/80">Avg Rating</span>
+                    <span className="text-sm text-[#FFFFFF]">Avg Rating</span>
                   </div>
                   <Badge className="bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B]/30 font-semibold tabular-nums">
                     {(profile.averageRating || 0).toFixed(1)}
@@ -416,7 +416,7 @@ const Profile = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-6 relative overflow-hidden cursor-pointer hover:bg-[#0F1220]/95 transition-all duration-300 group"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-6 relative overflow-hidden cursor-pointer hover:bg-[#9A9A9A]/10 transition-all duration-300 group"
               onClick={async () => {
                 if (profile.following && profile.following.length > 0) {
                   setLoadingFollowing(true);
@@ -436,15 +436,15 @@ const Profile = () => {
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
-              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[#FFFFFF] mb-2 flex items-center gap-2">
                 <FaUser className="w-4 h-4 text-[#8B5CF6]" />
                 Following ({profile.following?.length || 0})
               </h3>
               
               {profile.following && profile.following.length > 0 ? (
-                <p className="text-sm text-white/70">Tap to view all</p>
+                <p className="text-sm text-[#9A9A9A]">Tap to view all</p>
               ) : (
-                <p className="text-sm text-white/70">Not following anyone yet</p>
+                <p className="text-sm text-[#9A9A9A]">Not following anyone yet</p>
               )}
             </motion.div>
 
@@ -453,7 +453,7 @@ const Profile = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-6 relative overflow-hidden cursor-pointer hover:bg-[#0F1220]/95 transition-all duration-300 group"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-6 relative overflow-hidden cursor-pointer hover:bg-[#9A9A9A]/10 transition-all duration-300 group"
               onClick={async () => {
                 if (profile.followers && profile.followers.length > 0) {
                   setLoadingFollowers(true);
@@ -473,15 +473,15 @@ const Profile = () => {
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#22D3EE]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
-              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[#FFFFFF] mb-2 flex items-center gap-2">
                 <FaUsers className="w-4 h-4 text-[#22D3EE]" />
                 Followers ({profile.followers?.length || 0})
               </h3>
               
               {profile.followers && profile.followers.length > 0 ? (
-                <p className="text-sm text-white/70">Tap to view all</p>
+                <p className="text-sm text-[#9A9A9A]">Tap to view all</p>
               ) : (
-                <p className="text-sm text-white/70">No followers yet</p>
+                <p className="text-sm text-[#9A9A9A]">No followers yet</p>
               )}
             </motion.div>
 
@@ -490,16 +490,16 @@ const Profile = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-[#0F1220]/92 backdrop-blur-xl border border-white/6 rounded-3xl p-6 relative overflow-hidden"
+              className="bg-[#000000] border border-[#9A9A9A]/20 rounded-3xl p-6 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/30 to-transparent" />
               
-              <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-bold text-[#FFFFFF] mb-4">Quick Actions</h3>
               
               <div className="space-y-3">
                 <Link to="/homepage">
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button variant="outline" className="w-full justify-start border-white/20 text-white/80 hover:bg-white/5 rounded-2xl">
+                    <Button variant="outline" className="w-full justify-start border-[#9A9A9A]/40 text-[#FFFFFF] hover:bg-[#9A9A9A]/10 rounded-2xl">
                       <FaGamepad className="w-4 h-4 mr-2" />
                       Browse Games
                     </Button>
@@ -508,7 +508,7 @@ const Profile = () => {
                 
                 <Link to="/favorites">
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button variant="outline" className="w-full justify-start border-white/20 text-white/80 hover:bg-white/5 rounded-2xl">
+                    <Button variant="outline" className="w-full justify-start border-[#9A9A9A]/40 text-[#FFFFFF] hover:bg-[#9A9A9A]/10 rounded-2xl">
                       <FaStar className="w-4 h-4 mr-2" />
                       My Favorites
                     </Button>
@@ -522,20 +522,20 @@ const Profile = () => {
 
       {/* Following Modal */}
       <Dialog open={showFollowingModal} onOpenChange={setShowFollowingModal}>
-        <DialogContent className="max-w-md bg-[#0F1220]/95 backdrop-blur-xl border border-white/10 text-white">
+        <DialogContent className="max-w-md bg-[#000000] border border-[#9A9A9A]/40 text-[#FFFFFF]">
           <DialogHeader>
-            <DialogTitle className="text-white">Following ({profile?.following?.length || 0})</DialogTitle>
+            <DialogTitle className="text-[#FFFFFF]">Following ({profile?.following?.length || 0})</DialogTitle>
           </DialogHeader>
           <div className="max-h-96 overflow-y-auto">
             {loadingFollowing ? (
-              <div className="text-center py-4 text-white/70">Loading...</div>
+              <div className="text-center py-4 text-[#9A9A9A]">Loading...</div>
             ) : followingData.length > 0 ? (
               <div className="space-y-3">
                 {followingData.map((user) => (
                   <motion.div 
                     key={user.uid} 
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer transition-all duration-200" 
+                    className="flex items-center gap-3 p-3 hover:bg-[#9A9A9A]/10 rounded-2xl cursor-pointer transition-all duration-200" 
                     onClick={() => {
                       setShowFollowingModal(false);
                       navigate(`/user/${user.username}`);
@@ -548,16 +548,16 @@ const Profile = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-medium text-white">@{user.username}</p>
+                      <p className="font-medium text-[#FFFFFF]">@{user.username}</p>
                       {user.displayName && (
-                        <p className="text-sm text-white/70">{user.displayName}</p>
+                        <p className="text-sm text-[#9A9A9A]">{user.displayName}</p>
                       )}
                     </div>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-4 text-white/70">No following found</div>
+              <div className="text-center py-4 text-[#9A9A9A]">No following found</div>
             )}
           </div>
         </DialogContent>
@@ -565,20 +565,20 @@ const Profile = () => {
 
       {/* Followers Modal */}
       <Dialog open={showFollowersModal} onOpenChange={setShowFollowersModal}>
-        <DialogContent className="max-w-md bg-[#0F1220]/95 backdrop-blur-xl border border-white/10 text-white">
+        <DialogContent className="max-w-md bg-[#000000] border border-[#9A9A9A]/40 text-[#FFFFFF]">
           <DialogHeader>
-            <DialogTitle className="text-white">Followers ({profile?.followers?.length || 0})</DialogTitle>
+            <DialogTitle className="text-[#FFFFFF]">Followers ({profile?.followers?.length || 0})</DialogTitle>
           </DialogHeader>
           <div className="max-h-96 overflow-y-auto">
             {loadingFollowers ? (
-              <div className="text-center py-4 text-white/70">Loading...</div>
+              <div className="text-center py-4 text-[#9A9A9A]">Loading...</div>
             ) : followersData.length > 0 ? (
               <div className="space-y-3">
                 {followersData.map((user) => (
                   <motion.div 
                     key={user.uid} 
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer transition-all duration-200" 
+                    className="flex items-center gap-3 p-3 hover:bg-[#9A9A9A]/10 rounded-2xl cursor-pointer transition-all duration-200" 
                     onClick={() => {
                       setShowFollowersModal(false);
                       navigate(`/user/${user.username}`);
@@ -591,16 +591,16 @@ const Profile = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-medium text-white">@{user.username}</p>
+                      <p className="font-medium text-[#FFFFFF]">@{user.username}</p>
                       {user.displayName && (
-                        <p className="text-sm text-white/70">{user.displayName}</p>
+                        <p className="text-sm text-[#9A9A9A]">{user.displayName}</p>
                       )}
                     </div>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-4 text-white/70">No followers found</div>
+              <div className="text-center py-4 text-[#9A9A9A]">No followers found</div>
             )}
           </div>
         </DialogContent>

@@ -1,15 +1,17 @@
 import { storyService } from './storyService';
+import { notificationService } from './notificationService';
 
 export const cleanupService = {
-  // Start automatic cleanup of expired stories
+  // Start automatic cleanup of expired stories and old notifications
   startStoryCleanup() {
     // Run cleanup every hour
     const cleanup = async () => {
       try {
         await storyService.deleteExpiredStories();
-        console.log('Expired stories cleaned up');
+        await notificationService.deleteOldNotifications();
+        console.log('Expired stories and old notifications cleaned up');
       } catch (error) {
-        console.error('Error cleaning up expired stories:', error);
+        console.error('Error cleaning up expired content:', error);
       }
     };
 
