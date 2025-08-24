@@ -279,7 +279,16 @@ const Chat: React.FC = () => {
                 >
                   <FaArrowLeft className="w-4 h-4" />
                 </Button>
-                <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                <Avatar 
+                  className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                  onClick={() => {
+                    if (!isAIChat && otherUserId) {
+                      // Get username from otherUserName or use otherUserId as fallback
+                      const username = otherUserName.replace('@', '') || otherUserId;
+                      navigate(`/user/${username}`);
+                    }
+                  }}
+                >
                   <AvatarImage src={otherUserPhoto} alt={otherUserName} />
                   <AvatarFallback className={`text-white text-sm ${isAIChat ? 'bg-primary' : 'bg-blue-500'}`}>
                     {isAIChat ? <FaRobot className="w-4 h-4" /> : otherUserName.charAt(0).toUpperCase()}
@@ -329,7 +338,15 @@ const Chat: React.FC = () => {
                       {!isOwn && (
                         <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
                           {showAvatar ? (
-                            <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
+                            <Avatar 
+                              className="w-6 h-6 sm:w-8 sm:h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                              onClick={() => {
+                                if (!isAIChat && otherUserId) {
+                                  const username = otherUserName.replace('@', '') || otherUserId;
+                                  navigate(`/user/${username}`);
+                                }
+                              }}
+                            >
                               <AvatarImage src={otherUserPhoto} alt={otherUserName} />
                               <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}>
                                 {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}
@@ -372,7 +389,15 @@ const Chat: React.FC = () => {
                 {otherUserTyping && (
                   <div className="flex gap-2 justify-start mt-2">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
-                      <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
+                      <Avatar 
+                        className="w-6 h-6 sm:w-8 sm:h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                        onClick={() => {
+                          if (!isAIChat && otherUserId) {
+                            const username = otherUserName.replace('@', '') || otherUserId;
+                            navigate(`/user/${username}`);
+                          }
+                        }}
+                      >
                         <AvatarImage src={otherUserPhoto} alt={otherUserName} />
                         <AvatarFallback className={`text-xs sm:text-sm ${isAIChat ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}>
                           {isAIChat ? <FaRobot className="w-3 h-3" /> : otherUserName.charAt(0).toUpperCase()}

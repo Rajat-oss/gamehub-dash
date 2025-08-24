@@ -149,10 +149,17 @@ const Discussions: React.FC = () => {
                     className="p-4 hover:bg-gray-900 active:bg-gray-800 transition-colors cursor-pointer"
                   >
                     <div className="flex items-start space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={discussion.authorPhotoURL} alt={discussion.authorName} />
-                        <AvatarFallback className="bg-gray-700 text-white text-sm">
-                          {discussion.authorName.charAt(0).toUpperCase()}
+                      <Avatar 
+                        className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate(`/user/${discussion.authorName}`);
+                        }}
+                      >
+                        <AvatarImage src={discussion.authorPhotoURL || ''} alt={discussion.authorName} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                          {discussion.authorName?.charAt(0)?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       
@@ -289,9 +296,18 @@ const Discussions: React.FC = () => {
                       onClick={() => navigate(`/discussions/${discussion.id}`)}>
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex items-start gap-3 sm:gap-4">
-                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                        <AvatarImage src={discussion.authorPhotoURL} alt={discussion.authorName} />
-                        <AvatarFallback className="text-sm">{discussion.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+                      <Avatar 
+                        className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate(`/user/${discussion.authorName}`);
+                        }}
+                      >
+                        <AvatarImage src={discussion.authorPhotoURL || ''} alt={discussion.authorName} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                          {discussion.authorName?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">

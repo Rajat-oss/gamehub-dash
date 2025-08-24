@@ -126,9 +126,14 @@ const DiscussionDetails: React.FC = () => {
         <Card className="bg-gradient-card border-border/50 mb-6 sm:mb-8">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4 mb-4">
-              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                <AvatarImage src={discussion.authorPhotoURL} alt={discussion.authorName} />
-                <AvatarFallback className="text-sm">{discussion.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+              <Avatar 
+                className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                onClick={() => navigate(`/user/${discussion.authorName}`)}
+              >
+                <AvatarImage src={discussion.authorPhotoURL || ''} alt={discussion.authorName} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  {discussion.authorName?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 min-w-0">
@@ -216,9 +221,14 @@ const DiscussionDetails: React.FC = () => {
               <Card key={reply.id} className="bg-gradient-card border-border/50">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-start gap-3 sm:gap-4">
-                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
-                      <AvatarImage src={reply.authorPhotoURL} alt={reply.authorName} />
-                      <AvatarFallback className="text-xs sm:text-sm">{reply.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+                    <Avatar 
+                      className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                      onClick={() => navigate(`/user/${reply.authorName}`)}
+                    >
+                      <AvatarImage src={reply.authorPhotoURL || ''} alt={reply.authorName} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
+                        {reply.authorName?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
