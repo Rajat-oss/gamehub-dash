@@ -37,6 +37,7 @@ const Chat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isAIChat, setIsAIChat] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -60,9 +61,14 @@ const Chat: React.FC = () => {
         setAiMessages(parsedMessages);
       } else {
         // Initialize with welcome message
+        const apiKey = import.meta.env.VITE_GOOGLE_GENAI_API_KEY;
+        const isApiAvailable = apiKey && apiKey !== 'your_api_key_here';
+        
         const welcomeMessage: AIMessage = {
           id: '1',
-          content: "Hi! I'm your gaming assistant. Ask me about games, get recommendations, or chat about anything gaming-related!",
+          content: isApiAvailable 
+            ? "Hi! I'm your gaming assistant. Ask me about games, get recommendations, or chat about anything gaming-related!"
+            : "Hi! I'm your gaming assistant running in offline mode. I can still help with basic game recommendations and tips!",
           isUser: false,
           timestamp: new Date()
         };
@@ -87,6 +93,7 @@ const Chat: React.FC = () => {
     const unsubscribe = subscribeToMessages(user.uid, otherUserId, (chatMessages) => {
       setMessages(chatMessages);
       setLoading(false);
+      setConnectionError(false);
       
       // Mark messages as seen
       if (chatMessages.length > 0) {
@@ -176,10 +183,8 @@ const Chat: React.FC = () => {
       
       try {
         await sendMessage(
-          otherUserId,
-          otherUserName,
           user.uid,
-          user.displayName || 'User',
+          otherUserId,
           newMessage.trim()
         );
         setNewMessage('');
@@ -283,7 +288,8 @@ const Chat: React.FC = () => {
                 <div className="min-w-0 flex-1">
                   <h1 className="font-semibold text-base sm:text-lg truncate">{otherUserName}</h1>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    {otherUserTyping ? 'Typing...' : getLastSeenStatus()}
+                    {connectionError ? 'Connection issues - using offline mode' : 
+                     otherUserTyping ? 'Typing...' : getLastSeenStatus()}
                   </p>
                 </div>
               </div>

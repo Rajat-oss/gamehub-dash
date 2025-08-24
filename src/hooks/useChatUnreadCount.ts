@@ -44,6 +44,14 @@ export const useChatUnreadCount = () => {
             // Calculate total
             const total = Object.values(chatCounts).reduce((sum, count) => sum + count, 0);
             setUnreadCount(total);
+          }, (error) => {
+            console.error('Error getting unread count:', error);
+            // Fallback: try to get count from localStorage
+            const fallbackMessages = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+            const unreadCount = fallbackMessages.filter((msg: any) => 
+              msg.receiverId === user.uid && !msg.read
+            ).length;
+            setUnreadCount(unreadCount);
           });
 
           unsubscribes.push(messageUnsubscribe);
