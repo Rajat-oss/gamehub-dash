@@ -124,8 +124,25 @@ export async function sendMessageWithNames(senderId: string, receiverId: string,
     }
     
   } catch (error) {
-    console.error('Error sending message:', error);
-    throw error;
+    console.error('Error sending message, using fallback:', error);
+    // Fallback to localStorage if Firebase fails
+    const fallbackMessage = {
+      id: Date.now().toString(),
+      senderId,
+      receiverId,
+      senderName,
+      receiverName,
+      message,
+      timestamp: new Date(),
+      read: false
+    };
+    
+    const existingMessages = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+    existingMessages.push(fallbackMessage);
+    localStorage.setItem('chat_messages', JSON.stringify(existingMessages));
+    
+    // Dispatch custom event to update UI
+    window.dispatchEvent(new CustomEvent('chatUpdate'));
   }
 }
 
