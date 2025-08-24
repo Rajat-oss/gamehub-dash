@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope, FaBars, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope, FaBars, FaTimes, FaUsers } from 'react-icons/fa';
+import { MobileSidebar } from '@/components/MobileSidebar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchGames, TwitchGame } from '@/lib/twitch';
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const chatUnreadCount = useChatUnreadCount();
   const navigate = useNavigate();
@@ -147,18 +149,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     <nav className="bg-card/50 backdrop-blur-lg border-b border-border/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Mobile Hamburger Menu */}
-          <div className="lg:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2"
-            >
-              {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
-            </Button>
-          </div>
-
           {/* Logo */}
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
@@ -327,49 +317,67 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </Button>
           </div>
 
-          {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={userProfile?.photoURL || user?.photoURL || ''} alt={userProfile?.username || user?.displayName || ''} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || <FaUser />}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {userProfile?.username || user?.displayName || 'Gamer'}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                <FaUser className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
-                <FaCog className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/contact')}>
-                <FaEnvelope className="mr-2 h-4 w-4" />
-                <span>Contact Us</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <FaSignOutAlt className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* User Menu - Desktop Dropdown, Mobile Sidebar */}
+          <div className="hidden lg:block">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={userProfile?.photoURL || user?.photoURL || ''} alt={userProfile?.username || user?.displayName || ''} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || <FaUser />}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {userProfile?.username || user?.displayName || 'Gamer'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <FaUser className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <FaCog className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/contact')}>
+                  <FaEnvelope className="mr-2 h-4 w-4" />
+                  <span>Contact Us</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <FaSignOutAlt className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          {/* Mobile Profile Button */}
+          <div className="lg:hidden">
+            <Button 
+              variant="ghost" 
+              className="relative h-8 w-8 rounded-full"
+              onClick={() => setIsMobileSidebarOpen(true)}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={userProfile?.photoURL || user?.photoURL || ''} alt={userProfile?.username || user?.displayName || ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || <FaUser />}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Expanded Search */}
@@ -445,130 +453,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Mobile Sidebar Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                onClick={() => setIsMobileMenuOpen(false)}
-              />
-              
-              {/* Sidebar */}
-              <motion.div
-                initial={{ x: '-100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '-100%' }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="fixed top-0 left-0 h-full w-64 bg-background border-r border-border shadow-2xl z-50 lg:hidden"
-              >
-                <div className="p-4">
-                  {/* Header with Logo and Close Button */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="cursor-pointer" onClick={() => {
-                      navigate('/');
-                      setIsMobileMenuOpen(false);
-                    }}>
-                      <img 
-                        src="/logofinal.png" 
-                        alt="GameHub" 
-                        className="h-16 w-16 object-contain" 
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-2"
-                    >
-                      <FaTimes className="w-5 h-5" />
-                    </Button>
-                  </div>
-                  
-                  {/* Navigation Items */}
-                  <div className="space-y-2">
-                    <Button 
-                      variant={location.pathname === '/posts' ? 'default' : 'ghost'}
-                      onClick={() => {
-                        navigate('/posts');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start"
-                    >
-                      Social
-                    </Button>
-                    
-                    <Button 
-                      variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
-                      onClick={() => {
-                        navigate('/my-games');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start"
-                    >
-                      <FaGamepad className="w-4 h-4 mr-2" />
-                      My Games
-                    </Button>
-                    
-                    <Button 
-                      variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
-                      onClick={() => {
-                        navigate('/favorites');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start"
-                    >
-                      <FaHeart className="w-4 h-4 mr-2" />
-                      Favorites
-                    </Button>
-                    
-                    <Button 
-                      variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
-                      onClick={() => {
-                        navigate('/inbox');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start relative"
-                    >
-                      <FaComments className="w-4 h-4 mr-2" />
-                      Chat
-                      {chatUnreadCount > 0 && (
-                        <Badge className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-green-500 text-white">
-                          {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                    
-                    <Button
-                      variant={location.pathname === '/notifications' ? 'default' : 'ghost'}
-                      onClick={() => {
-                        navigate('/notifications');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full justify-start relative"
-                    >
-                      <FaBell className="w-4 h-4 mr-2" />
-                      Notifications
-                      {unreadCount > 0 && (
-                        <Badge className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                    
-
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        
+        {/* Mobile Sidebar */}
+        <MobileSidebar 
+          isOpen={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+          userProfile={userProfile}
+          unreadCount={unreadCount}
+          chatUnreadCount={chatUnreadCount}
+        />
       </div>
     </nav>
   );
