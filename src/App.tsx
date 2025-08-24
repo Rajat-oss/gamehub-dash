@@ -7,6 +7,8 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useNotificationListener } from "@/hooks/useNotificationListener";
+import { cleanupService } from "@/services/cleanupService";
+import { useEffect } from "react";
 import { LandingPage } from "./pages/LandingPage";
 import Index from "./pages/Index";
 import Favorites from "./pages/Favorites";
@@ -59,6 +61,13 @@ const AppContent = () => {
 
 const NotificationWrapper = () => {
   useNotificationListener();
+  
+  useEffect(() => {
+    // Start story cleanup service
+    const stopCleanup = cleanupService.startStoryCleanup();
+    return stopCleanup;
+  }, []);
+  
   return <AppContent />;
 };
 

@@ -191,6 +191,27 @@ export const userService = {
     });
   },
 
+  // Get all public users for suggestions
+  async getAllPublicUsers(): Promise<UserProfile[]> {
+    const q = query(collection(db, USERS_COLLECTION), where('isPublic', '!=', false));
+    const querySnapshot = await getDocs(q);
+    
+    const users: UserProfile[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const joinDate = data.joinDate 
+        ? (typeof data.joinDate.toDate === 'function' ? data.joinDate.toDate() : new Date(data.joinDate))
+        : new Date();
+      
+      users.push({
+        ...data,
+        joinDate
+      } as UserProfile);
+    });
+    
+    return users;
+  },
+
   // Cleanup function - remove user document by username (for testing)
   async deleteUserByUsername(username: string): Promise<void> {
     try {
