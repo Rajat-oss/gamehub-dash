@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { discussionService } from '@/services/discussionService';
+import { userService } from '@/services/userService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,15 @@ export const CreateDiscussionModal: React.FC<CreateDiscussionModalProps> = ({ is
   });
   const [newTag, setNewTag] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      userService.getUserProfile(user.uid).then(profile => {
+        setUserProfile(profile);
+      }).catch(console.error);
+    }
+  }, [user]);
 
   const categories = [
     { id: 'general', name: 'General Gaming' },
@@ -43,8 +53,8 @@ export const CreateDiscussionModal: React.FC<CreateDiscussionModalProps> = ({ is
     try {
       await discussionService.createDiscussion(
         user.uid, 
-        user.displayName || 'User', 
-        user.photoURL, 
+        userProfile?.username || user.displayName || 'User', 
+        userProfile?.photoURL || user.photoURL, 
         formData
       );
       toast.success('Discussion created successfully!');

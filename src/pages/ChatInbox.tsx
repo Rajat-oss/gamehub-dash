@@ -153,7 +153,16 @@ const ChatInbox = () => {
                   return (
                     <Link key={chat.id} to={`/chat/${otherUserId}`}>
                       <div className="flex items-center space-x-4 p-4 bg-secondary/10 rounded-lg border border-border/30 hover:bg-secondary/20 transition-colors cursor-pointer">
-                        <Avatar className="h-12 w-12">
+                        <Avatar 
+                          className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (otherUserId && profile?.username) {
+                              navigate(`/user/${profile.username}`);
+                            }
+                          }}
+                        >
                           <AvatarImage src={profile?.photoURL} alt={otherUserName} />
                           <AvatarFallback className="bg-primary text-primary-foreground">
                             {otherUserName.charAt(0).toUpperCase()}
