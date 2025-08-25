@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -15,73 +16,68 @@ import { useNavigate } from 'react-router-dom';
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  
+  const featuresRef = useRef(null);
+  const statsRef = useRef(null);
+  const howItWorksRef = useRef(null);
+  const showcaseRef = useRef(null);
+  const socialRef = useRef(null);
+  
+  const featuresInView = useInView(featuresRef, { once: true, margin: '-100px' });
+  const statsInView = useInView(statsRef, { once: true, margin: '-100px' });
+  const howItWorksInView = useInView(howItWorksRef, { once: true, margin: '-100px' });
+  const showcaseInView = useInView(showcaseRef, { once: true, margin: '-100px' });
+  const socialInView = useInView(socialRef, { once: true, margin: '-100px' });
 
   const features = [
     {
-      icon: Zap,
-      title: "Vast Game Library",
-      description: "Access thousands of games from indie gems to AAA blockbusters",
-      color: "text-blue-500"
-    },
-    {
-      icon: Users,
-      title: "Gaming Community",
-      description: "Connect with fellow gamers and share your gaming experiences",
-      color: "text-green-500"
-    },
-    {
       icon: Trophy,
-      title: "Achievement System",
-      description: "Track your progress and unlock achievements across all games",
+      title: "Game Progress Tracking",
+      description: "Log your gaming sessions, track completion rates, and monitor your gaming journey",
       color: "text-yellow-500"
     },
     {
-      icon: Download,
-      title: "Lightning Fast",
-      description: "Optimized performance for seamless gaming experience",
+      icon: Users,
+      title: "Gaming Social Network",
+      description: "Share screenshots, stories, and connect with gamers who share your interests",
+      color: "text-green-500"
+    },
+    {
+      icon: Gamepad2,
+      title: "Personal Game Library",
+      description: "Organize your games, create wishlists, and discover new titles to play",
+      color: "text-blue-500"
+    },
+    {
+      icon: Heart,
+      title: "Gaming Stories & Posts",
+      description: "Share your gaming moments, achievements, and experiences with the community",
+      color: "text-pink-500"
+    },
+    {
+      icon: Star,
+      title: "Reviews & Ratings",
+      description: "Rate games you've played and read authentic reviews from fellow gamers",
       color: "text-purple-500"
     },
     {
-      icon: Shield,
-      title: "Secure Platform",
-      description: "Your data and gaming progress are always protected",
-      color: "text-red-500"
-    },
-    {
       icon: Sparkles,
-      title: "Premium Features",
-      description: "Unlock exclusive content and advanced gaming tools",
-      color: "text-pink-500"
+      title: "AI Gaming Assistant",
+      description: "Get personalized game recommendations and gaming tips from our AI assistant",
+      color: "text-red-500"
     }
   ];
 
   const stats = [
-    { number: "10K+", label: "Active Gamers", icon: Users },
-    { number: "500+", label: "Games Available", icon: Gamepad2 },
-    { number: "98%", label: "Satisfaction Rate", icon: Heart },
-    { number: "24/7", label: "Support Available", icon: Shield }
+    { number: "10K+", label: "Gaming Sessions Logged", icon: Trophy },
+    { number: "500+", label: "Games in Database", icon: Gamepad2 },
+    { number: "5K+", label: "Gaming Stories Shared", icon: Heart },
+    { number: "24/7", label: "AI Assistant Available", icon: Sparkles }
   ];
 
-  const testimonials = [
-    {
-      name: "Alex Chen",
-      role: "Pro Gamer",
-      content: "GameHub has completely transformed my gaming experience. The vast library and seamless interface make discovering new games a joy.",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-    },
-    {
-      name: "Sarah Johnson",
-      role: "Content Creator",
-      content: "As a gaming content creator, I love how GameHub helps me find trending games and connect with the gaming community effortlessly.",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
-    },
-    {
-      name: "Mike Rodriguez",
-      role: "Casual Gamer",
-      content: "The recommendation system is spot-on! I've discovered so many hidden gems that I wouldn't have found otherwise.",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
-    }
-  ];
+ 
 
   const footerLinks = {
     product: [
@@ -91,7 +87,7 @@ export const LandingPage: React.FC = () => {
       { name: "API", href: "#api" }
     ],
     company: [
-      { name: "About Us", href: "#about" },
+      { name: "About Us", href: "/about" },
       { name: "Careers", href: "#careers" },
       { name: "Blog", href: "#blog" },
       { name: "Press", href: "#press" }
@@ -103,8 +99,8 @@ export const LandingPage: React.FC = () => {
       { name: "Community", href: "#community" }
     ],
     legal: [
-      { name: "Privacy Policy", href: "#privacy" },
-      { name: "Terms of Service", href: "#terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
       { name: "Cookie Policy", href: "#cookies" },
       { name: "GDPR", href: "#gdpr" }
     ]
@@ -182,35 +178,35 @@ export const LandingPage: React.FC = () => {
           <Sparkles className="absolute bottom-32 right-24 h-9 w-9 text-primary/8 animate-float-delayed" />
         </div>
         
-        <div className="container relative z-10">
-          <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2 py-8 md:py-12 md:pb-8 lg:py-24 lg:pb-20">
-            <Badge variant="outline" className="animate-fade-in-up cyber-glow">
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="mx-auto flex max-w-[980px] flex-col items-center gap-4 sm:gap-2 py-12 sm:py-8 md:py-12 md:pb-8 lg:py-24 lg:pb-20">
+            <Badge variant="outline" className="animate-fade-in-up cyber-glow text-xs sm:text-sm">
               🎮 Welcome to the Future of Gaming
             </Badge>
-            <h1 className="animate-fade-in-up text-center text-3xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]" style={{animationDelay: '0.1s'}}>
+            <h1 className="animate-fade-in-up text-center text-2xl sm:text-3xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1] px-2" style={{animationDelay: '0.1s'}}>
               Your Ultimate{" "}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient-shift neon-text">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient-shift neon-text block sm:inline">
                 Gaming Hub
               </span>
             </h1>
-            <p className="animate-fade-in-up max-w-[750px] text-center text-lg text-muted-foreground sm:text-xl" style={{animationDelay: '0.2s'}}>
-              Discover, request, and enjoy thousands of games in one place. 
-              Join our community of passionate gamers and elevate your gaming experience.
+            <p className="animate-fade-in-up max-w-[750px] text-center text-base sm:text-lg text-muted-foreground sm:text-xl px-4 sm:px-0 leading-relaxed" style={{animationDelay: '0.2s'}}>
+              Track your gaming journey, share epic moments, and connect with fellow gamers. 
+              The ultimate platform combining game logging with social gaming experiences.
             </p>
-            <div className="animate-fade-in-up flex w-full items-center justify-center space-x-4 py-4 md:pb-10" style={{animationDelay: '0.3s'}}>
+            <div className="animate-fade-in-up flex w-full items-center justify-center flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 py-6 sm:py-4 md:pb-10 px-4 sm:px-0" style={{animationDelay: '0.3s'}}>
               {!user ? (
                 <>
-                  <Button size="lg" onClick={() => navigate('/auth?mode=signup')} className="gaming-button group animate-glow-pulse">
+                  <Button size="lg" onClick={() => navigate('/auth?mode=signup')} className="gaming-button group animate-glow-pulse w-full sm:w-auto">
                     Start Gaming Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
-                  <Button size="lg" variant="outline" className="group cyber-glow">
+                  <Button size="lg" variant="outline" className="group cyber-glow w-full sm:w-auto">
                     <Play className="mr-2 h-4 w-4 transition-transform group-hover:scale-110 animate-gaming-bounce" />
                     Watch Demo
                   </Button>
                 </>
               ) : (
-                <Button size="lg" onClick={() => navigate('/homepage')} className="gaming-button group animate-glow-pulse">
+                <Button size="lg" onClick={() => navigate('/homepage')} className="gaming-button group animate-glow-pulse w-full sm:w-auto">
                   Go to Homepage
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -223,141 +219,310 @@ export const LandingPage: React.FC = () => {
       <Separator />
       
       {/* Features Section */}
-      <section className="gaming-features-bg relative py-8 md:py-12 lg:py-24 overflow-hidden">
+      <motion.section 
+        ref={featuresRef}
+        className="gaming-features-bg relative py-8 md:py-12 lg:py-24 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={featuresInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
         {/* Background Gaming Icons */}
-        <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          className="absolute inset-0 pointer-events-none"
+          style={{ y }}
+        >
           <Users className="absolute top-10 left-5 h-12 w-12 text-green-500/5 animate-float" />
           <Download className="absolute top-20 right-10 h-8 w-8 text-purple-500/5 animate-float-delayed" />
           <Globe className="absolute bottom-10 left-1/4 h-10 w-10 text-blue-500/5 animate-gaming-bounce" />
-        </div>
+        </motion.div>
         
-        <div className="container relative z-10 space-y-6">
-          <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2 text-center">
-            <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-6xl">
+        <div className="container relative z-10 space-y-8 sm:space-y-6 px-4 sm:px-6">
+          <motion.div 
+            className="mx-auto flex max-w-[980px] flex-col items-center gap-4 sm:gap-2 text-center"
+            initial={{ y: 50, opacity: 0 }}
+            animate={featuresInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2">
               Why Choose GameHub?
             </h2>
-            <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2">
               Experience gaming like never before with our cutting-edge platform
             </p>
-          </div>
-          <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
+          </motion.div>
+          <div className="mx-auto grid justify-center gap-6 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
             {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="gaming-card-glow group relative overflow-hidden transition-all hover:shadow-lg animate-fade-in-up cyber-glow"
-                style={{ animationDelay: `${index * 0.1}s` }}
+              <motion.div
+                key={index}
+                initial={{ y: 50, opacity: 0, scale: 0.9 }}
+                animate={featuresInView ? { y: 0, opacity: 1, scale: 1 } : { y: 50, opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                whileHover={{ y: -10, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <CardHeader>
-                  <feature.icon className={`h-8 w-8 ${feature.color} transition-transform group-hover:scale-110 animate-gaming-bounce`} />
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+                <Card className="gaming-card-glow group relative overflow-hidden transition-all hover:shadow-lg cyber-glow h-full">
+                  <CardHeader>
+                    <motion.div
+                      whileHover={{ rotate: 360, scale: 1.2 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <feature.icon className={`h-8 w-8 ${feature.color} transition-transform`} />
+                    </motion.div>
+                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* How It Works Section */}
+      <motion.section 
+        ref={howItWorksRef}
+        className="relative py-8 md:py-12 lg:py-24 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={howItWorksInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="container relative z-10 px-4 sm:px-6">
+          <motion.div 
+            className="mx-auto flex max-w-[980px] flex-col items-center gap-4 sm:gap-2 text-center mb-12"
+            initial={{ y: 50, opacity: 0 }}
+            animate={howItWorksInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-5xl px-2">
+              How GameHub Works
+            </h2>
+            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg px-2">
+              Get started in three simple steps
+            </p>
+          </motion.div>
+          <div className="mx-auto grid gap-8 sm:gap-12 grid-cols-1 md:grid-cols-3 max-w-5xl">
+            {[
+              { icon: Users, title: "1. Create Account", desc: "Sign up and set up your gaming profile in minutes" },
+              { icon: Gamepad2, title: "2. Log Your Games", desc: "Track your gaming sessions and build your library" },
+              { icon: Heart, title: "3. Share & Connect", desc: "Share your gaming moments and connect with others" }
+            ].map((step, index) => (
+              <motion.div 
+                key={index}
+                className="text-center group"
+                initial={{ y: 50, opacity: 0, scale: 0.8 }}
+                animate={howItWorksInView ? { y: 0, opacity: 1, scale: 1 } : { y: 50, opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.5, delay: 0.4 + index * 0.2 }}
+                whileHover={{ y: -10 }}
+              >
+                <motion.div 
+                  className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <step.icon className="w-8 h-8 text-primary" />
+                </motion.div>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
 
       <Separator />
-      
-      {/* Stats Section */}
-      <section className="gaming-stats-bg relative py-8 md:py-12 lg:py-24 overflow-hidden">
-        {/* Floating Numbers Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-10 text-6xl font-bold text-primary/5 animate-float">10K</div>
-          <div className="absolute top-20 right-20 text-4xl font-bold text-accent/5 animate-float-delayed">500+</div>
-          <div className="absolute bottom-20 left-1/3 text-5xl font-bold text-primary/5 animate-gaming-bounce">98%</div>
-          <div className="absolute bottom-10 right-10 text-3xl font-bold text-accent/5 animate-float">24/7</div>
-        </div>
-        
-        <div className="container relative z-10">
-          <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 lg:grid-cols-4 md:max-w-[64rem]">
-            {stats.map((stat, index) => (
-              <Card 
-                key={index} 
-                className="gaming-card-glow text-center animate-fade-in-up border-0 bg-background/50 backdrop-blur cyber-glow animate-glow-pulse"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardContent className="p-6">
-                  <stat.icon className="h-8 w-8 mx-auto mb-2 text-primary animate-gaming-bounce" />
-                  <div className="text-3xl font-bold tracking-tighter sm:text-4xl text-primary neon-text">
-                    {stat.number}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section className="gaming-testimonials-bg relative py-8 md:py-12 lg:py-24 overflow-hidden">
-        {/* Background Quote Marks */}
-        <div className="absolute inset-0 pointer-events-none">
-          <Quote className="absolute top-10 left-5 h-20 w-20 text-primary/3 animate-float" />
-          <Quote className="absolute top-40 right-10 h-16 w-16 text-accent/3 animate-float-delayed" />
-          <Star className="absolute bottom-20 left-1/4 h-12 w-12 text-primary/3 animate-gaming-bounce" />
-          <Heart className="absolute bottom-10 right-1/3 h-14 w-14 text-accent/3 animate-float" />
-        </div>
-        
-        <div className="container relative z-10">
-          <div className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center mb-12">
-            <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
-              What Our Gamers Say
-            </h2>
-            <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              Join thousands of satisfied gamers who have transformed their gaming experience
-            </p>
-          </div>
-          <div className="mx-auto grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:max-w-[80rem]">
-            {testimonials.map((testimonial, index) => (
-              <Card 
-                key={index} 
-                className="gaming-card-glow group relative overflow-hidden transition-all hover:shadow-xl animate-fade-in-up cyber-glow"
-                style={{ animationDelay: `${index * 0.2}s` }}
+      {/* Product Showcase Section */}
+      <motion.section 
+        ref={showcaseRef}
+        className="relative py-8 md:py-12 lg:py-24 overflow-hidden bg-muted/20"
+        initial={{ opacity: 0 }}
+        animate={showcaseInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-12 lg:gap-20 items-center lg:grid-cols-2">
+              <motion.div 
+                className="space-y-6"
+                initial={{ x: -50, opacity: 0 }}
+                animate={showcaseInView ? { x: 0, opacity: 1 } : { x: -50, opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <CardHeader className="pb-4">
-                  <Quote className="h-8 w-8 text-primary mb-2 animate-gaming-bounce" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed italic">
-                    "{testimonial.content}"
-                  </p>
-                  <div className="flex items-center space-x-3">
-                    <img 
-                      src={testimonial.avatar} 
-                      alt={testimonial.name}
-                      className="h-12 w-12 rounded-full object-cover animate-glow-pulse"
-                    />
-                    <div className="text-left">
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl">
+                  Track Every Gaming Moment
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Log your gaming sessions, track completion rates, and see your progress over time. 
+                  Never lose track of your gaming journey again.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    "Automatic session tracking",
+                    "Progress visualization", 
+                    "Achievement milestones"
+                  ].map((feature, index) => (
+                    <motion.div 
+                      key={index}
+                      className="flex items-center gap-3"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={showcaseInView ? { x: 0, opacity: 1 } : { x: -20, opacity: 0 }}
+                      transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                      whileHover={{ x: 10 }}
+                    >
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+              <motion.div 
+                className="relative"
+                initial={{ x: 50, opacity: 0, scale: 0.9 }}
+                animate={showcaseInView ? { x: 0, opacity: 1, scale: 1 } : { x: 50, opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl p-8 backdrop-blur-sm border border-primary/20">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Gamepad2 className="w-6 h-6 text-primary" />
+                        <span className="font-medium">Cyberpunk 2077</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">45h played</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Trophy className="w-6 h-6 text-yellow-500" />
+                        <span className="font-medium">Elden Ring</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">Completed</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Star className="w-6 h-6 text-purple-500" />
+                        <span className="font-medium">Hades</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">★★★★★</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      <Separator />
+
+     
+
+      <Separator />
+
+      {/* Social Features Section */}
+      <motion.section 
+        ref={socialRef}
+        className="relative py-8 md:py-12 lg:py-24 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={socialInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-12 lg:gap-20 items-center lg:grid-cols-2">
+              <motion.div 
+                className="relative order-2 lg:order-1"
+                initial={{ x: -50, opacity: 0, scale: 0.9 }}
+                animate={socialInView ? { x: 0, opacity: 1, scale: 1 } : { x: -50, opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-2xl p-8 backdrop-blur-sm border border-green-500/20">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-4 bg-background/50 rounded-lg">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Alex shared a screenshot</p>
+                        <p className="text-sm text-muted-foreground">Just beat the final boss! 🎉</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-4 bg-background/50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <Heart className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Sarah posted a review</p>
+                        <p className="text-sm text-muted-foreground">Amazing storyline! Highly recommend ⭐⭐⭐⭐⭐</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-4 bg-background/50 rounded-lg">
+                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Mike unlocked achievement</p>
+                        <p className="text-sm text-muted-foreground">Speedrun Master - Complete in under 2 hours</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              <motion.div 
+                className="space-y-6 order-1 lg:order-2"
+                initial={{ x: 50, opacity: 0 }}
+                animate={socialInView ? { x: 0, opacity: 1 } : { x: 50, opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl">
+                  Connect with Fellow Gamers
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Share your gaming achievements, post reviews, and discover new games through 
+                  your gaming community. Build lasting friendships over shared gaming experiences.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    "Share screenshots and stories",
+                    "Follow other gamers",
+                    "Discover trending games"
+                  ].map((feature, index) => (
+                    <motion.div 
+                      key={index}
+                      className="flex items-center gap-3"
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={socialInView ? { x: 0, opacity: 1 } : { x: 20, opacity: 0 }}
+                      transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                      whileHover={{ x: 10 }}
+                    >
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       <Separator />
       
       {/* CTA Section */}
-      <section className="container py-8 md:py-12 lg:py-24">
-        <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2 text-center">
-          <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-6xl">
+      <section className="container py-12 sm:py-8 md:py-12 lg:py-24 px-4 sm:px-6">
+        <div className="mx-auto flex max-w-[980px] flex-col items-center gap-4 sm:gap-2 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2">
             Ready to Level Up Your Gaming?
           </h2>
-          <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+          <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2">
             Join thousands of gamers who have already discovered their new favorite games
           </p>
-          <div className="flex w-full items-center justify-center space-x-4 py-4 md:pb-10">
+          <div className="flex w-full items-center justify-center py-6 sm:py-4 md:pb-10 px-4 sm:px-0">
             {!user && (
-              <Button size="lg" onClick={() => navigate('/auth?mode=signup')}>
+              <Button size="lg" onClick={() => navigate('/auth?mode=signup')} className="w-full sm:w-auto">
                 <img src="/logofinal.png" alt="" className="mr-2 h-4 w-4 object-contain" />
                 Join GameHub Today
               </Button>
@@ -373,8 +538,8 @@ export const LandingPage: React.FC = () => {
             {/* Logo and Company Info */}
             <div className="lg:col-span-2">
               <div className="flex items-center space-x-3">
-                <img src="/logofinal.png" alt="GameHub" className="h-10 w-10 object-contain" />
-                <span className="text-xl font-bold">GameHub</span>
+                <img src="/logofinal.png" alt="GameHub" className="h-20 w-35" />
+                
               </div>
               <p className="mt-4 max-w-xs text-sm text-muted-foreground">
                 The ultimate gaming platform connecting players to their next favorite game experience through advanced discovery and community tools.
@@ -395,22 +560,7 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Links */}
-            <div>
-              <h3 className="text-sm font-semibold">Product</h3>
-              <ul className="mt-4 space-y-3">
-                {footerLinks.product.map((link, index) => (
-                  <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+        
 
             {/* Company Links */}
             <div>
@@ -418,12 +568,21 @@ export const LandingPage: React.FC = () => {
               <ul className="mt-4 space-y-3">
                 {footerLinks.company.map((link, index) => (
                   <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.href.startsWith('/') ? (
+                      <button 
+                        onClick={() => navigate(link.href)}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <a 
+                        href={link.href} 
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -451,13 +610,23 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex space-x-6 md:order-2">
                 {footerLinks.legal.map((link, index) => (
-                  <a 
-                    key={index}
-                    href={link.href}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </a>
+                  link.href.startsWith('/') ? (
+                    <button 
+                      key={index}
+                      onClick={() => navigate(link.href)}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.name}
+                    </button>
+                  ) : (
+                    <a 
+                      key={index}
+                      href={link.href}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  )
                 ))}
               </div>
               <p className="mt-4 text-xs text-muted-foreground md:mt-0 md:order-1">

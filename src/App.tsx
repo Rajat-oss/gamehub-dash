@@ -10,6 +10,9 @@ import { useNotificationListener } from "@/hooks/useNotificationListener";
 import { cleanupService } from "@/services/cleanupService";
 import { useEffect } from "react";
 import { LandingPage } from "./pages/LandingPage";
+import { AboutUs } from "./pages/AboutUs";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { TermsOfService } from "./pages/TermsOfService";
 import Index from "./pages/Index";
 import Favorites from "./pages/Favorites";
 import MyGames from "./pages/MyGames";
@@ -37,6 +40,9 @@ const AppContent = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         <Route path="/auth" element={<Index />} />
         <Route path="/homepage" element={<Index />} />
         <Route path="/favorites" element={<Favorites />} />

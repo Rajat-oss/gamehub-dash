@@ -163,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
 
           {/* Desktop Search - Only show on specific pages */}
           {showGameSearch && (
-            <form onSubmit={handleSearchSubmit} className="hidden lg:flex max-w-sm mr-4">
+            <form onSubmit={handleSearchSubmit} className="hidden lg:flex max-w-md w-96 mr-4">
               <motion.div 
                 className="relative w-full" 
                 ref={searchRef}
