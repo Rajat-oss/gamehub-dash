@@ -91,8 +91,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
             <Badge className="bg-primary/80 backdrop-blur-sm text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1">
               <FaStar className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-              <span className="hidden sm:inline">Pixel Pilgrim</span>
-              <span className="sm:hidden">PP</span>
+              <span className="hidden sm:inline">Featured</span>
+              <span className="sm:hidden">★</span>
             </Badge>
           </div>
 
@@ -127,9 +127,11 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
             {game.name}
           </h3>
         
-          <p className="text-xs text-muted-foreground mb-2 hidden md:block">
-            Popular game on Pixel Pilgrim platform
-          </p>
+          {game.genres && game.genres.length > 0 && (
+            <p className="text-xs text-muted-foreground mb-2 hidden md:block">
+              {game.genres.slice(0, 2).join(', ')} • {game.platforms ? game.platforms.slice(0, 2).join(', ') : 'Multi-platform'}
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-1">
             {game.genres && game.genres.length > 0 ? (

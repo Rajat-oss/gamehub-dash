@@ -49,7 +49,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
     setShowSuggestions(false);
   };
   
@@ -78,8 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   };
   
   const handleSuggestionClick = (game: TwitchGame) => {
-    setSearchQuery(game.name);
-    onSearch(game.name);
+    navigate(`/search?q=${encodeURIComponent(game.name)}`);
     setShowSuggestions(false);
   };
   
@@ -161,32 +162,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Desktop Search - Only show on specific pages */}
+          {/* Clean Search Bar */}
           {showGameSearch && (
-            <form onSubmit={handleSearchSubmit} className="hidden lg:flex max-w-md w-96 mr-4">
-              <motion.div 
-                className="relative w-full" 
-                ref={searchRef}
-                animate={{ 
-                  scale: isSearchFocused ? 1.02 : 1,
-                  width: isSearchFocused ? "110%" : "100%"
-                }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <motion.div
-                  animate={{ 
-                    scale: isSearchFocused ? 1.1 : 1,
-                    color: isSearchFocused ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
-                  }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
-                >
-                  <FaSearch className="w-4 h-4" />
-                </motion.div>
-                <motion.div
-                  whileFocus={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                >
+            <form onSubmit={handleSearchSubmit} className="hidden lg:flex max-w-sm w-full mr-4">
+              <div className="relative w-full" ref={searchRef}>
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Search games..."
@@ -194,51 +175,44 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                     onChange={handleSearchChange}
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setIsSearchFocused(false)}
-                    className="pl-10 bg-secondary/50 border-border/50 focus:border-primary transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
+                    className="pl-10 pr-10 h-9 text-sm bg-background border-input"
                   />
-                </motion.div>
-                
-                {/* Search Suggestions */}
-                <AnimatePresence>
-                  {showSuggestions && suggestions.length > 0 && (
-                    <motion.div 
-                      className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto"
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {suggestions.map((game, index) => (
-                        <motion.div
-                          key={game.id}
-                          className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer border-b border-border/20 last:border-b-0"
-                          onClick={() => handleSuggestionClick(game)}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.2, delay: index * 0.05 }}
-                          whileHover={{ x: 5 }}
-                        >
-                          <motion.div 
-                            className="w-10 h-12 flex-shrink-0 bg-secondary/30 rounded overflow-hidden"
-                            whileHover={{ scale: 1.05 }}
-                          >
-                            <img
-                              src={game.box_art_url.replace('{width}', '40').replace('{height}', '48')}
-                              alt={game.name}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          </motion.div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-foreground truncate">{game.name}</div>
-                            <div className="text-xs text-muted-foreground">Game</div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </motion.div>
+                      <FaTimes className="w-3 h-3" />
+                    </button>
                   )}
-                </AnimatePresence>
-              </motion.div>
+                </div>
+                
+                {/* Clean Search Suggestions */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-popover border border-border rounded-md mt-1 shadow-md z-50 max-h-60 overflow-y-auto">
+                    {suggestions.map((game) => (
+                      <div
+                        key={game.id}
+                        className="flex items-center gap-2 p-2 hover:bg-accent cursor-pointer text-sm"
+                        onClick={() => handleSuggestionClick(game)}
+                      >
+                        <div className="w-8 h-10 flex-shrink-0 bg-muted rounded overflow-hidden">
+                          <img
+                            src={game.box_art_url.replace('{width}', '32').replace('{height}', '40')}
+                            alt={game.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{game.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </form>
           )}
 
@@ -425,7 +399,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                             key={game.id}
                             className="flex items-center gap-3 p-2.5 hover:bg-primary/10 cursor-pointer border-b border-border/20 last:border-b-0"
                             onClick={() => {
-                              handleSuggestionClick(game);
+                              navigate(`/search?q=${encodeURIComponent(game.name)}`);
+                              setShowSuggestions(false);
                               setIsSearchExpanded(false);
                             }}
                             initial={{ opacity: 0, x: -20 }}

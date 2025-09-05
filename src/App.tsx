@@ -29,6 +29,7 @@ import Posts from "./pages/Posts";
 import Discussions from "./pages/Discussions";
 import DiscussionDetails from "./pages/DiscussionDetails";
 import Contact from "./pages/Contact";
+import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 import "@/utils/emailTest"; // Import email test utility
 import "@/utils/verifyTemplate"; // Import template verification utility
@@ -59,6 +60,7 @@ const AppContent = () => {
         <Route path="/chat/:userId" element={<Chat />} />
         <Route path="/inbox" element={<ChatInbox />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

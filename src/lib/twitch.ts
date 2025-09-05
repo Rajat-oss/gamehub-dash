@@ -6,6 +6,14 @@ const RAWG_API_KEY = 'a3abcc7420fd4c08be50dd90a8365cb8';
 
 let accessToken: string | null = null;
 
+// Cache for RAWG API responses
+const rawgCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+// Rate limiting
+let lastRawgCall = 0;
+const RAWG_RATE_LIMIT = 1000; // 1 second between calls
+
 export interface TwitchGame {
   id: string;
   name: string;
@@ -15,6 +23,8 @@ export interface TwitchGame {
   rawgId?: number;
   genres?: string[];
   platforms?: string[];
+  screenshots?: string[];
+  background_image?: string;
 }
 
 export interface GameDetails {
@@ -27,6 +37,8 @@ export interface GameDetails {
   release_date?: string;
   rating?: number;
   box_art_url: string;
+  screenshots?: string[];
+  background_image?: string;
 }
 
 export interface TwitchStream {
@@ -112,33 +124,41 @@ const popularGames = [
   { id: '15', name: 'Red Dead Redemption 2', box_art_url: 'https://static-cdn.jtvnw.net/ttv-boxart/493959-{width}x{height}.jpg' }
 ];
 
-export async function searchGames(query: string): Promise<TwitchGame[]> {
+// Helper function for cached RAWG API calls
+async function cachedRawgCall(url: string): Promise<any> {
+  const cacheKey = url;
+  const cached = rawgCache.get(cacheKey);
+  
+  // Return cached data if valid
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
+  // Rate limiting
+  const now = Date.now();
+  if (now - lastRawgCall < RAWG_RATE_LIMIT) {
+    await new Promise(resolve => setTimeout(resolve, RAWG_RATE_LIMIT - (now - lastRawgCall)));
+  }
+  
   try {
-    // Try RAWG API for comprehensive game search
-    const response = await fetch(`https://api.rawg.io/api/games?key=a3abcc7420fd4c08be50dd90a8365cb8&search=${encodeURIComponent(query)}&page_size=10`);
+    const response = await fetch(url);
+    lastRawgCall = Date.now();
     
     if (response.ok) {
       const data = await response.json();
-      if (data.results) {
-        return data.results.map((game: any) => ({
-          id: `rawg_${game.id}`,
-          name: game.name,
-          box_art_url: game.background_image || 'https://via.placeholder.com/285x380?text=' + encodeURIComponent(game.name),
-          isRawgGame: true,
-          rawgId: game.id,
-          genres: game.genres?.map((g: any) => g.name) || [],
-          platforms: game.platforms?.map((p: any) => p.platform.name) || []
-        }));
-      }
+      rawgCache.set(cacheKey, { data, timestamp: Date.now() });
+      return data;
     }
   } catch (error) {
-    console.log('RAWG API failed, using fallback');
+    console.log('RAWG API call failed:', error);
   }
   
-  // Fallback to static + Twitch API
+  return null;
+}
+
+export async function searchGames(query: string): Promise<TwitchGame[]> {
+  // First try static popular games for common searches
   const lowerQuery = query.toLowerCase();
-  
-  // Search in static popular games
   const staticResults = popularGames
     .filter(game => game.name.toLowerCase().includes(lowerQuery))
     .map(game => ({
@@ -146,7 +166,32 @@ export async function searchGames(query: string): Promise<TwitchGame[]> {
       box_art_url: game.box_art_url.replace('{width}', '285').replace('{height}', '380')
     }));
   
-  // Search in Twitch API
+  if (staticResults.length > 0) {
+    return staticResults.slice(0, 8);
+  }
+  
+  // Only use RAWG API if no static results found
+  try {
+    const data = await cachedRawgCall(`https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=8`);
+    
+    if (data?.results) {
+      return data.results.map((game: any) => ({
+        id: `rawg_${game.id}`,
+        name: game.name,
+        box_art_url: game.background_image || 'https://via.placeholder.com/285x380?text=' + encodeURIComponent(game.name),
+        isRawgGame: true,
+        rawgId: game.id,
+        genres: game.genres?.map((g: any) => g.name) || [],
+        platforms: game.platforms?.map((p: any) => p.platform.name) || [],
+        screenshots: game.short_screenshots?.map((s: any) => s.image) || [],
+        background_image: game.background_image
+      }));
+    }
+  } catch (error) {
+    console.log('RAWG API failed, using fallback');
+  }
+  
+  // Fallback to Twitch API if no RAWG results
   if (!cachedTopGames) {
     try {
       cachedTopGames = await getTopGames(100);
@@ -159,32 +204,24 @@ export async function searchGames(query: string): Promise<TwitchGame[]> {
     game.name.toLowerCase().includes(lowerQuery)
   );
   
-  // Combine and deduplicate results
-  const allResults = [...staticResults, ...apiResults];
-  const uniqueResults = allResults.filter((game, index, self) => 
-    index === self.findIndex(g => g.name.toLowerCase() === game.name.toLowerCase())
-  );
-  
-  return uniqueResults.slice(0, 8);
+  return apiResults.slice(0, 8);
 }
 
 export async function getGameById(gameId: string): Promise<TwitchGame | null> {
   if (gameId.startsWith('rawg_')) {
     const rawgId = gameId.replace('rawg_', '');
-    try {
-      const response = await fetch(`https://api.rawg.io/api/games/${rawgId}?key=${RAWG_API_KEY}`);
-      if (response.ok) {
-        const game = await response.json();
-        return {
-          id: gameId,
-          name: game.name,
-          box_art_url: game.background_image || 'https://via.placeholder.com/285x380?text=' + encodeURIComponent(game.name),
-          isRawgGame: true,
-          rawgId: game.id
-        };
-      }
-    } catch (error) {
-      console.error('Error fetching RAWG game:', error);
+    
+    const game = await cachedRawgCall(`https://api.rawg.io/api/games/${rawgId}?key=${RAWG_API_KEY}`);
+    if (game) {
+      return {
+        id: gameId,
+        name: game.name,
+        box_art_url: game.background_image || 'https://via.placeholder.com/285x380?text=' + encodeURIComponent(game.name),
+        isRawgGame: true,
+        rawgId: game.id,
+        screenshots: game.short_screenshots?.map((s: any) => s.image) || [],
+        background_image: game.background_image
+      };
     }
     return null;
   }
@@ -197,28 +234,23 @@ export async function getGameById(gameId: string): Promise<TwitchGame | null> {
 }
 
 export async function getGameDetails(gameName: string): Promise<GameDetails | null> {
-  try {
-    // Try RAWG API
-    const response = await fetch(`https://api.rawg.io/api/games?key=a3abcc7420fd4c08be50dd90a8365cb8&search=${encodeURIComponent(gameName)}`);
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        const game = data.results[0];
-        return {
-          id: game.id.toString(),
-          name: game.name,
-          summary: game.description_raw || game.description,
-          genres: game.genres?.map((g: any) => g.name) || [],
-          platforms: game.platforms?.map((p: any) => p.platform.name) || [],
-          release_date: game.released ? new Date(game.released).getFullYear().toString() : undefined,
-          rating: game.rating ? Math.round(game.rating) : undefined,
-          box_art_url: game.background_image || ''
-        };
-      }
-    }
-  } catch (error) {
-    console.log('Game API not available');
+  // Only use RAWG API for detailed game information when absolutely needed
+  const data = await cachedRawgCall(`https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(gameName)}&page_size=1`);
+  
+  if (data?.results?.[0]) {
+    const game = data.results[0];
+    return {
+      id: game.id.toString(),
+      name: game.name,
+      summary: game.description_raw || game.description,
+      genres: game.genres?.map((g: any) => g.name) || [],
+      platforms: game.platforms?.map((p: any) => p.platform.name) || [],
+      release_date: game.released ? new Date(game.released).getFullYear().toString() : undefined,
+      rating: game.rating ? Math.round(game.rating) : undefined,
+      box_art_url: game.background_image || '',
+      screenshots: game.short_screenshots?.map((s: any) => s.image) || [],
+      background_image: game.background_image
+    };
   }
   
   // Generate a basic description based on game name

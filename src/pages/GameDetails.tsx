@@ -168,121 +168,148 @@ const GameDetails = () => {
           </Button>
         </Link>
 
-        {/* Game Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Game Image */}
-          <div className="lg:col-span-1">
-            <div className="relative">
-              <img
-                src={game.box_art_url}
-                alt={game.name}
-                className="w-full rounded-lg shadow-lg"
-              />
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-1">
-                <AnimatedHeart
-                  isLiked={isGameFavorite}
-                  onToggle={handleToggleFavorite}
-                  size="md"
-                  className="text-white"
-                />
+        {/* Cinematic Hero Section */}
+        <div className="relative mb-12 overflow-hidden rounded-3xl">
+          {/* Background with Blur Effect */}
+          <div 
+            className="absolute inset-0 scale-110 blur-2xl"
+            style={{
+              backgroundImage: `url(${game.background_image || game.box_art_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          
+          {/* Content */}
+          <div className="relative p-8 lg:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Game Cover */}
+              <div className="lg:col-span-4">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300" />
+                  <img
+                    src={game.box_art_url}
+                    alt={game.name}
+                    className="relative w-full max-w-sm mx-auto aspect-[3/4] object-cover rounded-xl shadow-2xl"
+                  />
+                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2">
+                    <AnimatedHeart
+                      isLiked={isGameFavorite}
+                      onToggle={handleToggleFavorite}
+                      size="md"
+                      className="text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Hero Banner */}
+              <div className="lg:col-span-8 space-y-6">
+                {/* Title & Meta */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h1 className="text-5xl lg:text-7xl font-black tracking-tight">
+                      <span className="bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent">
+                        {game.name}
+                      </span>
+                    </h1>
+                    {gameDetails?.release_date && (
+                      <div className="text-lg">
+                        <span className="text-pink-400 font-semibold">{gameDetails.release_date}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Description */}
+                  <p className="text-xl text-gray-300 leading-relaxed max-w-3xl">
+                    {gameDetails?.summary?.slice(0, 200) || 
+                     `Experience the ultimate gaming adventure with ${game.name}. Immerse yourself in stunning visuals, engaging gameplay, and unforgettable moments.`}
+                    {gameDetails?.summary && gameDetails.summary.length > 200 && '...'}
+                  </p>
+                  
+                  {/* Platforms & Genres */}
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      {gameDetails?.platforms?.slice(0, 4).map(platform => (
+                        <Badge key={platform} className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 text-pink-300 px-3 py-1">
+                          {platform}
+                        </Badge>
+                      )) || (
+                        <>
+                          <Badge className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 text-pink-300 px-3 py-1">PC</Badge>
+                          <Badge className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 text-pink-300 px-3 py-1">Console</Badge>
+                        </>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {gameDetails?.genres?.slice(0, 3).map(genre => (
+                        <Badge key={genre} variant="outline" className="rounded-full border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10">
+                          {genre}
+                        </Badge>
+                      )) || (
+                        <Badge variant="outline" className="rounded-full border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10">
+                          Gaming
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="rounded-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10">
+                        Updated Recently
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                {user && (
+                  <div>
+                    <Button 
+                      onClick={() => setIsLogModalOpen(true)}
+                      size="lg"
+                      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-pink-500/25 transition-all duration-300"
+                    >
+                      <FaPlus className="w-5 h-5 mr-2" />
+                      Add to Library
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-
-          {/* Game Info */}
-          <div className="lg:col-span-2">
-            <div className="flex items-start justify-between mb-4">
-              <h1 className="text-4xl font-bold text-foreground">{game.name}</h1>
+        </div>
+        
+        {/* Stats Cards */}
+        <div className="mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <FaStar className="text-pink-400" />
+                <span className="text-2xl font-bold text-white">
+                  {(gameStats?.averageRating || 0).toFixed(1)}
+                </span>
+              </div>
+              <p className="text-sm text-gray-400">Rating</p>
             </div>
-
-            <div className="space-y-6">
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4">
-                {user && (
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      onClick={() => setIsLogModalOpen(true)}
-                      className="bg-gradient-primary hover:shadow-glow-primary"
-                    >
-                      <FaPlus className="w-4 h-4 mr-2" />
-                      Add to Library
-                    </Button>
-                  </motion.div>
-                )}
-                
-                <div className="flex items-center gap-2">
-                  <AnimatedHeart
-                    isLiked={isGameFavorite}
-                    onToggle={handleToggleFavorite}
-                    size="lg"
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {isGameFavorite ? 'Favorited' : 'Add to Favorites'}
-                  </span>
-                </div>
-                
-
+            
+            <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white mb-2">
+                {gameStats?.ratingCount || 0}
               </div>
-              
-              {/* Game Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-                      <FaStar className="text-yellow-400" />
-                    </motion.div>
-                    <span className="text-2xl font-bold text-primary">
-                      {(gameStats?.averageRating || 0).toFixed(1)}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">Rating</div>
-                </motion.div>
-                
-                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
-                  <motion.div className="text-2xl font-bold text-accent mb-1" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                    {gameStats?.ratingCount || 0}
-                  </motion.div>
-                  <div className="text-sm text-muted-foreground">Reviews</div>
-                </motion.div>
-                
-                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                      <FaComment className="text-purple-400" />
-                    </motion.div>
-                    <span className="text-2xl font-bold text-gaming-green">
-                      {gameStats?.commentCount || 0}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">Comments</div>
-                </motion.div>
-                
-                <motion.div whileHover={{ scale: 1.05 }} className="bg-gradient-card border border-border/50 rounded-lg p-4 text-center gaming-card-glow">
-                  <motion.div className="text-2xl font-bold text-gaming-blue mb-1" whileHover={{ rotateX: 360 }} transition={{ duration: 0.6 }}>
-                    #{game.id}
-                  </motion.div>
-                  <div className="text-sm text-muted-foreground">Game ID</div>
-                </motion.div>
-              </div>
-
-              {/* Game Description */}
-              <div className="bg-gradient-card border border-border/50 rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-3">About This Game</h3>
-                <p className="text-muted-foreground mb-4 line-clamp-3">
-                  {gameDetails?.summary || gameDetails?.storyline || 
-                   `Experience ${game.name} and discover what makes this game special.`}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {gameDetails?.genres?.map(genre => (
-                    <Badge key={genre} variant="secondary">{genre}</Badge>
-                  )) || <Badge variant="secondary">Gaming</Badge>}
-                  {gameDetails?.release_date && (
-                    <Badge variant="secondary">{gameDetails.release_date}</Badge>
-                  )}
-                  <Badge variant="secondary">Popular</Badge>
-                </div>
-              </div>
+              <p className="text-sm text-gray-400">Reviews</p>
             </div>
+            
+            <div className="bg-gradient-to-br from-cyan-500/10 to-pink-500/10 border border-cyan-500/20 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <FaComment className="text-cyan-400" />
+                <span className="text-2xl font-bold text-white">
+                  {gameStats?.commentCount || 0}
+                </span>
+              </div>
+              <p className="text-sm text-gray-400">Comments</p>
+            </div>
+            
+
           </div>
         </div>
 

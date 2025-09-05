@@ -97,102 +97,92 @@ export const GameDashboard: React.FC = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Enhanced Header with Animation */}
-        <motion.div 
-          className="mb-8 sm:mb-12 relative overflow-hidden"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-3xl blur-3xl animate-pulse"></div>
-          <div className="relative bg-[#000000] border border-[#9A9A9A]/20 rounded-2xl p-6 sm:p-8 shadow-2xl">
-            <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
-              <motion.div 
-                className="relative"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              >
-                <FaGamepad className="text-primary text-3xl sm:text-4xl" />
-                <div className="absolute -inset-1 bg-primary/20 rounded-full blur animate-ping"></div>
-              </motion.div>
-              <div>
-                <motion.h1 
-                  className="text-3xl sm:text-4xl font-bold text-[#FFFFFF]"
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                >
-                  Game Marketplace
-                </motion.h1>
-                <motion.div 
-                  className="h-1 w-20 bg-gradient-to-r from-primary to-secondary rounded-full mt-2"
-                  initial={{ width: 0 }}
-                  animate={{ width: 80 }}
-                  transition={{ delay: 0.6, duration: 0.8 }}
-                ></motion.div>
+        {/* Modern Hero Section */}
+        <section className="mb-16">
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50 backdrop-blur-sm border border-white/10 rounded-3xl">
+            <div className="absolute inset-0 opacity-40">
+              <div className="w-full h-full" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+              }}></div>
+            </div>
+            
+            <div className="relative p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      Live Gaming Platform
+                    </div>
+                    <h1 className="text-4xl lg:text-6xl font-black tracking-tight">
+                      <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        Discover
+                      </span>
+                      <br />
+                      <span className="bg-gradient-to-r from-primary via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        Epic Games
+                      </span>
+                    </h1>
+                    <p className="text-lg text-slate-400 max-w-2xl leading-relaxed">
+                      Explore curated collections, trending titles, and hidden gems. 
+                      Your next gaming adventure starts here.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                      <FaGamepad className="w-5 h-5 mr-2" />
+                      Browse Library
+                    </Button>
+                    <Link to="/community">
+                      <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/5">
+                        <FaUser className="w-4 h-4 mr-2" />
+                        Join Community
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                
+                <div className="lg:w-80">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="group cursor-pointer">
+                      <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
+                        <FaFire className="text-red-400 text-2xl mb-3" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-white text-sm">Trending</p>
+                          <p className="text-xs text-slate-400">Hot right now</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="group cursor-pointer">
+                      <div className="bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
+                        <FaTrophy className="text-yellow-400 text-2xl mb-3" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-white text-sm">Top Rated</p>
+                          <p className="text-xs text-slate-400">Highest scores</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="group cursor-pointer">
+                      <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
+                        <FaPlus className="text-green-400 text-2xl mb-3" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-white text-sm">New</p>
+                          <p className="text-xs text-slate-400">Fresh releases</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <motion.p 
-              className="text-[#9A9A9A] text-lg sm:text-xl leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-            >
-              🎮 Discover amazing games • 🚀 Request your favorites • 🌟 Join the community
-            </motion.p>
           </div>
-        </motion.div>
-
-        {/* Enhanced Action Bar */}
-        <motion.div 
-          className="mb-8 sm:mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
-        >
-          <div className="flex items-center gap-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Badge variant="secondary" className="text-sm px-4 py-2 bg-[#000000] border-[#9A9A9A]/40 text-[#FFFFFF] animate-pulse">
-                <motion.div
-                  animate={{ rotate: [0, 15, -15, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <FaFire className="w-4 h-4 mr-2" />
-                </motion.div>
-                <span className="hidden sm:inline">🔥 Trending Now</span>
-                <span className="sm:hidden">🔥 Hot</span>
-              </Badge>
-            </motion.div>
-          </div>
-          
-          <Link to="/community">
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
-                <FaUser className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Join Community</span>
-                <span className="sm:hidden">Community</span>
-              </Button>
-            </motion.div>
-          </Link>
-        </motion.div>
+        </section>
 
 
-        {/* Game Recommendations */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.6 }}
-        >
-          <GameRecommendations />
-        </motion.div>
+
 
         {/* Enhanced Games Grid */}
         {loading ? (

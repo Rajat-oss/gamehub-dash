@@ -27,7 +27,7 @@ export const postService = {
       let mediaUrl = '';
       
       if (postData.mediaFile) {
-        mediaUrl = await cloudinaryService.uploadImage(postData.mediaFile);
+        mediaUrl = await cloudinaryService.uploadMedia(postData.mediaFile);
       }
       
       const docRef = await addDoc(collection(db, 'posts'), {

@@ -41,6 +41,7 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -176,6 +177,8 @@ const Chat: React.FC = () => {
       } finally {
         setOtherUserTyping(false);
         setSending(false);
+        // Refocus input after AI response
+        setTimeout(() => inputRef.current?.focus(), 100);
       }
     } else {
       // Handle regular chat
@@ -190,6 +193,8 @@ const Chat: React.FC = () => {
           newMessage.trim()
         );
         setNewMessage('');
+        // Refocus input after sending
+        setTimeout(() => inputRef.current?.focus(), 100);
       } catch (error) {
         console.error('Error sending message:', error);
         toast.error('Failed to send message');
@@ -511,11 +516,13 @@ const Chat: React.FC = () => {
                 className="hidden"
               />
               <Input
+                ref={inputRef}
                 value={newMessage}
                 onChange={handleInputChange}
                 placeholder={isAIChat ? 'Ask me about games...' : `Message ${otherUserName}...`}
                 className="flex-1 rounded-full bg-secondary focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-base py-2 sm:py-3"
                 disabled={sending}
+                autoFocus
               />
               <Button 
                 type="submit" 

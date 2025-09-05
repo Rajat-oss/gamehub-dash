@@ -158,11 +158,10 @@ const Posts: React.FC = () => {
 
   const sidebarItems = [
     { icon: FaHome, label: 'Home', active: true },
-    { icon: FaGamepad, label: 'Gaming', active: false },
-    { icon: FaUsers, label: 'Community', active: false },
-    { icon: FaFire, label: 'Trending', active: false },
-    { icon: FaBell, label: 'Notifications', active: false },
-    { icon: FaComments, label: 'Messages', active: false },
+  
+    
+    
+    
   ];
 
 
@@ -404,7 +403,12 @@ const Posts: React.FC = () => {
                             src={post.mediaUrl}
                             className="w-full max-h-96 object-cover"
                             controls
-                          />
+                            preload="metadata"
+                            playsInline
+                            muted
+                          >
+                            Your browser does not support the video tag.
+                          </video>
                         ) : (
                           <img
                             src={post.mediaUrl}
