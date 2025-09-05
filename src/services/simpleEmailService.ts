@@ -1,5 +1,27 @@
 import emailjs from '@emailjs/browser';
 
+class SimpleEmailService {
+  async sendVerificationEmail(email: string, otp: string): Promise<void> {
+    try {
+      const templateParams = {
+        to_email: email,
+        otp_code: otp,
+        subject: 'GameHub - Email Verification Code'
+      };
+
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'pixelpilgrim-service';
+      const templateId = 'template_verification';
+      
+      await emailjs.send(serviceId, templateId, templateParams);
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      throw new Error('Failed to send verification email');
+    }
+  }
+}
+
+export const simpleEmailService = new SimpleEmailService();
+
 // Simple email service with minimal dependencies
 export const sendSimpleGameRequest = async (gameData: {
   gameName: string;

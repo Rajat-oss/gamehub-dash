@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   
@@ -142,12 +142,28 @@ export const LandingPage: React.FC = () => {
                 </>
               )}
               {user && (
-                <Button 
-                  onClick={() => navigate('/homepage')}
-                  size="sm"
-                >
-                  Homepage
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => navigate('/homepage')}
+                    size="sm"
+                  >
+                    Homepage
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        await logout();
+                        navigate('/');
+                      } catch (error) {
+                        console.error('Logout error:', error);
+                      }
+                    }}
+                    size="sm"
+                  >
+                    Logout
+                  </Button>
+                </>
               )}
             </nav>
           </div>

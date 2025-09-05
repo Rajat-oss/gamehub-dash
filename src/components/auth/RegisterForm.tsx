@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Lock, Chrome, User, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { userService } from '@/services/userService';
+import { OTPVerification } from './OTPVerification';
 
 interface RegisterFormProps {
   onToggleMode: () => void;
@@ -20,6 +21,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
+  const [showVerification, setShowVerification] = useState(false);
   const { register, loginWithGoogle } = useAuth();
 
   // Check username availability
@@ -58,12 +60,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
     setIsLoading(true);
     
     try {
-      await register(email, password, username);
-      
-      toast({
-        title: "Account created!",
-        description: "Welcome to GameHub! You've successfully registered.",
-      });
+      const result = await register(email, password, username);
+      if (result.needsVerification) {
+        setShowVerification(true);
+        toast({
+          title: "Check your email",
+          description: "We've sent you a 6-digit verification code.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -94,139 +98,146 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
     }
   };
 
+  if (showVerification) {
+    return (
+      <OTPVerification 
+        email={email} 
+        onBack={() => setShowVerification(false)}
+        onSuccess={() => {
+          setShowVerification(false);
+          onToggleMode();
+        }}
+      />
+    );
+  }
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-2 text-center">
-        <div className="flex items-center justify-center mb-4">
-          <img 
-            src="/logofinal.png" 
-            alt="GameHub" 
-            className="h-36 w-36 object-contain" 
-          />
-        </div>
-        <CardDescription>
-          Create your gaming account
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                className={`pl-10 pr-10 ${
-                  usernameStatus === 'taken' ? 'border-red-500' : 
-                  usernameStatus === 'available' ? 'border-green-500' : ''
-                }`}
-              />
-              {usernameStatus === 'checking' && (
-                <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+    <div className="w-full max-w-sm mx-auto">
+      <div className="text-center mb-8">
+        <img 
+          src="/logofinal.png" 
+          alt="GameHub" 
+          className="h-16 w-16 mx-auto mb-4 object-contain" 
+        />
+        <h1 className="text-2xl font-semibold tracking-tight">Create account</h1>
+        <p className="text-sm text-muted-foreground mt-2">Get started with GameHub</p>
+      </div>
+
+      <Card className="border-0 shadow-lg">
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+              <div className="relative">
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className={`h-11 pr-10 ${
+                    usernameStatus === 'taken' ? 'border-red-500' : 
+                    usernameStatus === 'available' ? 'border-green-500' : ''
+                  }`}
+                />
+                {usernameStatus === 'checking' && (
+                  <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                )}
+                {usernameStatus === 'available' && (
+                  <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-500" />
+                )}
+                {usernameStatus === 'taken' && (
+                  <X className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500" />
+                )}
+              </div>
+              {usernameStatus === 'taken' && (
+                <p className="text-xs text-red-500">Username is already taken</p>
               )}
               {usernameStatus === 'available' && (
-                <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-500" />
-              )}
-              {usernameStatus === 'taken' && (
-                <X className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500" />
+                <p className="text-xs text-green-500">Username is available</p>
               )}
             </div>
-            {usernameStatus === 'taken' && (
-              <p className="text-sm text-red-500">Username is already taken</p>
-            )}
-            {usernameStatus === 'available' && (
-              <p className="text-sm text-green-500">Username is available</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">Email address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="gamer@example.com"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10"
+                className="h-11"
               />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10"
+                className="h-11"
               />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="pl-10"
+                className="h-11"
               />
             </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-11"
+              disabled={isLoading || usernameStatus === 'taken' || usernameStatus === 'checking'}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </Button>
+          </form>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <Separator />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
           </div>
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isLoading || usernameStatus === 'taken' || usernameStatus === 'checking'}
+
+          <Button
+            variant="outline"
+            className="w-full h-11"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
           >
-            {isLoading ? "Creating account..." : "Create Account"}
+            <Chrome className="mr-2 h-4 w-4" />
+            Continue with Google
           </Button>
-        </form>
-        
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
+      <p className="text-center text-sm text-muted-foreground mt-6">
+        Already have an account?{' '}
+        <button
+          type="button"
+          onClick={onToggleMode}
+          className="font-medium text-primary hover:underline"
         >
-          <Chrome className="mr-2 h-4 w-4" />
-          Continue with Google
-        </Button>
-
-        <div className="text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
-          <button
-            type="button"
-            onClick={onToggleMode}
-            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-          >
-            Sign in
-          </button>
-        </div>
-      </CardContent>
-    </Card>
+          Sign in
+        </button>
+      </p>
+    </div>
   );
 };

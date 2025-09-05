@@ -13,15 +13,18 @@ import {
 import { auth } from '@/lib/firebase';
 import { profileService } from '@/services/profileService';
 import { userService } from '@/services/userService';
+import { otpService } from '@/services/otpService';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, userName?: string) => Promise<void>;
+  register: (email: string, password: string, userName?: string) => Promise<{ needsVerification: boolean; email: string }>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  sendOTP: (email: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +51,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
+    const isVerified = await otpService.isEmailVerified(email);
+    
+    if (!isVerified) {
+      throw new Error('Please verify your email before logging in.');
+    }
+    
     await signInWithEmailAndPassword(auth, email, password);
   };
 
@@ -55,7 +64,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const displayName = userName || 'Gamer' + Math.floor(Math.random() * 10000);
       
-      // Check if username is available
       if (userName) {
         const isAvailable = await userService.isUsernameAvailable(userName);
         if (!isAvailable) {
@@ -63,23 +71,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // Store registration data in sessionStorage (more secure than localStorage)
+      const regData = { email, password, displayName };
+      sessionStorage.setItem('pendingRegistration', JSON.stringify(regData));
       
-      // Set display name
-      await updateProfile(user, { displayName });
+      // Send OTP
+      await otpService.sendOTP(email);
       
-      // Create user profile in Firestore
-      await userService.createUserProfile(user.uid, {
-        username: displayName,
-        displayName: displayName,
-        email: email,
-        isPublic: true
-      });
+      return { needsVerification: true, email };
     } catch (error: any) {
-      if (error.code === 'auth/operation-not-allowed') {
-        throw new Error('Email/password authentication is not enabled. Please enable it in Firebase Console.');
-      }
+      sessionStorage.removeItem('pendingRegistration');
       throw error;
     }
   };
@@ -117,6 +118,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await sendPasswordResetEmail(auth, email);
   };
 
+  const sendOTP = async (email: string) => {
+    await otpService.sendOTP(email);
+  };
+
+  const verifyOTP = async (email: string, otp: string) => {
+    try {
+      await otpService.verifyOTP(email, otp);
+      
+      // Complete registration after OTP verification
+      const pendingReg = sessionStorage.getItem('pendingRegistration');
+      if (pendingReg) {
+        const { email: regEmail, password, displayName } = JSON.parse(pendingReg);
+        
+        if (regEmail === email) {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          
+          await updateProfile(user, { displayName });
+          
+          await userService.createUserProfile(user.uid, {
+            username: displayName,
+            displayName: displayName,
+            email: email,
+            isPublic: true
+          });
+          
+          sessionStorage.removeItem('pendingRegistration');
+          await otpService.cleanupOTP(email);
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -124,7 +160,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     loginWithGoogle,
     logout,
-    resetPassword
+    resetPassword,
+    sendOTP,
+    verifyOTP
   };
 
   return (

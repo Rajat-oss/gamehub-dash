@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Lock, Chrome } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { OTPVerification } from './OTPVerification';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -17,6 +18,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, onForgotPass
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,11 +32,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, onForgotPass
         description: "You've successfully logged in.",
       });
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.message.includes('verify your email')) {
+        setShowVerification(true);
+        toast({
+          title: "Email not verified",
+          description: "Please verify your email with the OTP we sent you.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +69,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, onForgotPass
       setIsLoading(false);
     }
   };
+
+  if (showVerification) {
+    return (
+      <OTPVerification 
+        email={email} 
+        onBack={() => setShowVerification(false)}
+        onSuccess={() => setShowVerification(false)}
+      />
+    );
+  }
 
   return (
     <Card className="w-full max-w-md">
