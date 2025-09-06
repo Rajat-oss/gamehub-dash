@@ -49,8 +49,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({ email, onBack,
     setLoading(true);
     try {
       await verifyOTP(email, otp);
-      toast.success('Email verified successfully! Welcome to GameHub!');
-      onSuccess();
+      toast.success('Account created successfully! Please login with your credentials.');
+      onSuccess(); // Call onSuccess to switch to login form
     } catch (error: any) {
       toast.error(error.message || 'Invalid verification code');
       setOtp('');

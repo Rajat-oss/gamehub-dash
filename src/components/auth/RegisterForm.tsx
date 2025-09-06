@@ -105,7 +105,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
         onBack={() => setShowVerification(false)}
         onSuccess={() => {
           setShowVerification(false);
-          onToggleMode();
+          onToggleMode(); // This will switch to login form
         }}
       />
     );

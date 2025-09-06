@@ -39,8 +39,13 @@ class OTPService {
   }
 
   private async sendVerificationEmail(email: string, otp: string): Promise<void> {
-    const { emailService } = await import('./emailService');
-    await emailService.sendOTPEmail(email, otp);
+    try {
+      const { emailService } = await import('./emailService');
+      await emailService.sendOTPEmail(email, otp);
+    } catch (error) {
+      console.error('Email service error:', error);
+      throw new Error(`Failed to send verification email to ${email}. Please check your email configuration.`);
+    }
   }
 
   async verifyOTP(email: string, inputOTP: string): Promise<boolean> {

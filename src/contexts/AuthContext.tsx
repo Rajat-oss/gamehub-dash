@@ -40,23 +40,20 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+      if (!isRegistering) {
+        setUser(user);
+      }
       setLoading(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [isRegistering]);
 
   const login = async (email: string, password: string) => {
-    const isVerified = await otpService.isEmailVerified(email);
-    
-    if (!isVerified) {
-      throw new Error('Please verify your email before logging in.');
-    }
-    
     await signInWithEmailAndPassword(auth, email, password);
   };
 
@@ -124,9 +121,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifyOTP = async (email: string, otp: string) => {
     try {
+      setIsRegistering(true);
       await otpService.verifyOTP(email, otp);
       
-      // Complete registration after OTP verification
       const pendingReg = sessionStorage.getItem('pendingRegistration');
       if (pendingReg) {
         const { email: regEmail, password, displayName } = JSON.parse(pendingReg);
@@ -144,12 +141,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             isPublic: true
           });
           
+          await signOut(auth);
+          
           sessionStorage.removeItem('pendingRegistration');
           await otpService.cleanupOTP(email);
         }
       }
     } catch (error) {
       throw error;
+    } finally {
+      setIsRegistering(false);
     }
   };
 
