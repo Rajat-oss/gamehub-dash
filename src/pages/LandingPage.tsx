@@ -120,10 +120,21 @@ export const LandingPage: React.FC = () => {
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
             <div className="w-full flex-1 md:w-auto md:flex-none">
-              {/* Navigation items can go here */}
+              <nav className="hidden md:flex items-center space-x-6">
+                <ThemeToggle />
+                <button onClick={() => navigate('/pricing')} className="text-sm font-medium hover:text-primary transition-colors">
+                  Pricing
+                </button>
+              </nav>
+              {/* Mobile menu */}
+              <div className="md:hidden flex items-center space-x-2">
+                <ThemeToggle />
+                <button onClick={() => navigate('/pricing')} className="text-xs font-medium hover:text-primary transition-colors px-2 py-1">
+                  Pricing
+                </button>
+              </div>
             </div>
             <nav className="flex items-center space-x-2">
-              <ThemeToggle />
               {!user && (
                 <>
                   <Button 
@@ -147,7 +158,7 @@ export const LandingPage: React.FC = () => {
                     onClick={() => navigate('/homepage')}
                     size="sm"
                   >
-                    Homepage
+                    Dashboard
                   </Button>
                   <Button 
                     variant="outline"
@@ -199,13 +210,13 @@ export const LandingPage: React.FC = () => {
             <Badge variant="outline" className="animate-fade-in-up cyber-glow text-xs sm:text-sm">
               🎮 Welcome to the Future of Gaming
             </Badge>
-            <h1 className="animate-fade-in-up text-center text-2xl sm:text-3xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1] px-2" style={{animationDelay: '0.1s'}}>
+            <h1 className="animate-fade-in-up text-center text-2xl sm:text-3xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1] px-2" style={{animationDelay: '0.1s', fontFamily: 'Exo 2, sans-serif'}}>
               Your Ultimate{" "}
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient-shift neon-text block sm:inline">
-                Gaming Hub
+                Pixel Pilgrim
               </span>
             </h1>
-            <p className="animate-fade-in-up max-w-[750px] text-center text-base sm:text-lg text-muted-foreground sm:text-xl px-4 sm:px-0 leading-relaxed" style={{animationDelay: '0.2s'}}>
+            <p className="animate-fade-in-up max-w-[750px] text-center text-base sm:text-lg text-muted-foreground sm:text-xl px-4 sm:px-0 leading-relaxed" style={{animationDelay: '0.2s', fontFamily: 'Source Sans Pro, sans-serif'}}>
               Track your gaming journey, share epic moments, and connect with fellow gamers. 
               The ultimate platform combining game logging with social gaming experiences.
             </p>
@@ -223,7 +234,7 @@ export const LandingPage: React.FC = () => {
                 </>
               ) : (
                 <Button size="lg" onClick={() => navigate('/homepage')} className="gaming-button group animate-glow-pulse w-full sm:w-auto">
-                  Go to Homepage
+                  Go to Dashboard
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               )}
@@ -259,10 +270,10 @@ export const LandingPage: React.FC = () => {
             animate={featuresInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2">
-              Why Choose GameHub?
+            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2" style={{fontFamily: 'Exo 2, sans-serif'}}>
+              Why Choose Pixel Pilgrim?
             </h2>
-            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2">
+            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>
               Experience gaming like never before with our cutting-edge platform
             </p>
           </motion.div>
@@ -284,10 +295,10 @@ export const LandingPage: React.FC = () => {
                     >
                       <feature.icon className={`h-8 w-8 ${feature.color} transition-transform`} />
                     </motion.div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl" style={{fontFamily: 'Exo 2, sans-serif'}}>{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <p className="text-muted-foreground" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -311,10 +322,10 @@ export const LandingPage: React.FC = () => {
             animate={howItWorksInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-5xl px-2">
-              How GameHub Works
+            <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-5xl px-2" style={{fontFamily: 'Exo 2, sans-serif'}}>
+              How Pixel Pilgrim Works
             </h2>
-            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg px-2">
+            <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg px-2" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>
               Get started in three simple steps
             </p>
           </motion.div>
@@ -339,8 +350,8 @@ export const LandingPage: React.FC = () => {
                 >
                   <step.icon className="w-8 h-8 text-primary" />
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">{step.desc}</p>
+                <h3 className="text-xl font-semibold mb-2" style={{fontFamily: 'Exo 2, sans-serif'}}>{step.title}</h3>
+                <p className="text-muted-foreground" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -366,10 +377,10 @@ export const LandingPage: React.FC = () => {
                 animate={showcaseInView ? { x: 0, opacity: 1 } : { x: -50, opacity: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl">
+                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl" style={{fontFamily: 'Exo 2, sans-serif'}}>
                   Track Every Gaming Moment
                 </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>
                   Log your gaming sessions, track completion rates, and see your progress over time. 
                   Never lose track of your gaming journey again.
                 </p>
@@ -493,10 +504,10 @@ export const LandingPage: React.FC = () => {
                 animate={socialInView ? { x: 0, opacity: 1 } : { x: 50, opacity: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl">
+                <h2 className="text-2xl sm:text-3xl font-bold leading-tight md:text-4xl" style={{fontFamily: 'Exo 2, sans-serif'}}>
                   Connect with Fellow Gamers
                 </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>
                   Share your gaming achievements, post reviews, and discover new games through 
                   your gaming community. Build lasting friendships over shared gaming experiences.
                 </p>
@@ -530,17 +541,17 @@ export const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <section className="container py-12 sm:py-8 md:py-12 lg:py-24 px-4 sm:px-6">
         <div className="mx-auto flex max-w-[980px] flex-col items-center gap-4 sm:gap-2 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2">
+          <h2 className="text-2xl sm:text-3xl font-bold leading-[1.1] md:text-6xl px-2" style={{fontFamily: 'Exo 2, sans-serif'}}>
             Ready to Level Up Your Gaming?
           </h2>
-          <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2">
+          <p className="max-w-[90%] sm:max-w-[85%] leading-relaxed text-muted-foreground text-base sm:text-lg sm:leading-7 px-2" style={{fontFamily: 'Source Sans Pro, sans-serif'}}>
             Join thousands of gamers who have already discovered their new favorite games
           </p>
           <div className="flex w-full items-center justify-center py-6 sm:py-4 md:pb-10 px-4 sm:px-0">
             {!user && (
               <Button size="lg" onClick={() => navigate('/auth?mode=signup')} className="w-full sm:w-auto">
                 <img src="/logofinal.png" alt="" className="mr-2 h-4 w-4 object-contain" />
-                Join GameHub Today
+                Join Pixel Pilgrim Today
               </Button>
             )}
           </div>

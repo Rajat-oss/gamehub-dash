@@ -122,14 +122,17 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
             <div className="flex flex-col min-h-screen h-full">
               {/* User Profile Section */}
               <div className="p-6 border-b border-gray-800 bg-black">
-                <div className="flex items-center space-x-4">
+                <button 
+                  onClick={() => handleNavigation('/profile')}
+                  className="flex items-center space-x-4 w-full hover:bg-gray-900/50 rounded-lg p-2 -m-2 transition-colors"
+                >
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={userProfile?.photoURL || user?.photoURL || ''} alt={userProfile?.username || user?.displayName || ''} />
                     <AvatarFallback className="bg-gray-800 text-white text-lg">
                       {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-left">
                     <p className="text-white font-bold text-lg truncate">
                       {userProfile?.username || user?.displayName || 'Gamer'}
                     </p>
@@ -137,7 +140,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                       {user?.email}
                     </p>
                   </div>
-                </div>
+                </button>
               </div>
 
               {/* Navigation Menu */}

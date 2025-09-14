@@ -21,6 +21,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
+  
+  // Password validation
+  const validatePassword = (pwd: string) => {
+    const minLength = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasNumber = /\d/.test(pwd);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+    return { minLength, hasUpper, hasLower, hasNumber, hasSpecial };
+  };
+  
+  const passwordValidation = validatePassword(password);
+  const passwordsMatch = password && confirmPassword && password === confirmPassword;
+  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
   const [showVerification, setShowVerification] = useState(false);
   const { register, loginWithGoogle } = useAuth();
 
@@ -183,25 +197,67 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
                 required
                 className="h-11"
               />
+              {password && (
+                <div className="text-xs space-y-1">
+                  <div className={`flex items-center gap-1 ${passwordValidation.minLength ? 'text-green-500' : 'text-red-500'}`}>
+                    {passwordValidation.minLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    At least 8 characters
+                  </div>
+                  <div className={`flex items-center gap-1 ${passwordValidation.hasUpper ? 'text-green-500' : 'text-red-500'}`}>
+                    {passwordValidation.hasUpper ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    One uppercase letter
+                  </div>
+                  <div className={`flex items-center gap-1 ${passwordValidation.hasLower ? 'text-green-500' : 'text-red-500'}`}>
+                    {passwordValidation.hasLower ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    One lowercase letter
+                  </div>
+                  <div className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-green-500' : 'text-red-500'}`}>
+                    {passwordValidation.hasNumber ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    One number
+                  </div>
+                  <div className={`flex items-center gap-1 ${passwordValidation.hasSpecial ? 'text-green-500' : 'text-red-500'}`}>
+                    {passwordValidation.hasSpecial ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    One special character
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="h-11"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className={`h-11 pr-10 ${
+                    confirmPassword && !passwordsMatch ? 'border-red-500' : 
+                    passwordsMatch ? 'border-green-500' : ''
+                  }`}
+                />
+                {confirmPassword && (
+                  passwordsMatch ? (
+                    <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-500" />
+                  ) : (
+                    <X className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500" />
+                  )
+                )}
+              </div>
+              {confirmPassword && !passwordsMatch && (
+                <p className="text-xs text-red-500">Passwords don't match</p>
+              )}
+              {passwordsMatch && (
+                <p className="text-xs text-green-500">Passwords match</p>
+              )}
             </div>
 
             <Button 
               type="submit" 
               className="w-full h-11"
-              disabled={isLoading || usernameStatus === 'taken' || usernameStatus === 'checking'}
+              disabled={isLoading || usernameStatus === 'taken' || usernameStatus === 'checking' || !isPasswordValid || !passwordsMatch}
             >
               {isLoading ? "Creating account..." : "Create account"}
             </Button>

@@ -47,7 +47,7 @@ export const AboutUs: React.FC = () => {
         <div className="container px-4 sm:px-6">
           <div className="mx-auto max-w-4xl text-center">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-              About GameHub
+              About Pixel Pilgrim
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
               Connecting gamers worldwide through shared experiences and community
@@ -150,7 +150,7 @@ export const AboutUs: React.FC = () => {
               <Card className="gaming-card-glow border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
                 <CardHeader className="text-center pb-6">
                   <div className="w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all duration-300">
-                    <img src="/rajat.jpg" alt="Rajat Jhade" className="w-full h-full object-cover" />
+                    <img src="/rajat.png" alt="Rajat Jhade" className="w-full h-full object-cover" />
                   </div>
                   <CardTitle className="text-2xl mb-2">Rajat Jhade</CardTitle>
                   <p className="text-lg font-semibold text-primary">Co-Founder</p>
