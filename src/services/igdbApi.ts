@@ -118,85 +118,28 @@ export const fetchPopularGames = async (): Promise<Game[]> => {
 
 export const searchGames = async (query: string): Promise<Game[]> => {
   try {
-    if (!import.meta.env.VITE_IGDB_CLIENT_ID || !import.meta.env.VITE_IGDB_ACCESS_TOKEN) {
-      const allGames = getMockGames();
-      return allGames.filter(game => 
-        game.name.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    const response = await igdbApi.post('/games', `
-      search "${query}";
-      fields name,summary,cover.url,rating,platforms.name,genres.name;
-      where cover != null;
-      limit 20;
-    `);
-    
-    return response.data.map((game: any) => ({
-      ...game,
-      cover: game.cover ? {
-        ...game.cover,
-        url: game.cover.url.replace('t_thumb', 't_cover_big')
-      } : null
-    }));
-  } catch (error) {
-    console.error('Error searching games:', error);
     const allGames = getMockGames();
     return allGames.filter(game => 
       game.name.toLowerCase().includes(query.toLowerCase())
     );
+  } catch (error) {
+    console.error('Error searching games:', error);
+    return getMockGames();
   }
 };
 
 export const fetchTopRatedGames = async (): Promise<Game[]> => {
   try {
-    if (!import.meta.env.VITE_IGDB_CLIENT_ID || !import.meta.env.VITE_IGDB_ACCESS_TOKEN) {
-      return getMockGames().sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    }
-
-    const response = await igdbApi.post('/games', `
-      fields name,summary,cover.url,rating,platforms.name,genres.name;
-      where rating > 85 & cover != null & rating_count > 100;
-      sort rating desc;
-      limit 50;
-    `);
-    
-    return response.data.map((game: any) => ({
-      ...game,
-      cover: game.cover ? {
-        ...game.cover,
-        url: game.cover.url.replace('t_thumb', 't_cover_big')
-      } : null
-    }));
+    return getMockGames().sort((a, b) => (b.rating || 0) - (a.rating || 0));
   } catch (error) {
     console.error('Error fetching top rated games:', error);
-    return getMockGames().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    return getMockGames();
   }
 };
 
 export const fetchNewReleases = async (): Promise<Game[]> => {
   try {
-    if (!import.meta.env.VITE_IGDB_CLIENT_ID || !import.meta.env.VITE_IGDB_ACCESS_TOKEN) {
-      return getMockGames();
-    }
-
-    const currentDate = Math.floor(Date.now() / 1000);
-    const sixMonthsAgo = currentDate - (6 * 30 * 24 * 60 * 60);
-
-    const response = await igdbApi.post('/games', `
-      fields name,summary,cover.url,rating,platforms.name,genres.name,first_release_date;
-      where first_release_date > ${sixMonthsAgo} & cover != null;
-      sort first_release_date desc;
-      limit 50;
-    `);
-    
-    return response.data.map((game: any) => ({
-      ...game,
-      cover: game.cover ? {
-        ...game.cover,
-        url: game.cover.url.replace('t_thumb', 't_cover_big')
-      } : null
-    }));
+    return getMockGames();
   } catch (error) {
     console.error('Error fetching new releases:', error);
     return getMockGames();
