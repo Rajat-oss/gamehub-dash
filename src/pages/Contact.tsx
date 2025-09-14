@@ -57,27 +57,32 @@ const Contact: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     const userName = user?.displayName || user?.email || 'User';
     const userEmail = user?.email || '';
+    const userId = user?.uid || '';
     
-    if (!userName || !userEmail || !formData.message) {
+    if (!userEmail || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await emailjs.send(
-        'service_zdf9xta',
-        'template_x9bq7x2',
-        {
-          name: userName,
-          time: new Date().toLocaleString(),
-          message: `Email: ${userEmail}\n\nSubject: ${formData.subject || `${contactTypes.find(t => t.value === formData.type)?.label} - GameHub`}\n\nType: ${formData.type}\n\nMessage:\n${formData.message}`
-        },
-        'meXmdsep-Hf_vqEqa'
+      const templateParams = {
+        from_name: userName,
+        from_email: userEmail,
+        message: `CONTACT REQUEST FROM USER\n\nUser Details:\n- Name: ${userName}\n- Email: ${userEmail}\n- User ID: ${userId}\n\nInquiry Type: ${formData.type}\n\nSubject: ${formData.subject || 'No subject provided'}\n\nMessage:\n${formData.message}\n\nThis is a direct contact request from a user seeking support or assistance.\n\nPlease respond directly to: ${userEmail}`
+      };
+      
+      const result = await emailjs.send(
+        'service_6ubgi63',
+        'template_odqwm7n',
+        templateParams,
+        'jOG6n8hamkzOE8VId'
       );
 
+      console.log('Email sent successfully');
       toast.success('Message sent successfully! We\'ll get back to you soon.');
       setFormData({
         name: user?.displayName || '',
@@ -200,14 +205,14 @@ const Contact: React.FC = () => {
                   <FaEnvelope className="w-4 h-4 text-primary" />
                   <div>
                     <div className="text-sm font-medium">Email</div>
-                    <div className="text-sm text-muted-foreground">support@gamehub.com</div>
+                    <div className="text-sm text-muted-foreground">pixel.pilgrim.ac@gmail.com</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <FaPhone className="w-4 h-4 text-primary" />
                   <div>
                     <div className="text-sm font-medium">Phone</div>
-                    <div className="text-sm text-muted-foreground">+1 (555) 123-4567</div>
+                    <div className="text-sm text-muted-foreground">+91 0000000000</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
