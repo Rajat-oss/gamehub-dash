@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,12 +12,30 @@ import {
   Github, Twitter, Linkedin, Mail, MapPin, Phone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Footer } from '@/components/Footer';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  const [navbarY, setNavbarY] = useState(0);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY;
+      const navbarHeight = 56; // h-14 = 56px
+      
+      if (scrolled > navbarHeight) {
+        setNavbarY(-scrolled + navbarHeight);
+      } else {
+        setNavbarY(0);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const featuresRef = useRef(null);
   const statsRef = useRef(null);
@@ -109,7 +127,12 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <motion.header 
+        className="w-full border-b bg-background"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: navbarY, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
         <div className="container flex h-14 items-center">
           <div className="mr-4 cursor-pointer" onClick={() => navigate('/')}>
             <img 
@@ -179,7 +202,7 @@ export const LandingPage: React.FC = () => {
             </nav>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
       <section className="gaming-hero-bg gaming-grid-bg relative overflow-hidden">
@@ -558,111 +581,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t bg-muted/20">
-        <div className="container py-12 md:py-16">
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
-            {/* Logo and Company Info */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center space-x-3">
-                <img src="/logofinal.png" alt="GameHub" className="h-20 w-35" />
-                
-              </div>
-              <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-                The ultimate gaming platform connecting players to their next favorite game experience through advanced discovery and community tools.
-              </p>
-              <div className="mt-6 flex space-x-4">
-                <a href="#" className="rounded-full bg-background p-2 text-muted-foreground hover:text-foreground transition-colors">
-                  <Twitter className="h-4 w-4" />
-                  <span className="sr-only">Twitter</span>
-                </a>
-                <a href="#" className="rounded-full bg-background p-2 text-muted-foreground hover:text-foreground transition-colors">
-                  <Github className="h-4 w-4" />
-                  <span className="sr-only">GitHub</span>
-                </a>
-                <a href="#" className="rounded-full bg-background p-2 text-muted-foreground hover:text-foreground transition-colors">
-                  <Linkedin className="h-4 w-4" />
-                  <span className="sr-only">LinkedIn</span>
-                </a>
-              </div>
-            </div>
-
-        
-
-            {/* Company Links */}
-            <div>
-              <h3 className="text-sm font-semibold">Company</h3>
-              <ul className="mt-4 space-y-3">
-                {footerLinks.company.map((link, index) => (
-                  <li key={index}>
-                    {link.href.startsWith('/') ? (
-                      <button 
-                        onClick={() => navigate(link.href)}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {link.name}
-                      </button>
-                    ) : (
-                      <a 
-                        href={link.href} 
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {link.name}
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Support Links */}
-            <div>
-              <h3 className="text-sm font-semibold">Support</h3>
-              <ul className="mt-4 space-y-3">
-                {footerLinks.support.map((link, index) => (
-                  <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-10 border-t pt-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <div className="flex space-x-6 md:order-2">
-                {footerLinks.legal.map((link, index) => (
-                  link.href.startsWith('/') ? (
-                    <button 
-                      key={index}
-                      onClick={() => navigate(link.href)}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.name}
-                    </button>
-                  ) : (
-                    <a 
-                      key={index}
-                      href={link.href}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  )
-                ))}
-              </div>
-              <p className="mt-4 text-xs text-muted-foreground md:mt-0 md:order-1">
-                &copy; {new Date().getFullYear()} GameHub. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
