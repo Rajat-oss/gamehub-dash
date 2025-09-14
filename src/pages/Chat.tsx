@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { sendMessage, subscribeToMessages, setTypingStatus, markMessagesAsSeen, subscribeToTypingStatus } from '@/lib/chat';
+import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { userService } from '@/services/userService';
 import { aiChatService, AIMessage } from '@/services/aiChatService';
 import { Navbar } from '@/components/homepage/Navbar';
@@ -38,6 +40,51 @@ const Chat: React.FC = () => {
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isAIChat, setIsAIChat] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+  const [otherUserActive, setOtherUserActive] = useState(false);
+  const [lastSeen, setLastSeen] = useState<Date | null>(null);
+  
+  // Simple presence tracking
+  useEffect(() => {
+    if (!user) return;
+    
+    // Set current user as active immediately
+    const setActive = async () => {
+      try {
+        await setDoc(doc(db, 'userStatus', user.uid), {
+          online: true,
+          lastActive: serverTimestamp()
+        });
+        console.log('Set user active:', user.uid);
+      } catch (error) {
+        console.error('Error setting active:', error);
+      }
+    };
+    
+    setActive();
+    
+    // Update every 10 seconds while active
+    const interval = setInterval(setActive, 10000);
+    
+    // Set offline on page unload
+    const setOffline = async () => {
+      try {
+        await setDoc(doc(db, 'userStatus', user.uid), {
+          online: false,
+          lastActive: serverTimestamp()
+        });
+      } catch (error) {
+        console.error('Error setting offline:', error);
+      }
+    };
+    
+    window.addEventListener('beforeunload', setOffline);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('beforeunload', setOffline);
+      setOffline();
+    };
+  }, [user]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,12 +144,9 @@ const Chat: React.FC = () => {
       setMessages(chatMessages);
       setLoading(false);
       setConnectionError(false);
-      
-      // Mark messages as seen
-      if (chatMessages.length > 0) {
-        markMessagesAsSeen(user.uid, otherUserId, user.uid);
-      }
     });
+
+    return unsubscribe;
 
     // Subscribe to typing status
     const unsubscribeTyping = subscribeToTypingStatus(user.uid, otherUserId, (typing) => {
@@ -133,8 +177,15 @@ const Chat: React.FC = () => {
       if (isInitialLoad) {
         messagesEndRef.current.dataset.initialized = 'true';
       }
+      
+      // Mark messages as read when user scrolls to bottom
+      if (!isAIChat && user && otherUserId && messages.length > 0) {
+        setTimeout(() => {
+          markMessagesAsSeen(user.uid, otherUserId, user.uid);
+        }, 500); // Small delay to ensure user sees the messages
+      }
     }
-  }, [messages, otherUserTyping]);
+  }, [messages, otherUserTyping, isAIChat, user, otherUserId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,7 +315,7 @@ const Chat: React.FC = () => {
         setIsTyping(false);
         setTypingStatus(user.uid, otherUserId, false);
         console.log('Setting typing status to false');
-      }, 2000);
+      }, 1000); // Reduced to 1 second for better responsiveness
     } else {
       // Stop typing immediately if input is empty
       if (isTyping) {
@@ -286,24 +337,91 @@ const Chat: React.FC = () => {
 
   const getLastSeenStatus = () => {
     if (isAIChat) return 'Always available';
-    // For now, show generic status since we don't track real-time presence
+    
+    // Check if other user sent a message recently (within 2 minutes)
+    const recentMessages = messages.filter(msg => 
+      msg.senderId === otherUserId && 
+      msg.timestamp && 
+      msg.timestamp.toDate
+    );
+    
+    if (recentMessages.length > 0) {
+      const lastMessage = recentMessages[recentMessages.length - 1];
+      const lastMessageTime = lastMessage.timestamp.toDate();
+      const now = new Date();
+      const diffMinutes = (now.getTime() - lastMessageTime.getTime()) / (1000 * 60);
+      
+      if (diffMinutes < 2) {
+        return 'Active now';
+      }
+    }
+    
+    // Check typing status
+    if (otherUserTyping) return 'Active now';
+    
+    // Default to active if we have any conversation
+    if (messages.length > 0) return 'Active now';
+    
     return 'Last seen recently';
   };
+
+  // Subscribe to other user's status
+  useEffect(() => {
+    if (!otherUserId || isAIChat) return;
+    
+    console.log('Subscribing to status for:', otherUserId);
+    
+    const unsubscribe = onSnapshot(doc(db, 'userStatus', otherUserId), (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        const isOnline = data.online;
+        const lastActive = data.lastActive?.toDate();
+        
+        console.log('Status update:', { otherUserId, isOnline, lastActive });
+        
+        if (isOnline && lastActive) {
+          // Check if last active was within 30 seconds
+          const now = new Date();
+          const diffSeconds = (now.getTime() - lastActive.getTime()) / 1000;
+          const isCurrentlyActive = diffSeconds < 30;
+          
+          console.log('Activity check:', { diffSeconds, isCurrentlyActive });
+          setOtherUserActive(isCurrentlyActive);
+        } else {
+          setOtherUserActive(false);
+        }
+        
+        setLastSeen(lastActive);
+      } else {
+        console.log('No status document for user:', otherUserId);
+        setOtherUserActive(false);
+      }
+    });
+    
+    return unsubscribe;
+  }, [otherUserId, isAIChat]);
 
   const handleDeleteMessage = async (messageId: string, isAI: boolean) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
 
-    if (isAI) {
-      // Delete from AI chat
-      const updatedMessages = aiMessages.filter(msg => msg.id !== messageId);
-      setAiMessages(updatedMessages);
-      localStorage.setItem(`ai_chat_${user?.uid}`, JSON.stringify(updatedMessages));
-      toast.success('Message deleted');
-    } else {
-      // Delete from regular chat (placeholder - would need backend implementation)
-      toast.success('Message deleted');
-      // For now, just remove from local state
-      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== messageId));
+    try {
+      if (isAI) {
+        // Delete from AI chat
+        const updatedMessages = aiMessages.filter(msg => msg.id !== messageId);
+        setAiMessages(updatedMessages);
+        if (user?.uid) {
+          localStorage.setItem(`ai_chat_${user.uid}`, JSON.stringify(updatedMessages));
+        }
+        toast.success('Message deleted');
+      } else {
+        // Delete from regular chat
+        const updatedMessages = messages.filter(msg => msg.id !== messageId);
+        setMessages(updatedMessages);
+        toast.success('Message deleted');
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message');
     }
   };
 
@@ -339,21 +457,26 @@ const Chat: React.FC = () => {
                 >
                   <FaArrowLeft className="w-4 h-4" />
                 </Button>
-                <Avatar 
-                  className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
-                  onClick={() => {
-                    if (!isAIChat && otherUserId) {
-                      // Get username from otherUserName or use otherUserId as fallback
-                      const username = otherUserName.replace('@', '') || otherUserId;
-                      navigate(`/user/${username}`);
-                    }
-                  }}
-                >
-                  <AvatarImage src={otherUserPhoto} alt={otherUserName} />
-                  <AvatarFallback className={`text-white text-sm ${isAIChat ? 'bg-primary' : 'bg-blue-500'}`}>
-                    {isAIChat ? <FaRobot className="w-4 h-4" /> : otherUserName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar 
+                    className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                    onClick={() => {
+                      if (!isAIChat && otherUserId) {
+                        // Get username from otherUserName or use otherUserId as fallback
+                        const username = otherUserName.replace('@', '') || otherUserId;
+                        navigate(`/user/${username}`);
+                      }
+                    }}
+                  >
+                    <AvatarImage src={otherUserPhoto} alt={otherUserName} />
+                    <AvatarFallback className={`text-white text-sm ${isAIChat ? 'bg-primary' : 'bg-blue-500'}`}>
+                      {isAIChat ? <FaRobot className="w-4 h-4" /> : otherUserName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {(otherUserActive || isAIChat) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <h1 className="font-semibold text-base sm:text-lg truncate">{otherUserName}</h1>
                   <p className="text-xs sm:text-sm text-muted-foreground">

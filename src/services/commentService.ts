@@ -140,11 +140,20 @@ export const commentService = {
         where('gameId', '==', gameId)
       );
       const snapshot = await getDocs(q);
-      const comments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date()
-      }));
+      const comments = snapshot.docs.map(doc => {
+        const commentData = {
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date()
+        };
+        
+        // Load replies from localStorage
+        const storageKey = `comment_replies_${doc.id}`;
+        const replies = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        commentData.replies = replies;
+        
+        return commentData;
+      });
       // Sort in memory to avoid index requirement
       return comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } catch (error) {
@@ -216,7 +225,22 @@ export const commentService = {
     userAvatar?: string;
     comment: string;
   }): Promise<void> {
-    // Placeholder for reply functionality
-    console.log('Add reply to comment:', commentId, replyData);
+    try {
+      const replyId = Date.now().toString();
+      const reply = {
+        id: replyId,
+        ...replyData,
+        createdAt: new Date()
+      };
+      
+      // For now, store in localStorage as a simple implementation
+      const storageKey = `comment_replies_${commentId}`;
+      const existingReplies = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      existingReplies.push(reply);
+      localStorage.setItem(storageKey, JSON.stringify(existingReplies));
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      throw error;
+    }
   }
 };
