@@ -43,13 +43,14 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
     setComments(prevComments => 
       prevComments.map(comment => {
         if (comment.id === commentId) {
-          const isLiked = comment.likedBy.includes(user.uid);
+          const likedBy = comment.likedBy || [];
+          const isLiked = likedBy.includes(user.uid);
           return {
             ...comment,
-            likes: isLiked ? comment.likes - 1 : comment.likes + 1,
+            likes: isLiked ? (comment.likes || 0) - 1 : (comment.likes || 0) + 1,
             likedBy: isLiked 
-              ? comment.likedBy.filter(uid => uid !== user.uid)
-              : [...comment.likedBy, user.uid]
+              ? likedBy.filter(uid => uid !== user.uid)
+              : [...likedBy, user.uid]
           };
         }
         return comment;
@@ -366,11 +367,11 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
               <div className="flex items-center space-x-4">
                 <div className="flex items-center gap-1">
                   <AnimatedHeart
-                    isLiked={user ? comment.likedBy.includes(user.uid) : false}
+                    isLiked={user ? (comment.likedBy || []).includes(user.uid) : false}
                     onToggle={() => handleToggleLike(comment.id)}
                     size="sm"
                   />
-                  <span className="text-sm text-muted-foreground">{comment.likes}</span>
+                  <span className="text-sm text-muted-foreground">{comment.likes || 0}</span>
                 </div>
                 
                 <Button
@@ -441,7 +442,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
 
               {/* Replies */}
               <AnimatePresence>
-                {comment.replies.length > 0 && (
+                {(comment.replies || []).length > 0 && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
@@ -449,7 +450,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                     className="mt-4 space-y-3 pl-6 border-l-2 border-border/30 overflow-hidden"
                   >
-                    {comment.replies.map((reply, index) => (
+                    {(comment.replies || []).map((reply, index) => (
                       <motion.div 
                         key={reply.id}
                         initial={{ opacity: 0, x: -20 }}

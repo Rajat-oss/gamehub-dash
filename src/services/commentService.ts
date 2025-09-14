@@ -15,6 +15,29 @@ import { notificationService } from './notificationService';
 const COMMENTS_COLLECTION = 'postComments';
 const GAME_COMMENTS_COLLECTION = 'gameComments';
 
+export interface Comment {
+  id: string;
+  gameId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  comment: string;
+  rating?: number;
+  likes: number;
+  likedBy: string[];
+  replies: Reply[];
+  createdAt: any;
+}
+
+export interface Reply {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  comment: string;
+  createdAt: any;
+}
+
 export const commentService = {
   async addComment(
     postId: string,
@@ -147,5 +170,53 @@ export const commentService = {
       console.error('Error getting game average rating:', error);
       return 0;
     }
+  },
+
+  // Add comment method that matches CommentsSection interface
+  async addComment(commentData: {
+    gameId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    comment: string;
+    rating?: number;
+  }): Promise<void> {
+    try {
+      await addDoc(collection(db, GAME_COMMENTS_COLLECTION), {
+        gameId: commentData.gameId,
+        userId: commentData.userId,
+        userName: commentData.userName,
+        userAvatar: commentData.userAvatar || '',
+        comment: commentData.comment,
+        rating: commentData.rating || null,
+        likes: 0,
+        likedBy: [],
+        replies: [],
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      throw error;
+    }
+  },
+
+  async toggleCommentLike(commentId: string, userId: string): Promise<void> {
+    // Placeholder for like functionality
+    console.log('Toggle like for comment:', commentId, 'by user:', userId);
+  },
+
+  async deleteComment(commentId: string, userId: string): Promise<void> {
+    // Placeholder for delete functionality
+    console.log('Delete comment:', commentId, 'by user:', userId);
+  },
+
+  async addReply(commentId: string, replyData: {
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    comment: string;
+  }): Promise<void> {
+    // Placeholder for reply functionality
+    console.log('Add reply to comment:', commentId, replyData);
   }
 };

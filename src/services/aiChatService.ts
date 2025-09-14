@@ -14,7 +14,10 @@ export const aiChatService = {
     try {
       // Check if API key is available
       const apiKey = import.meta.env.VITE_GOOGLE_GENAI_API_KEY;
+      console.log('API Key available:', !!apiKey);
+      
       if (!apiKey || apiKey.includes('your_') || apiKey.length < 10) {
+        console.log('Using fallback - no valid API key');
         return this.getFallbackResponse(message);
       }
 
@@ -22,19 +25,23 @@ export const aiChatService = {
       
       // Build context from conversation history
       const context = conversationHistory
-        .slice(-10) // Keep last 10 messages for context
+        .slice(-5) // Keep last 5 messages for context
         .map(msg => `${msg.isUser ? 'User' : 'AI'}: ${msg.content}`)
         .join('\n');
       
-      const prompt = `You are an expert gaming assistant for GameHub. You help with game recommendations, walkthroughs, cheats, tips, and strategies. Keep responses concise and helpful. Only provide detailed lists or guides when specifically asked for "detailed", "list", "guide", or "walkthrough".
+      const prompt = `You are a gaming expert assistant for Pixel Pilgrim. Help with game recommendations, tips, strategies, and gaming questions. Keep responses helpful and concise.
 
-${context ? `Previous conversation:\n${context}\n\n` : ''}User: ${message}`;
+${context ? `Context:\n${context}\n\n` : ''}User: ${message}`;
 
+      console.log('Sending request to Gemini API...');
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      return response.text();
+      const text = response.text();
+      console.log('AI Response received:', text.substring(0, 100) + '...');
+      return text;
     } catch (error) {
-      console.error('Error calling AI service:', error);
+      console.error('AI service error:', error);
+      console.log('Falling back to predefined responses');
       return this.getFallbackResponse(message);
     }
   },

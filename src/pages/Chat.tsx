@@ -8,7 +8,7 @@ import { Navbar } from '@/components/homepage/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaArrowLeft, FaPaperPlane, FaEllipsisV, FaRobot, FaImage, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaEllipsisV, FaRobot, FaImage, FaTimes, FaTrash } from 'react-icons/fa';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
@@ -290,6 +290,23 @@ const Chat: React.FC = () => {
     return 'Last seen recently';
   };
 
+  const handleDeleteMessage = async (messageId: string, isAI: boolean) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+
+    if (isAI) {
+      // Delete from AI chat
+      const updatedMessages = aiMessages.filter(msg => msg.id !== messageId);
+      setAiMessages(updatedMessages);
+      localStorage.setItem(`ai_chat_${user?.uid}`, JSON.stringify(updatedMessages));
+      toast.success('Message deleted');
+    } else {
+      // Delete from regular chat (placeholder - would need backend implementation)
+      toast.success('Message deleted');
+      // For now, just remove from local state
+      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== messageId));
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-hero">
@@ -399,7 +416,15 @@ const Chat: React.FC = () => {
                         </div>
                       )}
                       
-                      <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'}`}>
+                      <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${isOwn ? 'order-1' : 'order-2'} group relative`}>
+                        {isOwn && (
+                          <Button
+                            onClick={() => handleDeleteMessage(message.id, isAIChat)}
+                            className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          >
+                            <FaTrash className="w-3 h-3" />
+                          </Button>
+                        )}
                         <div className={`${(isAIChat ? message.content : message.message).startsWith('data:image/') ? 'p-1' : 'px-3 sm:px-4 py-2'} rounded-2xl ${isOwn 
                           ? 'bg-primary text-primary-foreground rounded-br-md' 
                           : 'bg-secondary text-secondary-foreground rounded-bl-md'
