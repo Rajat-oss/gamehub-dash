@@ -140,7 +140,7 @@ const Notifications: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar onSearch={() => {}} />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">Loading notifications...</div>
@@ -150,12 +150,12 @@ const Notifications: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Modern Header */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 mb-6 sm:mb-8">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border mb-6 sm:mb-8">
           <div className="absolute inset-0 bg-grid-pattern opacity-5" />
           <div className="relative p-4 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -207,8 +207,8 @@ const Notifications: React.FC = () => {
                 key={notification.id}
                 className={`relative overflow-hidden rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group hover:scale-[1.01] sm:hover:scale-[1.02] ${
                   !notification.read 
-                    ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/30 shadow-lg shadow-primary/10' 
-                    : 'bg-gradient-to-r from-card to-card/50 border-border/30 hover:border-border/50 hover:shadow-md'
+                    ? 'bg-card border-primary/30 shadow-lg' 
+                    : 'bg-card border-border hover:border-border/50 hover:shadow-md'
                 }`}
                 onClick={() => handleNotificationClick(notification)}
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -319,7 +319,7 @@ const Notifications: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent border border-border/30">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-card border border-border">
             <div className="absolute inset-0 bg-grid-pattern opacity-5" />
             <div className="relative p-8 sm:p-20 text-center">
               <div className="max-w-lg mx-auto">

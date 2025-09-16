@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { commentService } from '@/services/commentService';
 import { PostComment } from '@/types/post';
-import { FaUser, FaPaperPlane } from 'react-icons/fa';
+import { FaUser, FaPaperPlane, FaTrash, FaEllipsisV } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface CommentSectionProps {
   postId: string;
@@ -59,6 +60,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
       toast.error('Failed to add comment');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user) return;
+    
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      try {
+        await commentService.deleteComment(postId, commentId);
+        toast.success('Comment deleted');
+      } catch (error) {
+        toast.error('Failed to delete comment');
+      }
     }
   };
 
@@ -119,11 +133,31 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="bg-secondary/30 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm">{comment.username}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-                    </span>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{comment.username}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
+                      </span>
+                    </div>
+                    {user && comment.userId === user.uid && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground">
+                            <FaEllipsisV className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteComment(comment.id)} 
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <FaTrash className="mr-2 h-3 w-3" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                   <p className="text-sm">{comment.content}</p>
                 </div>

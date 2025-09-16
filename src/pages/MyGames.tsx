@@ -124,7 +124,7 @@ const MyGames: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <FaGamepad className="text-6xl text-muted-foreground mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Please log in</h2>
@@ -135,7 +135,7 @@ const MyGames: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -185,42 +185,42 @@ const MyGames: React.FC = () => {
             {/* Stats Cards */}
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-primary mb-1">{stats.totalGames}</div>
                     <div className="text-sm text-muted-foreground">Total Games</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-green-500 mb-1">{stats.completed}</div>
                     <div className="text-sm text-muted-foreground">Completed</div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-blue-500 mb-1">{stats.playing}</div>
                     <div className="text-sm text-muted-foreground">Playing</div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-purple-500 mb-1">{stats.wantToPlay}</div>
                     <div className="text-sm text-muted-foreground">Want to Play</div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-yellow-500 mb-1">{stats.onHold}</div>
                     <div className="text-sm text-muted-foreground">On Hold</div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-card border-border/50">
+                <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <FaStar className="text-yellow-400 text-lg" />
@@ -269,7 +269,7 @@ const MyGames: React.FC = () => {
             {filteredGameLogs.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
                 {filteredGameLogs.map((gameLog) => (
-                  <Card key={gameLog.id} className="bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
+                  <Card key={gameLog.id} className="bg-card border-border hover:border-primary/50 transition-all duration-300">
                     <CardContent className="p-0">
                       {/* Game Image */}
                       {gameLog.gameImageUrl && (

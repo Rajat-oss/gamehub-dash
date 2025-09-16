@@ -7,7 +7,9 @@ import {
   orderBy, 
   onSnapshot, 
   serverTimestamp,
-  getDocs
+  getDocs,
+  doc,
+  deleteDoc
 } from 'firebase/firestore';
 import { PostComment, CreateCommentData } from '@/types/post';
 import { notificationService } from './notificationService';
@@ -181,42 +183,17 @@ export const commentService = {
     }
   },
 
-  // Add comment method that matches CommentsSection interface
-  async addComment(commentData: {
-    gameId: string;
-    userId: string;
-    userName: string;
-    userAvatar?: string;
-    comment: string;
-    rating?: number;
-  }): Promise<void> {
+
+
+
+
+  async deleteComment(postId: string, commentId: string): Promise<void> {
     try {
-      await addDoc(collection(db, GAME_COMMENTS_COLLECTION), {
-        gameId: commentData.gameId,
-        userId: commentData.userId,
-        userName: commentData.userName,
-        userAvatar: commentData.userAvatar || '',
-        comment: commentData.comment,
-        rating: commentData.rating || null,
-        likes: 0,
-        likedBy: [],
-        replies: [],
-        createdAt: serverTimestamp()
-      });
+      await deleteDoc(doc(db, COMMENTS_COLLECTION, commentId));
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Error deleting comment:', error);
       throw error;
     }
-  },
-
-  async toggleCommentLike(commentId: string, userId: string): Promise<void> {
-    // Placeholder for like functionality
-    console.log('Toggle like for comment:', commentId, 'by user:', userId);
-  },
-
-  async deleteComment(commentId: string, userId: string): Promise<void> {
-    // Placeholder for delete functionality
-    console.log('Delete comment:', commentId, 'by user:', userId);
   },
 
   async addReply(commentId: string, replyData: {

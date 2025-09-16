@@ -167,7 +167,7 @@ const Posts: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <div className="min-h-screen bg-background relative">
       <Navbar onSearch={() => {}} />
       
       <div className="flex max-w-7xl mx-auto">
@@ -180,18 +180,18 @@ const Posts: React.FC = () => {
                 whileHover={{ scale: 1.02, x: 4 }}
                 className={`flex items-center gap-4 p-4 rounded-full cursor-pointer transition-all duration-200 ${
                   item.active 
-                    ? 'bg-white/10 border border-white/20' 
-                    : 'hover:bg-white/5'
+                    ? 'bg-primary/10 border border-primary/20' 
+                    : 'hover:bg-muted/50'
                 }`}
               >
-                <div className={`p-2 rounded-xl ${item.active ? 'bg-white' : 'bg-white/10'}`}>
-                  <item.icon className={`w-5 h-5 ${item.active ? 'text-black' : 'text-white'}`} />
+                <div className={`p-2 rounded-xl ${item.active ? 'bg-primary' : 'bg-muted'}`}>
+                  <item.icon className={`w-5 h-5 ${item.active ? 'text-primary-foreground' : 'text-foreground'}`} />
                 </div>
-                <span className={`font-medium ${item.active ? 'text-white' : 'text-[#9A9A9A]'}`}>
+                <span className={`font-medium ${item.active ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {item.label}
                 </span>
                 {item.active && (
-                  <div className="ml-auto w-2 h-2 bg-white rounded-full" />
+                  <div className="ml-auto w-2 h-2 bg-primary rounded-full" />
                 )}
               </motion.div>
             ))}
@@ -277,7 +277,7 @@ const Posts: React.FC = () => {
           </div>
 
           {/* Share Box */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-6">
+          <div className="bg-card border border-border rounded-3xl p-6 mb-6">
             <div className="flex items-center gap-4">
               <Avatar className="w-12 h-12">
                 <AvatarImage src={user?.photoURL} />
@@ -287,7 +287,7 @@ const Posts: React.FC = () => {
               </Avatar>
               <button
                 onClick={() => setIsPostModalOpen(true)}
-                className="flex-1 bg-black border border-white/10 rounded-full px-6 py-3 text-left text-[#9A9A9A] hover:border-white/30 transition-all duration-200"
+                className="flex-1 bg-background border border-border rounded-full px-6 py-3 text-left text-muted-foreground hover:border-border/80 transition-all duration-200"
               >
                 What's on your mind?
               </button>
@@ -345,7 +345,7 @@ const Posts: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                     whileHover={{ y: -2 }}
-                    className="bg-white/5 rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300"
+                    className="bg-card rounded-3xl p-6 border border-border hover:border-border/80 transition-all duration-300"
                   >
                     {/* Post Header */}
                     <div className="flex items-center gap-4 mb-4">
@@ -360,14 +360,14 @@ const Posts: React.FC = () => {
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-white">{post.username}</h3>
+                          <h3 className="font-semibold text-foreground">{post.username}</h3>
                           {post.gameTitle && (
-                            <Badge className="bg-white/10 text-white border-white/20 text-xs">
+                            <Badge className="bg-muted text-foreground border-border text-xs">
                               {post.gameTitle}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-[#9A9A9A]">
+                        <p className="text-sm text-muted-foreground">
                           {formatDistanceToNow(post.createdAt, { addSuffix: true })}
                         </p>
                       </div>
@@ -391,7 +391,7 @@ const Posts: React.FC = () => {
                     {/* Post Content */}
                     {post.content && (
                       <div className="mb-4">
-                        <p className="text-white leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                        <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
                       </div>
                     )}
                     
@@ -428,8 +428,8 @@ const Posts: React.FC = () => {
                           whileTap={{ scale: 0.9 }}
                           className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
                             isLiked 
-                              ? 'bg-white/20 text-white border border-white/30' 
-                              : 'bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white'
+                              ? 'bg-primary/20 text-primary border border-primary/30' 
+                              : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
                           }`}
                         >
                           <motion.div
@@ -447,8 +447,8 @@ const Posts: React.FC = () => {
                           whileTap={{ scale: 0.9 }}
                           className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
                             expandedComments.has(post.id)
-                              ? 'bg-white/20 text-white border border-white/30'
-                              : 'bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white'
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
                           }`}
                         >
                           {expandedComments.has(post.id) ? <FaComment className="w-4 h-4" /> : <FaRegComment className="w-4 h-4" />}
@@ -463,7 +463,7 @@ const Posts: React.FC = () => {
                           onClick={() => handleShare(post)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
+                          className="p-2 rounded-full bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground transition-all duration-200"
                         >
                           <FaShare className="w-4 h-4" />
                         </motion.button>
@@ -471,7 +471,7 @@ const Posts: React.FC = () => {
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-full bg-white/5 text-[#9A9A9A] border border-white/10 hover:border-white/30 hover:text-white transition-all duration-200"
+                          className="p-2 rounded-full bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground transition-all duration-200"
                         >
                           <FaBookmark className="w-4 h-4" />
                         </motion.button>
@@ -490,6 +490,7 @@ const Posts: React.FC = () => {
                         >
                           <CommentSection 
                             postId={post.id}
+                            postAuthorId={post.userId}
                             isExpanded={expandedComments.has(post.id)}
                           />
                         </motion.div>
@@ -582,9 +583,9 @@ const Posts: React.FC = () => {
 
           {/* Suggestions */}
           {suggestions.length > 0 && (
-            <div className="bg-white/5 rounded-3xl p-6 border border-white/10">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <FaUserPlus className="w-5 h-5 text-white" />
+            <div className="bg-card rounded-3xl p-6 border border-border">
+              <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <FaUserPlus className="w-5 h-5 text-primary" />
                 Suggestions
               </h3>
               <div className="space-y-4">
@@ -595,19 +596,19 @@ const Posts: React.FC = () => {
                       onClick={() => window.location.href = `/user/${suggestion.username}`}
                     >
                       <AvatarImage src={suggestion.photoURL} />
-                      <AvatarFallback className="bg-white text-black text-xs">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                         {suggestion.username?.slice(0, 2) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{suggestion.username}</p>
-                      <p className="text-[#9A9A9A] text-xs">{suggestion.followers?.length || 0} followers</p>
+                      <p className="text-foreground font-medium text-sm">{suggestion.username}</p>
+                      <p className="text-muted-foreground text-xs">{suggestion.followers?.length || 0} followers</p>
                     </div>
                     <motion.button
                       onClick={() => handleFollowUser(suggestion.uid)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="px-4 py-2 bg-white text-black text-xs font-medium rounded-full hover:bg-white/90 transition-all duration-200"
+                      className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-full hover:bg-primary/90 transition-all duration-200"
                     >
                       Follow
                     </motion.button>

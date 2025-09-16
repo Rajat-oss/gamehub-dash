@@ -41,7 +41,7 @@ const Favorites = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -77,14 +77,14 @@ const Favorites = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-gradient-card border border-border/50 rounded-lg">
+          <div className="text-center py-12 bg-card border border-border rounded-lg">
             <FaGamepad className="text-6xl text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
             <p className="text-muted-foreground mb-6">
               Add games to your favorites from the marketplace
             </p>
             <Link to="/homepage">
-              <Button className="bg-gradient-primary hover:shadow-glow-primary">
+              <Button className="bg-primary hover:bg-primary/90">
                 Browse Games
               </Button>
             </Link>
@@ -93,16 +93,16 @@ const Favorites = () => {
 
         {/* Stats */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+          <div className="bg-card border border-border rounded-lg p-6 text-center">
             <div className="text-3xl font-bold text-red-500 mb-2">{favorites.length}</div>
             <div className="text-muted-foreground">Favorite Games</div>
           </div>
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
+          <div className="bg-card border border-border rounded-lg p-6 text-center">
             <div className="text-3xl font-bold text-accent mb-2">Personal</div>
             <div className="text-muted-foreground">Collection</div>
           </div>
-          <div className="bg-gradient-card border border-border/50 rounded-lg p-6 text-center">
-            <div className="text-3xl font-bold text-gaming-green mb-2">Curated</div>
+          <div className="bg-card border border-border rounded-lg p-6 text-center">
+            <div className="text-3xl font-bold text-green-500 mb-2">Curated</div>
             <div className="text-muted-foreground">By You</div>
           </div>
         </div>

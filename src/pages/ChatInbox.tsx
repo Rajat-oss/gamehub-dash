@@ -86,7 +86,7 @@ const ChatInbox = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar onSearch={() => {}} />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">Loading chats...</div>
@@ -96,7 +96,7 @@ const ChatInbox = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -112,7 +112,7 @@ const ChatInbox = () => {
         </div>
 
         {/* AI Assistant Card */}
-        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 mb-4 sm:mb-6">
+        <Card className="bg-card border-border mb-4 sm:mb-6">
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
@@ -138,7 +138,7 @@ const ChatInbox = () => {
         </Card>
 
         {/* Chat List */}
-        <Card className="bg-gradient-card border-border/50">
+        <Card className="bg-card border-border">
           <CardHeader className="pb-3 sm:pb-6">
             <CardTitle className="flex items-center text-base sm:text-lg">
               <FaComments className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -170,7 +170,7 @@ const ChatInbox = () => {
                   
                   return (
                     <Link key={chat.id} to={`/chat/${otherUserId}`}>
-                      <div className="relative flex items-center space-x-3 sm:space-x-4 p-3 sm:p-5 bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 hover:bg-white/10 hover:shadow-lg transition-all duration-300 cursor-pointer group active:scale-[0.98]">
+                      <div className="relative flex items-center space-x-3 sm:space-x-4 p-3 sm:p-5 bg-card/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border hover:bg-card/80 hover:shadow-lg transition-all duration-300 cursor-pointer group active:scale-[0.98]">
                         <div className="relative flex-shrink-0">
                           <Avatar 
                             className="h-12 w-12 sm:h-14 sm:w-14 cursor-pointer hover:scale-105 transition-transform duration-200 shadow-md"
@@ -188,7 +188,7 @@ const ChatInbox = () => {
                             </AvatarFallback>
                           </Avatar>
                           {unreadCounts[otherUserId] > 0 && (
-                            <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full border-2 border-white shadow-sm" />
+                            <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full border-2 border-background shadow-sm" />
                           )}
                         </div>
                         
@@ -203,7 +203,7 @@ const ChatInbox = () => {
                           </div>
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {chat.lastMessage?.startsWith('data:image/') ? (
-                              <span className="flex items-center text-blue-400">
+                              <span className="flex items-center text-primary">
                                 <FaImage className="w-3 h-3 mr-1 flex-shrink-0" />
                                 Photo
                               </span>

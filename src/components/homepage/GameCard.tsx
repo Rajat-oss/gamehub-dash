@@ -79,7 +79,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
 
   return (
     <div className="cursor-pointer">
-      <Card className="group bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary overflow-hidden h-full hover:scale-105" onClick={handleCardClick}>
+      <Card className="group bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg overflow-hidden h-full hover:scale-105" onClick={handleCardClick}>
         <div className="relative aspect-[3/4] overflow-hidden">
           <img
             src={game.box_art_url || 'https://via.placeholder.com/285x380?text=No+Image'}
@@ -89,7 +89,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-            <Badge className="bg-primary/80 backdrop-blur-sm text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1">
+            <Badge className="bg-primary/80 backdrop-blur-sm text-primary-foreground text-xs px-1 py-0.5 sm:px-2 sm:py-1">
               <FaStar className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
               <span className="hidden sm:inline">Featured</span>
               <span className="sm:hidden">★</span>
@@ -97,7 +97,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
           </div>
 
           <button
-            className={`absolute top-2 left-2 sm:top-3 sm:left-3 h-6 w-6 sm:h-8 sm:w-8 rounded-md flex items-center justify-center ${isGameFavorite ? 'bg-red-500/90 hover:bg-red-500 text-white' : 'bg-black/50 hover:bg-black/70 text-white'} backdrop-blur-sm border-0 transition-colors z-20`}
+            className={`absolute top-2 left-2 sm:top-3 sm:left-3 h-6 w-6 sm:h-8 sm:w-8 rounded-md flex items-center justify-center ${isGameFavorite ? 'bg-red-500/90 hover:bg-red-500 text-white' : 'bg-background/50 hover:bg-background/70 text-foreground'} backdrop-blur-sm border-0 transition-colors z-20`}
             onClick={handleToggleFavorite}
           >
             <FaHeart className="w-2 h-2 sm:w-3 sm:h-3" />
@@ -114,7 +114,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
             </button>
             
             <button
-              className="bg-green-600/90 hover:bg-green-600 text-white border-0 px-2 h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors"
+              className="bg-green-600/90 hover:bg-green-600 text-primary-foreground border-0 px-2 h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors"
               onClick={handleLogGame}
             >
               <FaPlus className="w-2 h-2 sm:w-3 sm:h-3" />

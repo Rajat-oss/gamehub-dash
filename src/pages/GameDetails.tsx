@@ -120,7 +120,7 @@ const GameDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar onSearch={() => {}} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Skeleton className="h-8 w-32 mb-6" />
@@ -141,7 +141,7 @@ const GameDetails = () => {
 
   if (!game) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar onSearch={() => {}} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
@@ -156,7 +156,7 @@ const GameDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -179,8 +179,7 @@ const GameDetails = () => {
               backgroundPosition: 'center'
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-background/90" />
           
           {/* Content */}
           <div className="relative p-8 lg:p-12">
@@ -194,12 +193,12 @@ const GameDetails = () => {
                     alt={game.name}
                     className="relative w-full max-w-sm mx-auto aspect-[3/4] object-cover rounded-xl shadow-2xl"
                   />
-                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2">
+                  <div className="absolute top-4 right-4 bg-background/50 backdrop-blur-sm rounded-full p-2">
                     <AnimatedHeart
                       isLiked={isGameFavorite}
                       onToggle={handleToggleFavorite}
                       size="md"
-                      className="text-white"
+                      className="text-foreground"
                     />
                   </div>
                 </div>
@@ -211,7 +210,7 @@ const GameDetails = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h1 className="text-5xl lg:text-7xl font-black tracking-tight">
-                      <span className="bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent">
+                      <span className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent">
                         {game.name}
                       </span>
                     </h1>
@@ -223,7 +222,7 @@ const GameDetails = () => {
                   </div>
                   
                   {/* Description */}
-                  <p className="text-xl text-gray-300 leading-relaxed max-w-3xl">
+                  <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
                     {gameDetails?.summary?.slice(0, 200) || 
                      `Experience the ultimate gaming adventure with ${game.name}. Immerse yourself in stunning visuals, engaging gameplay, and unforgettable moments.`}
                     {gameDetails?.summary && gameDetails.summary.length > 200 && '...'}
@@ -282,31 +281,31 @@ const GameDetails = () => {
         {/* Stats Cards */}
         <div className="mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="bg-card border border-border rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-2">
                 <FaStar className="text-pink-400" />
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-foreground">
                   {(gameStats?.averageRating || 0).toFixed(1)}
                 </span>
               </div>
-              <p className="text-sm text-gray-400">Rating</p>
+              <p className="text-sm text-muted-foreground">Rating</p>
             </div>
             
-            <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-2xl p-6 backdrop-blur-sm">
-              <div className="text-2xl font-bold text-white mb-2">
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {gameStats?.ratingCount || 0}
               </div>
-              <p className="text-sm text-gray-400">Reviews</p>
+              <p className="text-sm text-muted-foreground">Reviews</p>
             </div>
             
-            <div className="bg-gradient-to-br from-cyan-500/10 to-pink-500/10 border border-cyan-500/20 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="bg-card border border-border rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-2">
                 <FaComment className="text-cyan-400" />
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-foreground">
                   {gameStats?.commentCount || 0}
                 </span>
               </div>
-              <p className="text-sm text-gray-400">Comments</p>
+              <p className="text-sm text-muted-foreground">Comments</p>
             </div>
             
 
@@ -340,7 +339,7 @@ const GameDetails = () => {
 
           <TabsContent value="stats" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="bg-gradient-card border-border/50">
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FaStar className="text-yellow-400" />
@@ -358,7 +357,7 @@ const GameDetails = () => {
                         <div key={rating} className="flex items-center gap-2">
                           <span className="text-sm w-4">{rating}</span>
                           <FaStar className="text-yellow-400 w-3 h-3" />
-                          <div className="flex-1 bg-secondary rounded-full h-2">
+                          <div className="flex-1 bg-muted rounded-full h-2">
                             <div 
                               className="bg-yellow-400 h-2 rounded-full" 
                               style={{ width: `${percentage}%` }}
@@ -374,7 +373,7 @@ const GameDetails = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-card border-border/50">
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FaUsers className="text-blue-400" />
@@ -401,7 +400,7 @@ const GameDetails = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-card border-border/50">
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FaGamepad className="text-green-400" />

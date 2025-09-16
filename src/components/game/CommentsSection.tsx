@@ -267,7 +267,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
   return (
     <div className="space-y-6">
       {/* Rating Summary */}
-      <div className="bg-gradient-card border border-border/50 rounded-lg p-6">
+      <div className="bg-card border border-border rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Community Rating</h3>
         <div className="flex items-center space-x-4">
           <div className="text-3xl font-bold text-primary">{(averageRating || 0).toFixed(1)}</div>
@@ -279,7 +279,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
       </div>
 
       {/* Add Comment */}
-      <div className="bg-gradient-card border border-border/50 rounded-lg p-6">
+      <div className="bg-card border border-border rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Leave a Review</h3>
           {user && (
@@ -299,12 +299,12 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
             placeholder={`Share your thoughts about ${gameName}...`}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            className="bg-secondary/50 border-border/50 focus:border-primary min-h-[100px]"
+            className="bg-background border-border focus:border-primary min-h-[100px]"
           />
           
           <Button 
             onClick={handleSubmitComment}
-            className="bg-gradient-primary hover:shadow-glow-primary"
+            className="bg-primary hover:bg-primary/90"
             disabled={!newComment.trim() || !user || submitting}
           >
             {submitting ? 'Posting...' : 'Post Review'}
@@ -323,11 +323,11 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
         <h3 className="text-xl font-semibold">Reviews & Comments ({comments.length})</h3>
         
         {loading ? (
-          <div className="text-center py-8 bg-gradient-card border border-border/50 rounded-lg">
+          <div className="text-center py-8 bg-card border border-border rounded-lg">
             <p className="text-muted-foreground">Loading comments...</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="text-center py-8 bg-gradient-card border border-border/50 rounded-lg">
+          <div className="text-center py-8 bg-card border border-border rounded-lg">
             <p className="text-muted-foreground">No reviews yet. Be the first to share your thoughts!</p>
           </div>
         ) : (
@@ -337,7 +337,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="bg-gradient-card border border-border/50 rounded-lg p-6 gaming-card-glow"
+              className="bg-card border border-border rounded-lg p-6"
             >
               {/* Comment Header */}
               <div className="flex items-start justify-between mb-3">
@@ -411,7 +411,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                       placeholder="Write a reply..."
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
-                      className="bg-secondary/50 border-border/50 focus:border-primary"
+                      className="bg-background border-border focus:border-primary"
                     />
                     <div className="flex space-x-2">
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -419,7 +419,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({ gameId, gameNa
                           size="sm"
                           onClick={() => handleSubmitReply(comment.id)}
                           disabled={!replyText.trim() || !user || submitting}
-                          className="bg-gradient-primary hover:shadow-glow-primary"
+                          className="bg-primary hover:bg-primary/90"
                         >
                           {submitting ? 'Posting...' : 'Post Reply'}
                         </Button>

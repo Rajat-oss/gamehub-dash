@@ -92,14 +92,14 @@ export const GameDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#000000]">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={handleSearch} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Modern Hero Section */}
         <section className="mb-16">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50 backdrop-blur-sm border border-white/10 rounded-3xl">
+          <div className="relative overflow-hidden bg-gradient-to-br from-card via-muted/30 to-card backdrop-blur-sm border border-border rounded-3xl">
             <div className="absolute inset-0 opacity-40">
               <div className="w-full h-full" style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -115,7 +115,7 @@ export const GameDashboard: React.FC = () => {
                       Live Gaming Platform
                     </div>
                     <h1 className="text-4xl lg:text-6xl font-black tracking-tight">
-                      <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                      <span className="bg-gradient-to-r from-foreground via-foreground/80 to-muted-foreground bg-clip-text text-transparent">
                         Discover
                       </span>
                       <br />
@@ -123,7 +123,7 @@ export const GameDashboard: React.FC = () => {
                         Epic Games
                       </span>
                     </h1>
-                    <p className="text-lg text-slate-400 max-w-2xl leading-relaxed">
+                    <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
                       Explore curated collections, trending titles, and hidden gems. 
                       Your next gaming adventure starts here.
                     </p>
@@ -135,7 +135,7 @@ export const GameDashboard: React.FC = () => {
                       Browse Library
                     </Button>
                     <Link to="/community">
-                      <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/5">
+                      <Button size="lg" variant="outline" className="border-border hover:bg-muted/50">
                         <FaUser className="w-4 h-4 mr-2" />
                         Join Community
                       </Button>
@@ -149,8 +149,8 @@ export const GameDashboard: React.FC = () => {
                       <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
                         <FaFire className="text-red-400 text-2xl mb-3" />
                         <div className="space-y-1">
-                          <p className="font-semibold text-white text-sm">Trending</p>
-                          <p className="text-xs text-slate-400">Hot right now</p>
+                          <p className="font-semibold text-foreground text-sm">Trending</p>
+                          <p className="text-xs text-muted-foreground">Hot right now</p>
                         </div>
                       </div>
                     </div>
@@ -159,8 +159,8 @@ export const GameDashboard: React.FC = () => {
                       <div className="bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
                         <FaTrophy className="text-yellow-400 text-2xl mb-3" />
                         <div className="space-y-1">
-                          <p className="font-semibold text-white text-sm">Top Rated</p>
-                          <p className="text-xs text-slate-400">Highest scores</p>
+                          <p className="font-semibold text-foreground text-sm">Top Rated</p>
+                          <p className="text-xs text-muted-foreground">Highest scores</p>
                         </div>
                       </div>
                     </div>
@@ -169,8 +169,8 @@ export const GameDashboard: React.FC = () => {
                       <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl p-4 hover:scale-105 transition-transform duration-300">
                         <FaPlus className="text-green-400 text-2xl mb-3" />
                         <div className="space-y-1">
-                          <p className="font-semibold text-white text-sm">New</p>
-                          <p className="text-xs text-slate-400">Fresh releases</p>
+                          <p className="font-semibold text-foreground text-sm">New</p>
+                          <p className="text-xs text-muted-foreground">Fresh releases</p>
                         </div>
                       </div>
                     </div>
@@ -233,10 +233,10 @@ export const GameDashboard: React.FC = () => {
               <FaGamepad className="text-6xl text-muted-foreground mx-auto animate-bounce" />
               <div className="absolute inset-0 text-6xl text-primary/20 mx-auto animate-ping">🎮</div>
             </div>
-            <h3 className="text-2xl font-bold mb-3 text-[#FFFFFF]">
+            <h3 className="text-2xl font-bold mb-3 text-foreground">
               No games found
             </h3>
-            <p className="text-[#9A9A9A] text-lg mb-6">
+            <p className="text-muted-foreground text-lg mb-6">
               Try a different search or explore our trending games
             </p>
             <Button onClick={loadGames} className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg transition-all duration-300">

@@ -250,7 +250,7 @@ export const LandingPage: React.FC = () => {
                     Start Gaming Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
-                  <Button size="lg" variant="outline" className="group cyber-glow w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="group cyber-glow w-full sm:w-auto" onClick={() => window.open('https://youtu.be/iLHAoc0Rrzo?si=oYsvvwqUVv3N-avL', '_blank')}>
                     <Play className="mr-2 h-4 w-4 transition-transform group-hover:scale-110 animate-gaming-bounce" />
                     Watch Demo
                   </Button>

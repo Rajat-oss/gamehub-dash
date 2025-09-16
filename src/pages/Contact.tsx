@@ -100,7 +100,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000]">
+    <div className="min-h-screen bg-background">
       <Navbar onSearch={() => {}} />
       
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -109,7 +109,7 @@ const Contact: React.FC = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
             Contact Us & Support
           </h1>
-          <p className="text-lg text-[#9A9A9A] max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Have questions, feedback, or need help? We're here to assist you with anything related to GameHub.
           </p>
         </div>
@@ -117,15 +117,15 @@ const Contact: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-[#000000] border-[#9A9A9A]/20">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-[#FFFFFF]">Send us a Message</CardTitle>
+                <CardTitle className="text-foreground">Send us a Message</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Contact Type */}
                   <div>
-                    <label className="block text-sm font-medium mb-3 text-[#FFFFFF]">What can we help you with?</label>
+                    <label className="block text-sm font-medium mb-3 text-foreground">What can we help you with?</label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {contactTypes.map((type) => (
                         <button
@@ -196,9 +196,9 @@ const Contact: React.FC = () => {
           {/* Contact Info & FAQs */}
           <div className="space-y-6">
             {/* Contact Information */}
-            <Card className="bg-[#000000] border-[#9A9A9A]/20">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-[#FFFFFF]">Get in Touch</CardTitle>
+                <CardTitle className="text-foreground">Get in Touch</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -241,9 +241,9 @@ const Contact: React.FC = () => {
 
         {/* FAQ Section */}
         <div className="mt-16">
-          <Card className="bg-[#000000] border-[#9A9A9A]/20">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-center text-[#FFFFFF]">Frequently Asked Questions</CardTitle>
+              <CardTitle className="text-center text-foreground">Frequently Asked Questions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
