@@ -168,15 +168,6 @@ export const LandingPage: React.FC = () => {
     }
   ];
 
-  const stats = [
-    { number: "10K+", label: "Gaming Sessions Logged", icon: Trophy },
-    { number: "500+", label: "Games in Database", icon: Gamepad2 },
-    { number: "5K+", label: "Gaming Stories Shared", icon: Heart },
-    { number: "24/7", label: "AI Assistant Available", icon: Sparkles }
-  ];
-
- 
-
   const footerLinks = {
     product: [
       { name: "Features", href: "#features" },
@@ -423,38 +414,6 @@ export const LandingPage: React.FC = () => {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               )}
-            </motion.div>
-
-            {/* Stats Row */}
-            <motion.div
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 w-full max-w-4xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              {[
-                { number: "10K+", label: "Active Gamers", icon: Users },
-                { number: "500+", label: "Games Tracked", icon: Gamepad2 },
-                { number: "50K+", label: "Sessions Logged", icon: Trophy },
-                { number: "24/7", label: "AI Support", icon: Sparkles }
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  className="text-center group cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <div className="flex justify-center mb-2">
-                    <div className="p-3 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <stat.icon className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </motion.div>
-              ))}
             </motion.div>
           </div>
         </div>
@@ -1134,8 +1093,8 @@ export const LandingPage: React.FC = () => {
               
               {/* Content */}
               <div className="p-8 md:p-12 lg:p-16">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                  {/* Left Side - Text Content */}
+                <div className="max-w-3xl mx-auto text-center">
+                  {/* Text Content */}
                   <div className="space-y-6">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -1173,7 +1132,7 @@ export const LandingPage: React.FC = () => {
 
                     {/* Trust Indicators */}
                     <motion.div
-                      className="grid sm:grid-cols-2 gap-4 pt-4"
+                      className="flex flex-wrap items-center justify-center gap-6 pt-4"
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.3 }}
@@ -1183,7 +1142,7 @@ export const LandingPage: React.FC = () => {
                         { icon: CheckCircle, text: "Free to start" },
                         { icon: CheckCircle, text: "No credit card" },
                         { icon: Shield, text: "Secure & private" },
-                        { icon: Users, text: "10K+ members" }
+                        { icon: Sparkles, text: "AI powered" }
                       ].map((item, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
                           <item.icon className="w-4 h-4 text-primary flex-shrink-0" />
@@ -1194,7 +1153,7 @@ export const LandingPage: React.FC = () => {
 
                     {/* CTA Buttons */}
                     <motion.div
-                      className="flex flex-col sm:flex-row gap-4 pt-4"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.4 }}
@@ -1232,68 +1191,6 @@ export const LandingPage: React.FC = () => {
                       )}
                     </motion.div>
                   </div>
-
-                  {/* Right Side - Stats/Features */}
-                  <motion.div
-                    className="relative"
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    <div className="grid grid-cols-2 gap-4">
-                      {[
-                        { 
-                          icon: Gamepad2, 
-                          value: "500+", 
-                          label: "Games Tracked",
-                          color: "from-blue-500/10 to-cyan-500/10",
-                          iconColor: "text-blue-500"
-                        },
-                        { 
-                          icon: Trophy, 
-                          value: "50K+", 
-                          label: "Sessions Logged",
-                          color: "from-yellow-500/10 to-orange-500/10",
-                          iconColor: "text-yellow-500"
-                        },
-                        { 
-                          icon: Users, 
-                          value: "10K+", 
-                          label: "Active Users",
-                          color: "from-green-500/10 to-emerald-500/10",
-                          iconColor: "text-green-500"
-                        },
-                        { 
-                          icon: Star, 
-                          value: "4.9/5", 
-                          label: "User Rating",
-                          color: "from-purple-500/10 to-pink-500/10",
-                          iconColor: "text-purple-500"
-                        }
-                      ].map((stat, index) => (
-                        <motion.div
-                          key={index}
-                          className={`relative p-6 rounded-xl border bg-gradient-to-br ${stat.color} hover:shadow-md transition-all group cursor-default`}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
-                          viewport={{ once: true }}
-                          whileHover={{ y: -4 }}
-                        >
-                          <div className="space-y-2">
-                            <stat.icon className={`w-8 h-8 ${stat.iconColor} transition-transform group-hover:scale-110`} />
-                            <div className={`text-2xl font-bold bg-gradient-to-r ${stat.color.replace('/10', '')} bg-clip-text text-transparent`}>
-                              {stat.value}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {stat.label}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
                 </div>
               </div>
 
