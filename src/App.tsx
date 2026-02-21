@@ -10,6 +10,7 @@ import { useNotificationListener } from "@/hooks/useNotificationListener";
 import { cleanupService } from "@/services/cleanupService";
 import { useEffect } from "react";
 import { LandingPage } from "./pages/LandingPage";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import { AboutUs } from "./pages/AboutUs";
 import { Pricing } from "./pages/Pricing";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
@@ -71,13 +72,13 @@ const AppContent = () => {
 
 const NotificationWrapper = () => {
   useNotificationListener();
-  
+
   useEffect(() => {
     // Start story cleanup service
     const stopCleanup = cleanupService.startStoryCleanup();
     return stopCleanup;
   }, []);
-  
+
   return <AppContent />;
 };
 
@@ -87,9 +88,11 @@ const App = () => (
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <TooltipProvider>
           <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <NotificationWrapper />
+            <SmoothScroll>
+              <Toaster />
+              <Sonner />
+              <NotificationWrapper />
+            </SmoothScroll>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

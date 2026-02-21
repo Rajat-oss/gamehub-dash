@@ -27,7 +27,7 @@
     --input: 220 13% 91%;
     --ring: 262.1 83.3% 57.8%;
     --radius: 0.75rem;
-    
+
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220.9 39.3% 11%;
     --sidebar-primary: 220.9 39.3% 11%;
@@ -36,22 +36,22 @@
     --sidebar-accent-foreground: 220.9 39.3% 11%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 262.1 83.3% 57.8%;
-    
+
     /* Gaming colors */
     --gaming-green: 120 100% 50%;
     --gaming-orange: 25 95% 53%;
     --gaming-blue: 217 91% 60%;
     --gaming-purple: 271 81% 56%;
-    
+
     /* Gradients - Light optimized */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
     --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(220 14.3% 97%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 14.3% 96%) 100%);
-    
+
     /* Glows */
     --glow-primary: 0 0 20px hsla(var(--primary), 0.5);
     --glow-accent: 0 0 20px hsla(var(--accent), 0.5);
-    
+
     /* Transitions */
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -78,7 +78,7 @@
     --border: 0 0% 15%;
     --input: 0 0% 5%;
     --ring: 250 100% 65%;
-    
+
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 60%;
     --sidebar-primary: 0 0% 100%;
@@ -99,8 +99,13 @@
     @apply bg-background text-foreground;
     font-family: 'Source Sans Pro', sans-serif;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Exo 2', sans-serif;
   }
 
@@ -129,6 +134,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -136,18 +142,24 @@
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
 }
 
 @keyframes float-delayed {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-15px);
   }
@@ -158,12 +170,29 @@
   opacity: 0;
 }
 
-.animate-fade-in-up:nth-child(1) { animation-delay: 0.1s; }
-.animate-fade-in-up:nth-child(2) { animation-delay: 0.2s; }
-.animate-fade-in-up:nth-child(3) { animation-delay: 0.3s; }
-.animate-fade-in-up:nth-child(4) { animation-delay: 0.4s; }
-.animate-fade-in-up:nth-child(5) { animation-delay: 0.5s; }
-.animate-fade-in-up:nth-child(6) { animation-delay: 0.6s; }
+.animate-fade-in-up:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.animate-fade-in-up:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.animate-fade-in-up:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.animate-fade-in-up:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.animate-fade-in-up:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.animate-fade-in-up:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
@@ -176,18 +205,24 @@
 
 /* Gaming-Specific Animations */
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(124, 58, 237, 0.6), 0 0 60px rgba(124, 58, 237, 0.3);
   }
 }
 
 @keyframes neon-flicker {
-  0%, 100% {
+
+  0%,
+  100% {
     text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
   }
+
   50% {
     text-shadow: 0 0 5px currentColor, 0 0 15px currentColor, 0 0 25px currentColor;
   }
@@ -197,9 +232,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -210,12 +247,15 @@
     transform: translate(0, 0) rotate(0deg);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     transform: translate(-100px, -100px) rotate(360deg);
     opacity: 0;
@@ -223,15 +263,24 @@
 }
 
 @keyframes gaming-bounce {
-  0%, 20%, 53%, 80%, 100% {
+
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
+
+  40%,
+  43% {
     transform: translate3d(0, -15px, 0);
   }
+
   70% {
     transform: translate3d(0, -7px, 0);
   }
+
   90% {
     transform: translate3d(0, -2px, 0);
   }
@@ -241,6 +290,7 @@
   0% {
     stroke-dashoffset: 1000;
   }
+
   100% {
     stroke-dashoffset: 0;
   }
@@ -251,6 +301,7 @@
     transform: translateY(-100vh);
     opacity: 1;
   }
+
   100% {
     transform: translateY(100vh);
     opacity: 0;
@@ -286,6 +337,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -295,6 +347,7 @@
   from {
     transform: translateX(-100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -327,7 +380,7 @@
 
 /* Gaming Background Effects */
 .gaming-grid-bg {
-  background-image: 
+  background-image:
     linear-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(124, 58, 237, 0.1) 1px, transparent 1px);
   background-size: 50px 50px;
@@ -346,12 +399,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(124, 58, 237, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(124, 58, 237, 0.2),
+      transparent);
   animation: cyber-sweep 3s infinite;
 }
 
@@ -359,6 +410,7 @@
   0% {
     left: -100%;
   }
+
   100% {
     left: 100%;
   }
@@ -383,28 +435,62 @@
   animation: particle-float 8s linear infinite;
 }
 
-.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
-.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
-.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
-.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
-.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
-.particle:nth-child(6) { left: 60%; animation-delay: 5s; }
-.particle:nth-child(7) { left: 70%; animation-delay: 6s; }
-.particle:nth-child(8) { left: 80%; animation-delay: 7s; }
-.particle:nth-child(9) { left: 90%; animation-delay: 8s; }
+.particle:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+  left: 20%;
+  animation-delay: 1s;
+}
+
+.particle:nth-child(3) {
+  left: 30%;
+  animation-delay: 2s;
+}
+
+.particle:nth-child(4) {
+  left: 40%;
+  animation-delay: 3s;
+}
+
+.particle:nth-child(5) {
+  left: 50%;
+  animation-delay: 4s;
+}
+
+.particle:nth-child(6) {
+  left: 60%;
+  animation-delay: 5s;
+}
+
+.particle:nth-child(7) {
+  left: 70%;
+  animation-delay: 6s;
+}
+
+.particle:nth-child(8) {
+  left: 80%;
+  animation-delay: 7s;
+}
+
+.particle:nth-child(9) {
+  left: 90%;
+  animation-delay: 8s;
+}
 
 /* Gaming Hero Background */
 .gaming-hero-bg {
-  background: 
+  background:
     radial-gradient(circle at 25% 25%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
-    linear-gradient(135deg, 
-      hsl(var(--background)) 0%, 
+    linear-gradient(135deg,
+      hsl(var(--background)) 0%,
       rgba(124, 58, 237, 0.03) 25%,
       rgba(168, 85, 247, 0.03) 50%,
       rgba(147, 51, 234, 0.03) 75%,
-      hsl(var(--background)) 100%
-    );
+      hsl(var(--background)) 100%);
   position: relative;
 }
 
@@ -415,7 +501,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
   animation: gradient-shift 8s ease-in-out infinite;
@@ -424,43 +510,40 @@
 
 /* Gaming Section Backgrounds */
 .gaming-features-bg {
-  background: 
-    linear-gradient(135deg, 
-      hsl(var(--background)) 0%, 
+  background:
+    linear-gradient(135deg,
+      hsl(var(--background)) 0%,
       rgba(34, 197, 94, 0.02) 25%,
       rgba(59, 130, 246, 0.02) 50%,
       rgba(168, 85, 247, 0.02) 75%,
-      hsl(var(--background)) 100%
-    );
+      hsl(var(--background)) 100%);
   position: relative;
 }
 
 .gaming-stats-bg {
-  background: 
-    linear-gradient(45deg, 
-      rgba(124, 58, 237, 0.05) 0%, 
+  background:
+    linear-gradient(45deg,
+      rgba(124, 58, 237, 0.05) 0%,
       rgba(168, 85, 247, 0.05) 25%,
       rgba(147, 51, 234, 0.05) 50%,
       rgba(126, 34, 206, 0.05) 75%,
-      rgba(124, 58, 237, 0.05) 100%
-    );
+      rgba(124, 58, 237, 0.05) 100%);
   animation: gradient-shift 6s ease infinite;
   position: relative;
 }
 
 .gaming-testimonials-bg {
-  background: 
+  background:
     radial-gradient(ellipse at center, rgba(124, 58, 237, 0.03) 0%, transparent 70%),
-    linear-gradient(135deg, 
-      hsl(var(--background)) 0%, 
+    linear-gradient(135deg,
+      hsl(var(--background)) 0%,
       rgba(168, 85, 247, 0.02) 50%,
-      hsl(var(--background)) 100%
-    );
+      hsl(var(--background)) 100%);
 }
 
 /* Neon Text Effects */
 .neon-text {
-  text-shadow: 
+  text-shadow:
     0 0 5px currentColor,
     0 0 10px currentColor,
     0 0 15px currentColor,
@@ -474,7 +557,7 @@
 
 .gaming-card-glow:hover {
   transform: translateY(-5px);
-  box-shadow: 
+  box-shadow:
     0 10px 25px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(124, 58, 237, 0.1),
     0 0 20px rgba(124, 58, 237, 0.1),
@@ -485,10 +568,9 @@
 .gaming-button {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(45deg, 
-    rgba(124, 58, 237, 1) 0%, 
-    rgba(168, 85, 247, 1) 100%
-  );
+  background: linear-gradient(45deg,
+      rgba(124, 58, 237, 1) 0%,
+      rgba(168, 85, 247, 1) 100%);
   transition: all 0.3s ease;
 }
 
@@ -499,12 +581,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s;
 }
 
@@ -514,7 +594,18 @@
 
 .gaming-button:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 5px 15px rgba(124, 58, 237, 0.4),
     0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+@theme inline {
+  @keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+    }
+  50% {
+    transform: translateY(-10px);
+    }
+  }
 }
