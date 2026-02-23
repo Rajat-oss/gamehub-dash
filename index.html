@@ -7,26 +7,30 @@
     <meta name="description" content="Discover and request your favorite games from our curated gaming marketplace. Modern UI with popular games from IGDB API." />
     <meta name="author" content="GameHub" />
     <meta name="keywords" content="games, gaming, marketplace, IGDB, game requests, gaming dashboard" />
-    <link rel="icon" type="image/png" href="/public/logofinal.png" />
+    <link rel="icon" type="image/png" href="/logofinal.png" />
 
-    <meta property="og:title" content="GameHub - Gaming Marketplace Dashboard" />
+    <meta property="og:title" content="Pixel Pilgrim - Gaming Social Media" />
     <meta property="og:description" content="Discover and request your favorite games from our curated gaming marketplace." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="" />
+    <meta property="og:image" content="/logofinal.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="public/logofinal.png" />
+    <meta name="twitter:site" content="@pixelpilgrim" />
+    <meta name="twitter:image" content="/logofinal.png" />
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts — preconnect then load with display=swap to prevent FOIT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Only load the weights actually used in the landing page -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800;900&family=Source+Sans+3:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Razorpay: load deferred so it never blocks rendering -->
+    <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
-    <!-- Razorpay -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    
-    <!-- Google AdSense -->
+    <!-- Google AdSense: async already set, no changes needed -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6853932934900534"
          crossorigin="anonymous"></script>
 

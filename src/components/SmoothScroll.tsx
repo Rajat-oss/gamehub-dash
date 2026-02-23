@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import { motionValue } from 'framer-motion';
 
-// Smoothed scroll position updated every RAF tick by Lenis
+// Shared smoothed scroll position — updated by Lenis every RAF tick.
+// Consumed by LandingPage navbar transforms via useTransform().
 export const lenisScrollY = motionValue(0);
 
 let lenisInstance: Lenis | null = null;
@@ -19,10 +20,12 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
         lenisInstance = lenis;
 
-        // Update lenisScrollY with Lenis's smoothed position every RAF tick
+        // Update the shared motionValue — this propagates to framer-motion transforms
+        // without triggering any React re-renders or DOM events.
+        // NOTE: The spurious `window.dispatchEvent(new Event('scroll'))` was removed —
+        // it was retriggerering every scroll listener 60× per second for no benefit.
         lenis.on('scroll', ({ scroll }: { scroll: number }) => {
             lenisScrollY.set(scroll);
-            window.dispatchEvent(new Event('scroll'));
         });
 
         let rafId: number;

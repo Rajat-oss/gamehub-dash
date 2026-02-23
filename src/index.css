@@ -109,6 +109,14 @@
     font-family: 'Exo 2', sans-serif;
   }
 
+  /* Promote animated/sticky elements to their own compositor layer */
+  .animate-float,
+  .animate-float-delayed,
+  .animate-glow-pulse {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
   /* Gaming scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -599,13 +607,3 @@
     0 0 20px rgba(124, 58, 237, 0.2);
 }
 
-@theme inline {
-  @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-    }
-  50% {
-    transform: translateY(-10px);
-    }
-  }
-}
