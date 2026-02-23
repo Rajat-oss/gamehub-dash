@@ -31,39 +31,35 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Core React runtime — always tiny, always cached
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'react-core';
-          }
-          // Router — small, separate cache chunk
-          if (id.includes('node_modules/react-router-dom') || id.includes('node_modules/react-router/')) {
-            return 'router';
-          }
-          // Three.js + @react-three — very large, isolated chunk so it's
-          // only downloaded when the landing page shader loads
+          // ── DO NOT manually chunk React or Radix UI ──────────────────────
+          // React must be co-located with Radix UI in the same chunk (or the
+          // entry chunk). If React is split out, Rollup cannot guarantee it
+          // evaluates before Radix UI calls React.forwardRef() at module-init
+          // time — causing: "Cannot read properties of undefined (reading
+          // 'forwardRef')". Let Rollup handle React + Radix naturally.
+
+          // Three.js — very large, safe to isolate (no React.forwardRef deps)
           if (id.includes('node_modules/three') || id.includes('@react-three')) {
             return 'three';
           }
-          // Framer-motion — medium, separate cache chunk
-          if (id.includes('node_modules/framer-motion')) {
-            return 'framer-motion';
-          }
-          // Firebase — large SDK, isolated
+          // Firebase — large SDK, no init-time React dependency
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
             return 'firebase';
           }
-          // Radix UI primitives — many small files, group together
-          if (id.includes('node_modules/@radix-ui')) {
-            return 'radix-ui';
+          // Framer-motion — self-contained, safe chunk
+          if (id.includes('node_modules/framer-motion')) {
+            return 'framer-motion';
           }
-          // Lucide icons — tree-shaken by Vite/Rollup, but group for caching
-          if (id.includes('node_modules/lucide-react')) {
-            return 'lucide';
-          }
-          // Tanstack Query
+          // Tanstack Query — self-contained
           if (id.includes('node_modules/@tanstack')) {
             return 'tanstack';
           }
+          // React Router — safe to isolate (lazy-loaded after React is ready)
+          if (id.includes('node_modules/react-router-dom') || id.includes('node_modules/react-router/')) {
+            return 'router';
+          }
+          // Everything else (React, Radix, Lucide, shadcn) → let Rollup decide
+          // Rollup will bundle them together in dependency order automatically.
         },
       },
     },
