@@ -176,12 +176,13 @@ export const LandingPage: React.FC = () => {
 
   // Navbar transforms — driven by Lenis's own smoothed position, updates every RAF tick
   // These use motionValues so they NEVER trigger React re-renders.
-  const navMaxWidth = useTransform(lenisScrollY, [0, 120], [9999, 1080]);
-  const navHeight = useTransform(lenisScrollY, [0, 120], [100, 66]);
+  // Navbar shrink: use transform-only approach for zero layout cost every frame.
+  // maxWidth/height/padding all trigger layout — scaleX/Y does not.
+  const navScaleX = useTransform(lenisScrollY, [0, 120], [1, 0.78]);
+  const navScaleY = useTransform(lenisScrollY, [0, 120], [1, 0.66]);
+  const navTranslateY = useTransform(lenisScrollY, [0, 120], [0, 12]);
   const navRadius = useTransform(lenisScrollY, [0, 120], [0, 16]);
-  const navPadX = useTransform(lenisScrollY, [0, 120], [40, 28]);
-  const navMarginTop = useTransform(lenisScrollY, [0, 120], [0, 12]);
-  const navBg = useTransform(lenisScrollY, [0, 120], ['rgba(9,9,11,0)', 'rgba(9,9,11,0.42)']);
+  const navBg = useTransform(lenisScrollY, [0, 120], ['rgba(9,9,11,0)', 'rgba(9,9,11,0.6)']);
   const navShadow = useTransform(lenisScrollY, [0, 120], ['0px 0px 0px rgba(0,0,0,0)', '0px 8px 40px rgba(0,0,0,0.3)']);
   const logoScale = useTransform(lenisScrollY, [0, 120], [1, 0.8]);
 
@@ -207,86 +208,91 @@ export const LandingPage: React.FC = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
       >
-        <motion.div
-          className="w-full flex items-center justify-between pointer-events-auto overflow-hidden"
-          style={{
-            maxWidth: navMaxWidth,
-            height: navHeight,
-            borderRadius: navRadius,
-            paddingLeft: navPadX,
-            paddingRight: navPadX,
-            marginTop: navMarginTop,
-            backgroundColor: navBg,
-            boxShadow: navShadow,
-            backdropFilter: 'blur(20px)',
-          }}
-        >
-          {/* Logo */}
+        {/* Outer: full-width, no layout changes — just positions the pill */}
+        <div className="w-full flex items-center justify-center pointer-events-none px-4">
+          {/* Transform-only container: scaleX/Y to shrink, translateY for margin-top equivalent.
+              These NEVER trigger layout — 100% GPU compositor path. */}
           <motion.div
-            className="cursor-pointer flex-shrink-0"
-            style={{ scale: logoScale, transformOrigin: 'left center' }}
-            onClick={() => navigate('/')}
+            className="w-full max-w-screen-xl flex items-center justify-between pointer-events-auto overflow-hidden px-10 h-[100px]"
+            style={{
+              borderRadius: navRadius,
+              backgroundColor: navBg,
+              boxShadow: navShadow,
+              scaleX: navScaleX,
+              scaleY: navScaleY,
+              y: navTranslateY,
+              backdropFilter: 'blur(20px)',
+              transformOrigin: 'top center',
+              willChange: 'transform, background-color',
+            }}
           >
-            <img src="/logofinal.png" alt="Pixel Pilgrim" className="h-20 w-20 object-contain" />
+            {/* Logo */}
+            <motion.div
+              className="cursor-pointer flex-shrink-0"
+              style={{ scale: logoScale, transformOrigin: 'left center' }}
+              onClick={() => navigate('/')}
+            >
+              <img src="/logofinal.png" alt="Pixel Pilgrim" className="h-20 w-20 object-contain" />
+            </motion.div>
+
+            {/* Center nav links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <button
+                onClick={() => navigate('/pricing')}
+                className="text-sm font-medium tracking-wide hover:text-primary transition-colors"
+              >
+                Pricing
+              </button>
+              <button
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-sm font-medium tracking-wide hover:text-primary transition-colors"
+              >
+                Features
+              </button>
+            </nav>
+
+            {/* Right side */}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              {!user && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/auth?mode=login')}
+                    className="hidden sm:inline-flex font-medium"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate('/auth?mode=signup')}
+                    className="font-semibold bg-gradient-to-r from-primary to-violet-600 hover:shadow-lg hover:shadow-primary/30 transition-all"
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
+              {user && (
+                <>
+                  <Button size="sm" onClick={() => navigate('/homepage')}>
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try { await logout(); navigate('/'); }
+                      catch (error) { console.error('Logout error:', error); }
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              )}
+            </div>
           </motion.div>
-
-          {/* Center nav links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => navigate('/pricing')}
-              className="text-sm font-medium tracking-wide hover:text-primary transition-colors"
-            >
-              Pricing
-            </button>
-            <button
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-sm font-medium tracking-wide hover:text-primary transition-colors"
-            >
-              Features
-            </button>
-          </nav>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            {!user && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/auth?mode=login')}
-                  className="hidden sm:inline-flex font-medium"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => navigate('/auth?mode=signup')}
-                  className="font-semibold bg-gradient-to-r from-primary to-violet-600 hover:shadow-lg hover:shadow-primary/30 transition-all"
-                >
-                  Get Started
-                </Button>
-              </>
-            )}
-            {user && (
-              <>
-                <Button size="sm" onClick={() => navigate('/homepage')}>
-                  Dashboard
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    try { await logout(); navigate('/'); }
-                    catch (error) { console.error('Logout error:', error); }
-                  }}
-                >
-                  Logout
-                </Button>
-              </>
-            )}
-          </div>
-        </motion.div>
+        </div>
       </motion.header>
 
 
@@ -490,17 +496,17 @@ export const LandingPage: React.FC = () => {
                   </svg>
                   {/* Nodes */}
                   {[
-                    { cx: '50%', cy: '50%', size: 16, color: 'bg-cyan-400', pulse: true, label: 'You' },
-                    { cx: '27%', cy: '27%', size: 11, color: 'bg-blue-400', label: 'Raj' },
-                    { cx: '73%', cy: '27%', size: 11, color: 'bg-teal-400', label: 'Maya' },
-                    { cx: '20%', cy: '63%', size: 9, color: 'bg-sky-400', label: 'Alex' },
-                    { cx: '80%', cy: '63%', size: 9, color: 'bg-cyan-300', label: 'Sam' },
-                    { cx: '50%', cy: '20%', size: 9, color: 'bg-indigo-400', label: 'Zara' },
+                    { cx: '50%', cy: '50%', size: 16, color: 'bg-cyan-400', colorHex: 'rgb(34,211,238)', pulse: true, label: 'You' },
+                    { cx: '27%', cy: '27%', size: 11, color: 'bg-blue-400', colorHex: 'rgb(96,165,250)', label: 'Raj' },
+                    { cx: '73%', cy: '27%', size: 11, color: 'bg-teal-400', colorHex: 'rgb(45,212,191)', label: 'Maya' },
+                    { cx: '20%', cy: '63%', size: 9, color: 'bg-sky-400', colorHex: 'rgb(56,189,248)', label: 'Alex' },
+                    { cx: '80%', cy: '63%', size: 9, color: 'bg-cyan-300', colorHex: 'rgb(103,232,249)', label: 'Sam' },
+                    { cx: '50%', cy: '20%', size: 9, color: 'bg-indigo-400', colorHex: 'rgb(129,140,248)', label: 'Zara' },
                   ].map((n, i) => (
                     <div key={i} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
                       style={{ left: n.cx, top: n.cy }}>
-                      {n.pulse && <div className={`absolute w-${n.size + 6} h-${n.size + 6} rounded-full ${n.color} opacity-20 animate-ping`} />}
-                      <div className={`w-${n.size} h-${n.size} rounded-full ${n.color} shadow-lg flex items-center justify-center`}>
+                      {n.pulse && <div style={{ width: `${(n.size + 6) * 4}px`, height: `${(n.size + 6) * 4}px`, background: n.colorHex, position: 'absolute', borderRadius: '50%', opacity: 0, animation: 'pp-pulse 2.5s ease-out infinite' }} />}
+                      <div className={`rounded-full ${n.color} shadow-lg flex items-center justify-center`} style={{ width: `${n.size * 4}px`, height: `${n.size * 4}px` }}>
                         <span className="text-[7px] font-bold text-black">{n.label[0]}</span>
                       </div>
                       <span className="text-[9px] text-white/50">{n.label}</span>
@@ -724,21 +730,20 @@ export const LandingPage: React.FC = () => {
                     { icon: TrendingUp, text: 'Beautiful progress visualization & charts', color: 'text-blue-500' },
                     { icon: Trophy, text: 'Achievement milestones & rewards', color: 'text-yellow-500' },
                   ].map((feature, i) => (
-                    <motion.div
+                    <div
                       key={feature.text}
-                      className="flex items-center gap-4 cursor-pointer"
-                      initial={{ x: -16, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.3 + i * 0.08 }}
-                      whileHover={{ x: 8 }}
+                      className="flex items-center gap-4 group/feat"
+                      style={{
+                        opacity: 0,
+                        animation: 'pp-fade-up 0.4s ease-out forwards',
+                        animationDelay: `${0.3 + i * 0.08}s`,
+                      }}
                     >
-                      {/* No backdrop-blur on icon wrapper — replaced with solid low-opacity bg */}
-                      <div className="p-2 rounded-lg bg-white/5 border border-primary/20 hover:border-primary/50 transition-colors">
+                      <div className="p-2 rounded-lg bg-white/5 border border-primary/20 group-hover/feat:border-primary/50 transition-colors shrink-0">
                         <feature.icon className={`w-5 h-5 ${feature.color}`} />
                       </div>
-                      <span className="text-base sm:text-lg">{feature.text}</span>
-                    </motion.div>
+                      <span className="text-base sm:text-lg group-hover/feat:text-primary transition-colors">{feature.text}</span>
+                    </div>
                   ))}
                 </div>
 
@@ -756,38 +761,27 @@ export const LandingPage: React.FC = () => {
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
               >
-                {/* Floating badges — translateY only (no rotate → no repaint) */}
-                <motion.div
+                {/* Floating badges — CSS pp-float animation, not framer-motion infinite loops */}
+                <div
                   className="absolute -top-4 -right-4 z-20 p-3.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl"
-                  style={{ willChange: 'transform', boxShadow: '0 8px 24px rgba(16,185,129,0.35)' }}
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ willChange: 'transform', boxShadow: '0 8px 24px rgba(16,185,129,0.35)', animation: 'pp-float 3.5s ease-in-out infinite' }}
                 >
                   <Sparkles className="w-5 h-5 text-white" />
-                </motion.div>
+                </div>
 
-                <motion.div
+                <div
                   className="absolute -bottom-4 -left-4 z-20 p-3.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl"
-                  style={{ willChange: 'transform', boxShadow: '0 8px 24px rgba(168,85,247,0.35)' }}
-                  animate={{ y: [0, 8, 0] }}
-                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ willChange: 'transform', boxShadow: '0 8px 24px rgba(168,85,247,0.35)', animation: 'pp-float 4.5s ease-in-out infinite reverse' }}
                 >
                   <Heart className="w-5 h-5 text-white" />
-                </motion.div>
+                </div>
 
-                {/* Main dashboard card
-                    - No backdrop-blur (was backdrop-blur-xl)
-                    - No from-background/80 alpha bg (alpha = compositing cost)
-                    - hover: simple scale only, no rotateX/Y (no perspective recalculate)
-                */}
-                <motion.div
-                  className="relative bg-zinc-950 rounded-3xl p-7 sm:p-8 border border-white/10 overflow-hidden"
+                {/* Dashboard card — CSS hover scale, no framer-motion on mobile */}
+                <div
+                  className="relative bg-zinc-950 rounded-3xl p-7 sm:p-8 border border-white/10 overflow-hidden hover:scale-[1.015] transition-transform duration-300"
                   style={{
                     boxShadow: '0 0 0 1px rgba(255,255,255,0.06) inset, 0 24px 48px rgba(0,0,0,0.4)',
-                    willChange: 'transform',
                   }}
-                  whileHover={{ scale: 1.015 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
                 >
                   {/* Subtle inner glow — CSS only, no blur filter */}
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
@@ -851,7 +845,7 @@ export const LandingPage: React.FC = () => {
                       ))}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
 
             </div>
@@ -866,9 +860,9 @@ export const LandingPage: React.FC = () => {
       <section
         ref={socialRef}
         className="relative py-24 md:py-32 overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.025)' }}
+        style={{ background: 'rgba(255,255,255,0.025)', contain: 'layout style' }}
       >
-        {/* Static diagonal grid — hardcoded rgba to avoid CSS var resolution on paint */}
+        {/* Static diagonal grid */}
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
@@ -882,6 +876,11 @@ export const LandingPage: React.FC = () => {
             <div className="grid gap-14 lg:gap-20 items-center lg:grid-cols-2">
 
               {/* ── Left: Community Feed card ─────────────────────────────── */}
+              {/*
+                ONE parent motion.div handles the section entrance animation.
+                Children are plain divs with CSS staggered animations — zero
+                IntersectionObservers, zero framer-motion scroll subscriptions.
+              */}
               <motion.div
                 className="relative order-2 lg:order-1"
                 initial={{ x: -40, opacity: 0 }}
@@ -889,24 +888,25 @@ export const LandingPage: React.FC = () => {
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.55, ease: 'easeOut' }}
               >
-                {/* Floating heart badge — y-only animation, no scale/rotate */}
-                <motion.div
+                {/* Floating heart — CSS animation, NOT framer-motion infinite loop */}
+                <div
                   className="absolute -top-4 -right-4 z-20 p-3 bg-gradient-to-br from-red-500 to-pink-600 rounded-full"
-                  style={{ willChange: 'transform', boxShadow: '0 8px 20px rgba(239,68,68,0.4)' }}
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    boxShadow: '0 8px 20px rgba(239,68,68,0.4)',
+                    animation: 'pp-float 3s ease-in-out infinite',
+                    willChange: 'transform',
+                  }}
                 >
                   <Heart className="w-4 h-4 text-white fill-white" />
-                </motion.div>
+                </div>
 
-                {/* Feed card — solid bg, no backdrop-blur */}
-                <div className="relative bg-zinc-950 rounded-3xl p-7 sm:p-8 border border-white/10 overflow-hidden"
+                {/* Feed card */}
+                <div
+                  className="relative bg-zinc-950 rounded-3xl p-7 sm:p-8 border border-white/10 overflow-hidden"
                   style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.05) inset, 0 20px 48px rgba(0,0,0,0.45)' }}
                 >
-                  {/* Top accent line */}
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-                  {/* Header */}
                   <div className="flex items-center justify-between mb-5 pb-4 border-b border-white/8">
                     <h3 className="text-lg font-bold flex items-center gap-2">
                       <Users className="w-5 h-5 text-primary" />
@@ -917,44 +917,24 @@ export const LandingPage: React.FC = () => {
                     </Badge>
                   </div>
 
-                  {/* Feed Items — plain divs, no motion, no backdrop-blur */}
+                  {/* Feed Items — plain divs, CSS fade-in stagger, ZERO framer-motion */}
                   <div className="space-y-3">
                     {[
-                      {
-                        user: 'Alex', avatarColor: 'bg-blue-600', icon: Users,
-                        action: 'shared a screenshot',
-                        content: 'Just beat the final boss! 🎉',
-                        time: '2m ago', accentColor: 'bg-blue-500/8',
-                      },
-                      {
-                        user: 'Sarah', avatarColor: 'bg-emerald-600', icon: Heart,
-                        action: 'posted a review',
-                        content: 'Amazing storyline! Highly recommend ⭐⭐⭐⭐⭐',
-                        time: '15m ago', accentColor: 'bg-emerald-500/8',
-                      },
-                      {
-                        user: 'Mike', avatarColor: 'bg-purple-600', icon: Trophy,
-                        action: 'unlocked achievement',
-                        content: 'Speedrun Master — Complete in under 2 hours',
-                        time: '1h ago', accentColor: 'bg-purple-500/8',
-                      },
-                      {
-                        user: 'Emma', avatarColor: 'bg-pink-600', icon: Sparkles,
-                        action: 'started playing',
-                        content: 'The Legend of Zelda: Breath of the Wild',
-                        time: '3h ago', accentColor: 'bg-pink-500/8',
-                      },
+                      { user: 'Alex', avatarColor: 'bg-blue-600', icon: Users, action: 'shared a screenshot', content: 'Just beat the final boss! 🎉', time: '2m ago' },
+                      { user: 'Sarah', avatarColor: 'bg-emerald-600', icon: Heart, action: 'posted a review', content: 'Amazing storyline! Highly recommend ⭐⭐⭐⭐⭐', time: '15m ago' },
+                      { user: 'Mike', avatarColor: 'bg-purple-600', icon: Trophy, action: 'unlocked achievement', content: 'Speedrun Master — Complete in under 2 hours', time: '1h ago' },
+                      { user: 'Emma', avatarColor: 'bg-pink-600', icon: Sparkles, action: 'started playing', content: 'The Legend of Zelda: Breath of the Wild', time: '3h ago' },
                     ].map((item, i) => (
-                      <motion.div
+                      <div
                         key={item.user}
-                        className="flex items-start gap-3 p-3.5 rounded-xl border border-white/6 cursor-pointer hover:border-white/12 transition-colors"
-                        style={{ background: 'rgba(255,255,255,0.03)' }}
-                        initial={{ x: -16, opacity: 0 }}
-                        whileInView={{ x: 0, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.3, delay: 0.1 + i * 0.07 }}
+                        className="flex items-start gap-3 p-3.5 rounded-xl border border-white/6 hover:border-white/15 transition-colors"
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          opacity: 0,
+                          animation: 'pp-fade-up 0.4s ease-out forwards',
+                          animationDelay: `${0.1 + i * 0.07}s`,
+                        }}
                       >
-                        {/* Avatar — no rotate on hover, just scale */}
                         <div className={`w-9 h-9 ${item.avatarColor} rounded-full shrink-0 flex items-center justify-center`}>
                           <item.icon className="w-4 h-4 text-white" />
                         </div>
@@ -968,11 +948,10 @@ export const LandingPage: React.FC = () => {
                           </div>
                           <p className="text-xs text-white/50 line-clamp-1">{item.content}</p>
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
 
-                  {/* Bottom fade — plain div, not motion.div */}
                   <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none rounded-b-3xl" />
                 </div>
               </motion.div>
@@ -1005,27 +984,27 @@ export const LandingPage: React.FC = () => {
                   </p>
                 </div>
 
+                {/* Feature list — plain divs, CSS stagger, no hover motion subscriptions */}
                 <div className="space-y-3">
                   {[
                     { icon: Heart, text: 'Share screenshots and gaming stories', color: 'text-pink-500' },
                     { icon: Users, text: 'Follow other gamers and build your network', color: 'text-blue-500' },
                     { icon: TrendingUp, text: 'Discover trending games in your community', color: 'text-green-500' },
                   ].map((feature, i) => (
-                    <motion.div
+                    <div
                       key={feature.text}
-                      className="flex items-center gap-4 cursor-pointer"
-                      initial={{ x: 16, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: 0.2 + i * 0.08 }}
-                      whileHover={{ x: 8 }}
+                      className="flex items-center gap-4 group/feat"
+                      style={{
+                        opacity: 0,
+                        animation: 'pp-fade-up 0.4s ease-out forwards',
+                        animationDelay: `${0.2 + i * 0.08}s`,
+                      }}
                     >
-                      {/* Solid bg — no backdrop-blur */}
-                      <div className="p-2 rounded-lg bg-white/5 border border-primary/20 hover:border-primary/50 transition-colors shrink-0">
+                      <div className="p-2 rounded-lg bg-white/5 border border-primary/20 group-hover/feat:border-primary/50 transition-colors shrink-0">
                         <feature.icon className={`w-5 h-5 ${feature.color}`} />
                       </div>
-                      <span className="text-base sm:text-lg">{feature.text}</span>
-                    </motion.div>
+                      <span className="text-base sm:text-lg group-hover/feat:text-primary transition-colors">{feature.text}</span>
+                    </div>
                   ))}
                 </div>
 
@@ -1198,6 +1177,6 @@ export const LandingPage: React.FC = () => {
       </section>
 
       <Footer />
-    </div>
+    </div >
   );
 };

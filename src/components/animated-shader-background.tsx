@@ -19,17 +19,23 @@ const AnimatedShaderBackground = memo(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    // ── Mobile detection ─────────────────────────────────────────────────────
+    // Mobile GPUs are ~4-8× weaker than desktop. Cap everything aggressively.
+    const isMobile = navigator.maxTouchPoints > 0;
+
     // ── Renderer ─────────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
 
-    // Cap pixel ratio at 1.5 to avoid 4× overdraw on retina screens
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    // Mobile: cap at 1.0 (no retina overdraw at all). Desktop: cap at 1.5.
+    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
 
     const w = container.clientWidth;
     const h = container.clientHeight;
-    renderer.setSize(w, h);
+    // Mobile: render at half resolution, CSS scales it up (huge GPU savings)
+    const renderScale = isMobile ? 0.5 : 1.0;
+    renderer.setSize(w * renderScale, h * renderScale);
     renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
     container.appendChild(renderer.domElement);
 
@@ -37,14 +43,15 @@ const AnimatedShaderBackground = memo(() => {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         iTime: { value: 0 },
-        iResolution: { value: new THREE.Vector2(w, h) },
+        iResolution: { value: new THREE.Vector2(w * renderScale, h * renderScale) },
+        iIterations: { value: isMobile ? 10.0 : 18.0 },
       },
       vertexShader: `void main(){gl_Position=vec4(position,1.0);}`,
       fragmentShader: `
         uniform float iTime;
         uniform vec2 iResolution;
 
-        #define NUM_OCTAVES 3
+        #define NUM_OCTAVES 2
 
         float rand(vec2 n){return fract(sin(dot(n,vec2(12.9898,4.1414)))*43758.5453);}
 
@@ -61,15 +68,18 @@ const AnimatedShaderBackground = memo(() => {
           return v;
         }
 
+        uniform float iIterations;
+
         void main(){
           vec2 p=((gl_FragCoord.xy)-iResolution.xy*0.5)/iResolution.y*mat2(6.0,-4.0,4.0,6.0);
           vec2 v;vec4 o=vec4(0.0);
           float f=2.0+fbm(p+vec2(iTime*5.0,0.0))*0.5;
 
-          /* Reduced from 35 → 20 iterations — same visual quality, ~43% faster */
-          for(float i=0.0;i<20.0;i++){
+          /* Desktop: 18 iterations. Mobile: 10 iterations (passed as uniform). */
+          for(float i=0.0;i<18.0;i++){
+            if(i>=iIterations) break;
             v=p+cos(i*i+(iTime+p.x*0.08)*0.025+i*vec2(13.0,11.0))*3.5;
-            float tailNoise=fbm(v+vec2(iTime*0.5,i))*0.3*(1.0-(i/20.0));
+            float tailNoise=fbm(v+vec2(iTime*0.5,i))*0.3*(1.0-(i/iIterations));
             vec4 auroraColors=vec4(
               0.1+0.3*sin(i*0.2+iTime*0.4),
               0.3+0.5*cos(i*0.3+iTime*0.5),
@@ -77,7 +87,7 @@ const AnimatedShaderBackground = memo(() => {
               1.0
             );
             vec4 contrib=auroraColors*exp(sin(i*i+iTime*0.8))/length(max(v,vec2(v.x*f*0.015,v.y*1.5)));
-            float thin=smoothstep(0.0,1.0,i/20.0)*0.6;
+            float thin=smoothstep(0.0,1.0,i/iIterations)*0.6;
             o+=contrib*(1.0+tailNoise*0.8)*thin;
           }
 
@@ -91,15 +101,20 @@ const AnimatedShaderBackground = memo(() => {
     scene.add(new THREE.Mesh(geometry, material));
 
     // ── Animation loop ────────────────────────────────────────────────────────
+    // Mobile: throttle to 30fps (render every other frame) to halve GPU cost.
+    // Desktop: full 60fps.
     let frameId: number;
     let paused = false;
+    let lastRender = 0;
+    const frameInterval = isMobile ? 1000 / 30 : 0; // 0 = every frame on desktop
 
-    const animate = () => {
-      if (!paused) {
-        material.uniforms.iTime.value += 0.016;
-        renderer.render(scene, camera);
-      }
+    const animate = (timestamp: number) => {
       frameId = requestAnimationFrame(animate);
+      if (paused) return;
+      if (frameInterval > 0 && timestamp - lastRender < frameInterval) return;
+      lastRender = timestamp;
+      material.uniforms.iTime.value += isMobile ? 0.033 : 0.016;
+      renderer.render(scene, camera);
     };
     frameId = requestAnimationFrame(animate);
 
@@ -110,8 +125,8 @@ const AnimatedShaderBackground = memo(() => {
     // ── Resize (use ResizeObserver — cheaper than window resize) ─────────────
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
-      renderer.setSize(width, height);
-      material.uniforms.iResolution.value.set(width, height);
+      renderer.setSize(width * renderScale, height * renderScale);
+      material.uniforms.iResolution.value.set(width * renderScale, height * renderScale);
     });
     ro.observe(container);
 
