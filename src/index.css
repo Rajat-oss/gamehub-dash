@@ -109,6 +109,14 @@
     font-family: 'Exo 2', sans-serif;
   }
 
+  /* Promote animated/sticky elements to their own compositor layer */
+  .animate-float,
+  .animate-float-delayed,
+  .animate-glow-pulse {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
   /* Gaming scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -129,6 +137,50 @@
 }
 
 /* Landing Page Animations */
+/* Lightweight opacity-only pulse — replaces Tailwind's animate-ping (which does scale+opacity, forcing repaint) */
+@keyframes pp-pulse {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+
+  60% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* Pure CSS float — replaces framer-motion infinite y animation, zero JS RAF overhead */
+@keyframes pp-float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Fade-up for staggered list items — replaces per-item whileInView framer-motion (7+ IntersectionObservers saved) */
+@keyframes pp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -597,15 +649,4 @@
   box-shadow:
     0 5px 15px rgba(124, 58, 237, 0.4),
     0 0 20px rgba(124, 58, 237, 0.2);
-}
-
-@theme inline {
-  @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-    }
-  50% {
-    transform: translateY(-10px);
-    }
-  }
 }
