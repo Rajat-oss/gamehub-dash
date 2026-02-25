@@ -1,7 +1,7 @@
 import React, { useRef, memo } from 'react';
 import AnimatedShaderBackground from '@/components/animated-shader-background';
 import { Button } from '@/components/ui/button';
-import { motion, useScroll, useTransform, useInView, MotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -17,139 +17,220 @@ import { BentoCard } from '@/components/bento';
 
 
 
-// ─── Section Header for How It Works ─────────────────────────────────────────
-// Extracted as its own component so useTransform is at component level (not
-// inside JSX style prop inline, which is another hooks-in-wrong-place pattern).
-const HowItWorksHeader = memo<{ hwProgress: MotionValue<number> }>(({ hwProgress }) => {
-  const opacity = useTransform(hwProgress, [0, 0.12, 0.16], [1, 1, 0]);
-  const y = useTransform(hwProgress, [0, 0.16], [0, -20]);
-
-  return (
-    <motion.div
-      className="relative z-20 text-center mb-16 px-6"
-      style={{ opacity, y, willChange: 'opacity, transform' }}
-    >
-      <h2 className="text-4xl sm:text-6xl font-bold mb-4 tracking-tight text-white" style={{ fontFamily: 'Exo 2, sans-serif' }}>
-        How it Works
-      </h2>
-      <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto" style={{ fontFamily: 'Source Sans Pro, sans-serif' }}>
-        A simple, three-step journey to elevate your gaming experience.
-      </p>
-    </motion.div>
-  );
-});
-HowItWorksHeader.displayName = 'HowItWorksHeader';
-
-// ─── How-It-Works step ────────────────────────────────────────────────────────
-type StepConfig = {
+// ─── How It Works — data ──────────────────────────────────────────────────────
+type HowItWorksStep = {
   icon: React.ElementType;
   title: string;
   desc: string;
-  borderColor: string;
+  number: string;
+  gradient: string;
   iconBg: string;
-  accentColor: string;
+  glowColor: string;
+  features: string[];
 };
 
-/**
- * GPU-compositing-safe stacking card.
- *
- * ROOT CAUSE OF LAG: When opacity + scale/y change on the SAME element the
- * browser must fully rasterize (re-draw on CPU) the card content every frame.
- * That is the scroll lag — it can't use the GPU compositor because changing
- * opacity forces a new paint, and the card has complex content to paint.
- *
- * FIX — two separate motion.div layers:
- *  ┌ outer motion.div  →  opacity ONLY       ← GPU composites, never rasterizes
- *  └ inner motion.div  →  y + scale ONLY     ← GPU composites, never rasterizes
- *
- * Additional cost removers:
- *  • solid bg-zinc-950 (no /90 alpha = no per-frame alpha compositing overhead)
- *  • no box-shadow on animated elements (shadow forces repaint per frame)
- *  • no Spotlight / onMouseMove (fires during touch-scroll on mobile)
- *  • contain: layout style on parent section (limits reflow scope to section)
- */
-const HowItWorksStep = memo<{
-  step: StepConfig;
-  index: number;
-  hwProgress: MotionValue<number>;
-}>(({ step, index, hwProgress }) => {
-  const rangeStart = 0.15 + index * 0.27;
-  const rangeEnd = 0.42 + index * 0.27;
-
-  // LAYER 1: opacity — outer wrapper, own compositor layer
-  const opacity = useTransform(
-    hwProgress,
-    [rangeStart - 0.07, rangeStart, rangeEnd, rangeEnd + 0.18],
-    [0, 1, 1, 0.3],
-    { clamp: true }
-  );
-
-  // LAYER 2: spatial transforms — inner wrapper, separate compositor layer
-  const y = useTransform(hwProgress, [rangeStart - 0.18, rangeStart], [160, 0], { clamp: true });
-  const scale = useTransform(hwProgress, [rangeEnd, rangeEnd + 0.18], [1, 0.94 - index * 0.02], { clamp: true });
-
-  return (
-    <motion.div
-      className="absolute top-0 w-full"
-      style={{ zIndex: index, opacity, willChange: 'opacity' }}
-    >
-      <motion.div style={{ y, scale, willChange: 'transform' }}>
-        <div
-          className="relative overflow-hidden rounded-xl border border-white/10 bg-zinc-950 p-8 sm:p-10"
-        >
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
-            {/* Icon */}
-            <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl shrink-0 flex items-center justify-center ${step.iconBg}`}>
-              <step.icon className="w-7 h-7 sm:w-10 sm:h-10" />
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0 text-center sm:text-left">
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2 block">
-                0{index + 1}
-              </span>
-              <h3 className="text-2xl sm:text-4xl font-bold mb-3 tracking-tight text-white" style={{ fontFamily: 'Exo 2, sans-serif' }}>
-                {step.title}
-              </h3>
-              <p className="text-base text-white/50 leading-relaxed max-w-2xl">
-                {step.desc}
-              </p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-});
-HowItWorksStep.displayName = 'HowItWorksStep';
-
-// ─── Static data (outside component so it's never re-created on renders) ─────
-const HOW_IT_WORKS_STEPS: StepConfig[] = [
+const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
   {
     icon: Users,
-    title: "Create Your Identity",
-    desc: "Sign up in seconds and customize your digital gaming persona with your favorite titles and platforms.",
-    borderColor: "border-blue-500/25",
-    iconBg: "bg-blue-500/10 text-blue-400",
-    accentColor: "from-blue-500 to-cyan-500",
+    number: '01',
+    title: 'Create Your Identity',
+    desc: 'Sign up in seconds and craft your digital gaming persona. Showcase your favorite titles, platforms, and playstyle.',
+    gradient: 'from-blue-500 to-cyan-400',
+    iconBg: 'bg-blue-500/15 text-blue-400',
+    glowColor: 'rgba(59,130,246,0.15)',
+    features: ['Custom gaming profile', 'Platform sync', 'Persona builder'],
   },
   {
     icon: Gamepad2,
-    title: "Track Your Journey",
-    desc: "Log your sessions, build your library, and track your progress with precise, automated analytics.",
-    borderColor: "border-purple-500/25",
-    iconBg: "bg-purple-500/10 text-purple-400",
-    accentColor: "from-purple-500 to-violet-500",
+    number: '02',
+    title: 'Track Your Journey',
+    desc: 'Log every session, build your library, and gain deep insights into your playtime, completion rates, and habits.',
+    gradient: 'from-violet-500 to-purple-400',
+    iconBg: 'bg-violet-500/15 text-violet-400',
+    glowColor: 'rgba(139,92,246,0.15)',
+    features: ['Session logging', 'Progress analytics', 'Backlog manager'],
   },
   {
     icon: Heart,
-    title: "Connect & Conquer",
-    desc: "Join a global hub of passionate gamers, share your epic moments, and discover your next favorite game.",
-    borderColor: "border-pink-500/25",
-    iconBg: "bg-pink-500/10 text-pink-400",
-    accentColor: "from-pink-500 to-rose-500",
+    number: '03',
+    title: 'Connect & Conquer',
+    desc: 'Join a global hub of gamers. Share epic moments, write reviews, and discover your next obsession through the community.',
+    gradient: 'from-pink-500 to-rose-400',
+    iconBg: 'bg-pink-500/15 text-pink-400',
+    glowColor: 'rgba(236,72,153,0.15)',
+    features: ['Community feed', 'Real-time chat', 'Game discovery'],
   },
 ];
+
+// ─── How It Works Section — fully responsive, single component ────────────────
+const HowItWorks = memo(() => {
+  const navigate = useNavigate();
+  return (
+    <section
+      id="how-it-works"
+      className="relative py-24 sm:py-32 overflow-hidden bg-background"
+    >
+      {/* Ambient background */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139,92,246,0.08) 0%, transparent 65%),' +
+            'radial-gradient(ellipse 50% 40% at 80% 80%, rgba(59,130,246,0.05) 0%, transparent 60%)',
+        }}
+      />
+
+      <div className="relative z-10 container px-4 sm:px-6 mx-auto max-w-6xl">
+
+        {/* ── Section header ── */}
+        <motion.div
+          className="text-center mb-16 sm:mb-20"
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
+        >
+          <span
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white/50 mb-5"
+          >
+            <Zap className="w-3 h-3" />
+            How it works
+          </span>
+          <h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-4"
+            style={{ fontFamily: 'Exo 2, sans-serif' }}
+          >
+            Three steps to{' '}
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-300 to-cyan-400 bg-clip-text text-transparent">
+              level up
+            </span>
+          </h2>
+          <p
+            className="text-base sm:text-lg text-white/50 max-w-xl mx-auto leading-relaxed"
+            style={{ fontFamily: 'Source Sans Pro, sans-serif' }}
+          >
+            Everything you need to track, share and own your gaming journey — in one beautiful place.
+          </p>
+        </motion.div>
+
+        {/* ── Steps grid ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {HOW_IT_WORKS_STEPS.map((step, i) => (
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.55, delay: i * 0.12, ease: 'easeOut' }}
+              className="group relative"
+            >
+              {/* Connector line (desktop only, between cards) */}
+              {i < HOW_IT_WORKS_STEPS.length - 1 && (
+                <div
+                  className="hidden md:block absolute top-[52px] left-[calc(100%+0px)] w-full h-px z-10 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(to right, ${step.glowColor.replace('0.15', '0.6')}, transparent)`,
+                    width: 'calc(100% - 80px)',
+                    left: 'calc(100% - 0px)',
+                  }}
+                />
+              )}
+
+              {/* Card */}
+              <div
+                className="relative h-full rounded-2xl border border-white/8 bg-zinc-950 p-7 sm:p-8 overflow-hidden transition-all duration-300 group-hover:border-white/20"
+                style={{
+                  boxShadow: `0 0 0 1px rgba(255,255,255,0.04) inset`,
+                }}
+              >
+                {/* Hover glow */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+                  style={{ background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${step.glowColor}, transparent)` }}
+                />
+
+                {/* Top accent bar */}
+                <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${step.gradient} opacity-0 group-hover:opacity-80 transition-opacity duration-400`} />
+
+                {/* Step number — large background watermark */}
+                <div
+                  className="absolute -top-4 -right-2 text-[7rem] font-black leading-none select-none pointer-events-none"
+                  style={{
+                    fontFamily: 'Exo 2, sans-serif',
+                    background: `linear-gradient(135deg, ${step.glowColor.replace('0.15', '0.12')}, transparent)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  {step.number}
+                </div>
+
+                {/* Icon + step label */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${step.iconBg}`}>
+                    <step.icon className="w-6 h-6" />
+                  </div>
+                  <span
+                    className={`text-xs font-bold uppercase tracking-[0.2em] bg-gradient-to-r ${step.gradient} bg-clip-text text-transparent`}
+                  >
+                    Step {step.number}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3
+                  className="text-xl sm:text-2xl font-bold text-white mb-3 tracking-tight"
+                  style={{ fontFamily: 'Exo 2, sans-serif' }}
+                >
+                  {step.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm sm:text-base text-white/50 leading-relaxed mb-6">
+                  {step.desc}
+                </p>
+
+                {/* Feature pills */}
+                <div className="flex flex-wrap gap-2">
+                  {step.features.map((feat) => (
+                    <span
+                      key={feat}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/8 bg-white/4 text-xs text-white/50 font-medium"
+                    >
+                      <CheckCircle className="w-3 h-3 text-white/30" />
+                      {feat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── Bottom CTA ── */}
+        <motion.div
+          className="mt-14 sm:mt-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
+        >
+          <p className="text-white/40 text-sm mb-4">Ready to start your journey?</p>
+          <Button
+            size="lg"
+            className="group px-8 py-6 font-semibold rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white hover:shadow-xl hover:shadow-violet-500/25 transition-all duration-300"
+            onClick={() => navigate('/auth?mode=signup')}
+          >
+            Get Started — It's Free
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </motion.div>
+      </div>
+    </section>
+  );
+});
+HowItWorks.displayName = 'HowItWorks';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -331,7 +412,7 @@ export const LandingPage: React.FC = () => {
 
           {/* CTA buttons */}
           <motion.div
-            className="flex flex-row items-center gap-3 w-full sm:w-auto mb-8 sm:mb-16"
+            className="flex flex-row items-center justify-center gap-3 w-full sm:w-auto mb-8 sm:mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.45 }}
@@ -360,7 +441,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 onClick={() => navigate('/homepage')}
-                className="group px-8 sm:px-10 py-6 text-base font-semibold rounded-full bg-white text-black hover:bg-white/90 transition-all duration-300"
+                className="group px-6 sm:px-10 py-5 sm:py-6 text-sm sm:text-base font-semibold rounded-full bg-white text-black hover:bg-white/90 transition-all duration-300"
               >
                 Go to Dashboard
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -466,8 +547,8 @@ export const LandingPage: React.FC = () => {
               title="Real-time 1-on-1 Chat"
               description="Direct message anyone in the community. Coordinate raids, trades, or just talk about your favorite games without leaving."
               graphic={
-                <div className="absolute inset-0 bg-zinc-950 overflow-hidden">
-                  <img src="/message.png" alt="Chat" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-zinc-950 overflow-hidden flex items-center justify-center p-3">
+                  <img src="/message.png" alt="Chat" className="w-full h-full object-contain" />
                   <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-zinc-950/80 to-transparent" />
                 </div>
               }
@@ -494,46 +575,8 @@ export const LandingPage: React.FC = () => {
       </section>
 
 
-      {/* How It Works ─ GPU-compositing-safe stacking cards */}
-      <section
-        ref={howItWorksRef}
-        className="relative bg-background"
-        id="how-it-works"
-        style={{
-          height: '320vh',
-          // Scope layout/style recalculation to this section only.
-          // Reduces browser reflow work during scroll by ~60%.
-          contain: 'layout style',
-        }}
-      >
-        <div
-          className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden"
-          style={{ contain: 'layout' }}
-        >
-          {/* Section Background Effects */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 bg-background" />
-          </div>
-
-          {/* Header: extracted component so its useTransform is at component level */}
-          <HowItWorksHeader hwProgress={hwProgress} />
-
-          {/* Stacking Cards container */}
-          <div
-            className="relative w-full max-w-3xl px-4 sm:px-6"
-            style={{ height: '52vh' }}
-          >
-            {HOW_IT_WORKS_STEPS.map((step, index) => (
-              <HowItWorksStep
-                key={step.title}
-                step={step}
-                index={index}
-                hwProgress={hwProgress}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* How It Works — redesigned, fully responsive */}
+      <HowItWorks />
 
       <Separator />
 
