@@ -4,10 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { createPortal } from 'react-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  FaHome, FaFileAlt, FaCog, FaUser, FaLightbulb, FaUsers, 
-  FaUserCog, FaQuestionCircle, FaSun, FaSignOutAlt, FaGamepad, 
-  FaHeart, FaComments, FaBell, FaPlus, FaEnvelope 
+import {
+  FaHome, FaFileAlt, FaCog, FaUser, FaLightbulb, FaUsers,
+  FaUserCog, FaQuestionCircle, FaSun, FaSignOutAlt, FaGamepad,
+  FaHeart, FaComments, FaBell, FaPlus, FaEnvelope, FaListUl
 } from 'react-icons/fa';
 
 interface MenuItem {
@@ -27,12 +27,12 @@ interface MobileSidebarProps {
   chatUnreadCount: number;
 }
 
-export const MobileSidebar: React.FC<MobileSidebarProps> = ({ 
-  isOpen, 
-  onClose, 
-  userProfile, 
-  unreadCount, 
-  chatUnreadCount 
+export const MobileSidebar: React.FC<MobileSidebarProps> = ({
+  isOpen,
+  onClose,
+  userProfile,
+  unreadCount,
+  chatUnreadCount
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -70,6 +70,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
     { id: 'social', icon: FaPlus, label: 'Social', route: '/posts' },
     { id: 'games', icon: FaGamepad, label: 'My Games', route: '/my-games' },
     { id: 'favorites', icon: FaHeart, label: 'Favorites', route: '/favorites' },
+    { id: 'backlog', icon: FaListUl, label: 'Backlog', route: '/backlog' },
     { id: 'chat', icon: FaComments, label: 'Chat', route: '/inbox' },
     { id: 'notifications', icon: FaBell, label: 'Notifications', route: '/notifications' },
     { id: 'settings', icon: FaCog, label: 'Settings', route: '/settings' },
@@ -122,7 +123,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
             <div className="flex flex-col min-h-screen h-full">
               {/* User Profile Section */}
               <div className="p-6 border-b border-gray-800 bg-black">
-                <button 
+                <button
                   onClick={() => handleNavigation('/profile')}
                   className="flex items-center space-x-4 w-full hover:bg-gray-900/50 rounded-lg p-2 -m-2 transition-colors"
                 >
@@ -150,7 +151,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                     const Icon = item.icon;
                     const isActive = getActiveItem() === item.id;
                     const badgeCount = getBadgeCount(item.id);
-                    
+
                     return (
                       <motion.button
                         key={item.id}
@@ -161,35 +162,32 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                             handleNavigation(item.route);
                           }
                         }}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${
-                          isActive 
-                            ? 'bg-gray-800 text-white' 
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
+                            ? 'bg-gray-800 text-white'
                             : item.isRed
-                            ? 'text-red-400 hover:bg-gray-900/20'
-                            : 'text-[#9A9A9A] hover:bg-gray-900/50'
-                        }`}
+                              ? 'text-red-400 hover:bg-gray-900/20'
+                              : 'text-[#9A9A9A] hover:bg-gray-900/50'
+                          }`}
                         whileHover={{ x: 4 }}
                         whileTap={{ scale: 0.98 }}
                       >
                         <div className="flex items-center space-x-3">
-                          <Icon className={`w-5 h-5 ${
-                            isActive 
-                              ? 'text-white' 
-                              : item.isRed 
-                              ? 'text-red-400' 
-                              : 'text-[#9A9A9A] group-hover:text-white'
-                          }`} />
-                          <span className={`font-medium ${
-                            isActive 
-                              ? 'text-white' 
-                              : item.isRed 
-                              ? 'text-red-400' 
-                              : 'text-[#9A9A9A] group-hover:text-white'
-                          }`}>
+                          <Icon className={`w-5 h-5 ${isActive
+                              ? 'text-white'
+                              : item.isRed
+                                ? 'text-red-400'
+                                : 'text-[#9A9A9A] group-hover:text-white'
+                            }`} />
+                          <span className={`font-medium ${isActive
+                              ? 'text-white'
+                              : item.isRed
+                                ? 'text-red-400'
+                                : 'text-[#9A9A9A] group-hover:text-white'
+                            }`}>
                             {item.label}
                           </span>
                         </div>
-                        
+
                         {/* Badge */}
                         {badgeCount > 0 && (
                           <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">

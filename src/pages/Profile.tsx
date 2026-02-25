@@ -19,7 +19,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -36,10 +36,10 @@ const Profile = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
-      
+
       try {
         let userProfile = await userService.getUserProfile(user.uid);
-        
+
         if (!userProfile) {
           await userService.createUserProfile(user.uid, {
             username: user.displayName || 'Gamer' + Math.floor(Math.random() * 10000),
@@ -49,7 +49,7 @@ const Profile = () => {
           });
           userProfile = await userService.getUserProfile(user.uid);
         }
-        
+
         setProfile(userProfile);
         setBioText(userProfile.bio || '');
         setIsPublic(userProfile.isPublic !== false);
@@ -58,7 +58,7 @@ const Profile = () => {
         toast.error('Failed to load profile');
       }
     };
-    
+
     loadProfile();
   }, [user]);
 
@@ -80,6 +80,10 @@ const Profile = () => {
     try {
       const imageUrl = await cloudinaryService.uploadImage(file);
       await userService.updateUserProfile(user.uid, { photoURL: imageUrl });
+
+      // Update Firebase Auth profile to keep it in sync
+      await updateUserProfile({ photoURL: imageUrl });
+
       const updatedProfile = await userService.getUserProfile(user.uid);
       setProfile(updatedProfile);
       toast.success('Avatar updated successfully!');
@@ -103,7 +107,7 @@ const Profile = () => {
   if (!user || !profile) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar onSearch={() => {}} />
+        <Navbar onSearch={() => { }} />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center text-muted-foreground">Loading profile...</div>
         </div>
@@ -115,11 +119,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar onSearch={() => {}} />
-      
+      <Navbar onSearch={() => { }} />
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -127,7 +131,7 @@ const Profile = () => {
         >
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
             <div className="relative">
-              <motion.div 
+              <motion.div
                 className="relative group"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
@@ -142,7 +146,7 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
               </motion.div>
-              
+
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button
                   size="sm"
@@ -157,7 +161,7 @@ const Profile = () => {
                   )}
                 </Button>
               </motion.div>
-              
+
               <input
                 id="avatar-upload"
                 type="file"
@@ -166,7 +170,7 @@ const Profile = () => {
                 onChange={handleAvatarUpload}
               />
             </div>
-            
+
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-foreground tracking-tight leading-tight mb-2">
                 {profile.username || profile.displayName}
@@ -183,20 +187,20 @@ const Profile = () => {
           {/* Profile Info */}
           <div className="lg:col-span-2 space-y-8">
             {/* About Section */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               className="bg-card border border-border rounded-3xl p-8 shadow-md hover:shadow-lg transition-shadow duration-300"
             >
               <h2 className="text-xl font-bold text-foreground mb-6">About</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-foreground">Email</label>
                   <p className="text-muted-foreground">{profile.email || 'No email provided'}</p>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-medium text-foreground">Bio</label>
@@ -239,15 +243,15 @@ const Profile = () => {
                     <p className="text-muted-foreground leading-relaxed">{profile.bio || 'No bio provided'}</p>
                   )}
                 </div>
-                
+
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <Label className="flex items-center gap-2 text-foreground">
                       {isPublic ? <FaEye className="w-4 h-4 text-primary" /> : <FaEyeSlash className="w-4 h-4 text-muted-foreground" />}
                       Profile Visibility
                     </Label>
-                    <Switch 
-                      checked={isPublic} 
+                    <Switch
+                      checked={isPublic}
                       onCheckedChange={async (checked) => {
                         try {
                           await userService.updateUserProfile(user.uid, { isPublic: checked });
@@ -267,7 +271,7 @@ const Profile = () => {
             </motion.div>
 
             {/* Favorite Games */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -277,12 +281,12 @@ const Profile = () => {
                 <FaGamepad className="w-5 h-5 mr-3 text-primary" />
                 Favorite Games ({favoriteGames.length})
               </h2>
-              
+
               {favoriteGames.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-4">
                   {favoriteGames.slice(0, 6).map((game, index) => (
                     <Link key={game.id} to={`/game/${game.id}`}>
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.05 }}
@@ -308,7 +312,7 @@ const Profile = () => {
                   </div>
                 </div>
               )}
-              
+
               {favoriteGames.length > 6 && (
                 <div className="mt-6">
                   <Link to="/favorites">
@@ -324,14 +328,14 @@ const Profile = () => {
           {/* Stats Sidebar */}
           <div className="space-y-6">
             {/* Stats Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               className="bg-card border border-border rounded-3xl p-8 shadow-md hover:shadow-lg transition-shadow duration-300"
             >
               <h2 className="text-xl font-bold text-foreground mb-6">Stats</h2>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-2xl border border-border">
                   <div className="flex items-center space-x-3">
@@ -342,7 +346,7 @@ const Profile = () => {
                     {favoriteGames.length}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-2xl border border-border">
                   <div className="flex items-center space-x-3">
                     <FaComments className="text-accent w-4 h-4" />
@@ -352,7 +356,7 @@ const Profile = () => {
                     {profile.totalComments || 0}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-2xl border border-border">
                   <div className="flex items-center space-x-3">
                     <FaStar className="text-yellow-500 w-4 h-4" />
@@ -366,7 +370,7 @@ const Profile = () => {
             </motion.div>
 
             {/* Following Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -392,7 +396,7 @@ const Profile = () => {
                 <FaUser className="w-4 h-4 text-primary" />
                 Following ({profile.following?.length || 0})
               </h3>
-              
+
               {profile.following && profile.following.length > 0 ? (
                 <p className="text-sm text-foreground/70">Tap to view all</p>
               ) : (
@@ -401,7 +405,7 @@ const Profile = () => {
             </motion.div>
 
             {/* Followers Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -427,7 +431,7 @@ const Profile = () => {
                 <FaUsers className="w-4 h-4 text-accent" />
                 Followers ({profile.followers?.length || 0})
               </h3>
-              
+
               {profile.followers && profile.followers.length > 0 ? (
                 <p className="text-sm text-foreground/70">Tap to view all</p>
               ) : (
@@ -436,14 +440,14 @@ const Profile = () => {
             </motion.div>
 
             {/* Quick Actions */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
               className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
             >
               <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
-              
+
               <div className="space-y-3">
                 <Link to="/homepage">
                   <Button variant="outline" className="w-full justify-start rounded-2xl">
@@ -451,7 +455,7 @@ const Profile = () => {
                     Browse Games
                   </Button>
                 </Link>
-                
+
                 <Link to="/favorites">
                   <Button variant="outline" className="w-full justify-start rounded-2xl">
                     <FaStar className="w-4 h-4 mr-2" />
@@ -476,10 +480,10 @@ const Profile = () => {
             ) : followingData.length > 0 ? (
               <div className="space-y-3">
                 {followingData.map((user) => (
-                  <motion.div 
-                    key={user.uid} 
+                  <motion.div
+                    key={user.uid}
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-2xl cursor-pointer transition-all duration-200" 
+                    className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-2xl cursor-pointer transition-all duration-200"
                     onClick={() => {
                       setShowFollowingModal(false);
                       navigate(`/user/${user.username}`);
@@ -519,10 +523,10 @@ const Profile = () => {
             ) : followersData.length > 0 ? (
               <div className="space-y-3">
                 {followersData.map((user) => (
-                  <motion.div 
-                    key={user.uid} 
+                  <motion.div
+                    key={user.uid}
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-2xl cursor-pointer transition-all duration-200" 
+                    className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-2xl cursor-pointer transition-all duration-200"
                     onClick={() => {
                       setShowFollowersModal(false);
                       navigate(`/user/${user.username}`);

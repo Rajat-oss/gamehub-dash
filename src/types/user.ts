@@ -10,6 +10,8 @@ export interface UserProfile {
   following: string[];
   isPublic: boolean;
   favoriteGames?: string[]; // Array of game IDs
+  totalComments?: number;
+  averageRating?: number;
 }
 
 export interface FollowData {

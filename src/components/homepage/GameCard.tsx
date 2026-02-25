@@ -2,12 +2,15 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FaStar, FaDownload, FaHeart, FaPlus } from 'react-icons/fa';
+import { FaStar, FaDownload, FaHeart, FaPlus, FaBookmark } from 'react-icons/fa';
 import { TwitchGame } from '@/lib/twitch';
 import { addToFavorites, removeFromFavorites, isFavorite, addToUserFavorites, removeFromUserFavorites } from '@/lib/favorites';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { gameLogService } from '@/services/gameLogService';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface GameCardProps {
   game: TwitchGame;
@@ -21,7 +24,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isGameFavorite, setIsGameFavorite] = React.useState(false);
-  
+  const [isAddingToBacklog, setIsAddingToBacklog] = React.useState(false);
+
   React.useEffect(() => {
     if (propIsFavorite !== undefined) {
       setIsGameFavorite(propIsFavorite);
@@ -33,7 +37,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (onToggleFavorite) {
       onToggleFavorite();
       setIsGameFavorite(!isGameFavorite);
@@ -77,6 +81,31 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
     navigate(`/game/${game.id}`);
   };
 
+  const handleAddToBacklog = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast.error('Please sign in to add games to your backlog');
+      return;
+    }
+
+    setIsAddingToBacklog(true);
+    try {
+      await gameLogService.quickAddToBacklog(user.uid, {
+        id: game.id,
+        name: game.name,
+        box_art_url: game.box_art_url
+      }, user.displayName || user.email || 'Anonymous');
+      toast.success('Added to backlog!');
+    } catch (error: any) {
+      console.error('Error adding to backlog:', error);
+      toast.error(error.message || 'Failed to add to backlog');
+    } finally {
+      setIsAddingToBacklog(false);
+    }
+  };
+
   return (
     <div className="cursor-pointer">
       <Card className="group bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg overflow-hidden h-full hover:scale-105" onClick={handleCardClick}>
@@ -87,7 +116,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
             <Badge className="bg-primary/80 backdrop-blur-sm text-primary-foreground text-xs px-1 py-0.5 sm:px-2 sm:py-1">
               <FaStar className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
@@ -103,21 +132,21 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
             <FaHeart className="w-2 h-2 sm:w-3 sm:h-3" />
           </button>
 
-          <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 flex space-x-1 sm:space-x-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 z-20">
+          <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 flex gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 z-20">
             <button
-              className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground text-xs h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors"
-              onClick={handleRequest}
-            >
-              <FaDownload className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
-              <span className="hidden xs:inline sm:hidden md:inline">Request</span>
-              <span className="xs:hidden sm:inline md:hidden">Request</span>
-            </button>
-            
-            <button
-              className="bg-green-600/90 hover:bg-green-600 text-primary-foreground border-0 px-2 h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors"
+              className="flex-1 bg-green-600/90 hover:bg-green-600 text-primary-foreground border-0 h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors gap-1.5"
               onClick={handleLogGame}
             >
-              <FaPlus className="w-2 h-2 sm:w-3 sm:h-3" />
+              <FaPlus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <span className="text-[10px] sm:text-xs font-medium truncate">Log</span>
+            </button>
+            <button
+              className="flex-1 bg-blue-600/90 hover:bg-blue-600 text-primary-foreground border-0 h-7 sm:h-8 rounded-md flex items-center justify-center transition-colors gap-1.5"
+              onClick={handleAddToBacklog}
+              disabled={isAddingToBacklog}
+            >
+              <FaBookmark className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3", isAddingToBacklog && "animate-pulse")} />
+              <span className="text-[10px] sm:text-xs font-medium truncate">Backlog</span>
             </button>
           </div>
         </div>
@@ -126,7 +155,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, onRequest, onLogGame, 
           <h3 className="font-semibold text-xs sm:text-sm md:text-lg mb-1 sm:mb-2 line-clamp-2 leading-tight hover:text-primary transition-colors duration-200">
             {game.name}
           </h3>
-        
+
           {game.genres && game.genres.length > 0 && (
             <p className="text-xs text-muted-foreground mb-2 hidden md:block">
               {game.genres.slice(0, 2).join(', ')} • {game.platforms ? game.platforms.slice(0, 2).join(', ') : 'Multi-platform'}

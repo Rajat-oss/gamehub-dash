@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { format, isToday, isYesterday } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +37,12 @@ export const AIChat: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const getDateLabel = (timestamp: Date) => {
+    if (isToday(timestamp)) return 'Today';
+    if (isYesterday(timestamp)) return 'Yesterday';
+    return format(timestamp, 'MMMM d, yyyy');
+  };
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -52,7 +59,7 @@ export const AIChat: React.FC = () => {
 
     try {
       const aiResponse = await aiChatService.sendMessage(inputMessage, messages);
-      
+
       const aiMessage: AIMessage = {
         id: (Date.now() + 1).toString(),
         content: aiResponse,
@@ -84,41 +91,61 @@ export const AIChat: React.FC = () => {
           AI Gaming Assistant
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex items-start space-x-2 max-w-[80%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className={message.isUser ? 'bg-primary' : 'bg-secondary'}>
-                    {message.isUser ? <FaUser className="w-4 h-4" /> : <FaRobot className="w-4 h-4" />}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className={`rounded-lg p-3 ${
-                  message.isUser 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-secondary text-secondary-foreground'
-                }`}>
-                  <div className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{
-                    __html: message.content
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                      .replace(/•/g, '•')
-                      .replace(/\n/g, '<br>')
-                  }} />
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+        <div
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+          data-lenis-prevent
+        >
+          {messages.map((message, index) => {
+            const prevMessage = messages[index - 1];
+            const currentDate = message.timestamp;
+            const prevDate = prevMessage?.timestamp;
+
+            const currentDay = currentDate.toDateString();
+            const prevDay = prevDate?.toDateString();
+            const showDateSeparator = currentDay !== prevDay;
+
+            return (
+              <React.Fragment key={message.id}>
+                {showDateSeparator && (
+                  <div className="flex justify-center my-4">
+                    <div className="bg-secondary/50 text-secondary-foreground px-3 py-1 rounded-full text-[10px] font-medium border border-border uppercase tracking-wider">
+                      {getDateLabel(currentDate)}
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`flex items-start space-x-2 max-w-[80%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className={message.isUser ? 'bg-primary' : 'bg-secondary'}>
+                        {message.isUser ? <FaUser className="w-4 h-4" /> : <FaRobot className="w-4 h-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className={`rounded-lg p-3 ${message.isUser
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground'
+                      }`}>
+                      <div className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{
+                        __html: message.content
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                          .replace(/•/g, '•')
+                          .replace(/\n/g, '<br>')
+                      }} />
+                      <span className="text-xs opacity-70 mt-1 block">
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-          
+              </React.Fragment>
+            );
+          })}
+
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-2">
@@ -137,10 +164,10 @@ export const AIChat: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
-        
+
         <div className="p-4 border-t">
           <div className="flex space-x-2">
             <Input
@@ -151,8 +178,8 @@ export const AIChat: React.FC = () => {
               disabled={isLoading}
               className="flex-1"
             />
-            <Button 
-              onClick={handleSendMessage} 
+            <Button
+              onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
             >

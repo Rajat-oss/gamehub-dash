@@ -15,27 +15,28 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { LandingPage } from "./pages/LandingPage";
 
 // ─── Lazy loaded (all non-landing routes) ──────────────────────────────────
-const AboutUs          = lazy(() => import("./pages/AboutUs").then(m => ({ default: m.AboutUs })));
-const Pricing          = lazy(() => import("./pages/Pricing").then(m => ({ default: m.Pricing })));
-const PrivacyPolicy    = lazy(() => import("./pages/PrivacyPolicy").then(m => ({ default: m.PrivacyPolicy })));
-const TermsOfService   = lazy(() => import("./pages/TermsOfService").then(m => ({ default: m.TermsOfService })));
-const Index            = lazy(() => import("./pages/Index"));
-const Favorites        = lazy(() => import("./pages/Favorites"));
-const MyGames          = lazy(() => import("./pages/MyGames"));
-const GameDetails      = lazy(() => import("./pages/GameDetails"));
-const Profile          = lazy(() => import("./pages/Profile"));
-const UserProfilePage  = lazy(() => import("./pages/UserProfile"));
-const Community        = lazy(() => import("./pages/Community"));
-const Notifications    = lazy(() => import("./pages/Notifications"));
-const Settings         = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
-const Chat             = lazy(() => import("./pages/Chat"));
-const ChatInbox        = lazy(() => import("./pages/ChatInbox"));
-const Posts            = lazy(() => import("./pages/Posts"));
-const Discussions      = lazy(() => import("./pages/Discussions"));
+const AboutUs = lazy(() => import("./pages/AboutUs").then(m => ({ default: m.AboutUs })));
+const Pricing = lazy(() => import("./pages/Pricing").then(m => ({ default: m.Pricing })));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import("./pages/TermsOfService").then(m => ({ default: m.TermsOfService })));
+const Index = lazy(() => import("./pages/Index"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const Backlog = lazy(() => import("./pages/Backlog"));
+const MyGames = lazy(() => import("./pages/MyGames"));
+const GameDetails = lazy(() => import("./pages/GameDetails"));
+const Profile = lazy(() => import("./pages/Profile"));
+const UserProfilePage = lazy(() => import("./pages/UserProfile"));
+const Community = lazy(() => import("./pages/Community"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
+const Chat = lazy(() => import("./pages/Chat"));
+const ChatInbox = lazy(() => import("./pages/ChatInbox"));
+const Posts = lazy(() => import("./pages/Posts"));
+const Discussions = lazy(() => import("./pages/Discussions"));
 const DiscussionDetails = lazy(() => import("./pages/DiscussionDetails"));
-const Contact          = lazy(() => import("./pages/Contact"));
-const SearchResults    = lazy(() => import("./pages/SearchResults"));
-const NotFound         = lazy(() => import("./pages/NotFound"));
+const Contact = lazy(() => import("./pages/Contact"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 /** Minimal fallback while a lazy chunk loads */
 const PageFallback = () => (
@@ -58,29 +59,30 @@ const AppContent = () => {
     <BrowserRouter>
       <Suspense fallback={<PageFallback />}>
         <Routes>
-          <Route path="/"                         element={<LandingPage />} />
-          <Route path="/about"                    element={<AboutUs />} />
-          <Route path="/pricing"                  element={<Pricing />} />
-          <Route path="/privacy"                  element={<PrivacyPolicy />} />
-          <Route path="/terms"                    element={<TermsOfService />} />
-          <Route path="/auth"                     element={<Index />} />
-          <Route path="/homepage"                 element={<Index />} />
-          <Route path="/favorites"                element={<Favorites />} />
-          <Route path="/my-games"                 element={<MyGames />} />
-          <Route path="/game/:gameId"             element={<GameDetails />} />
-          <Route path="/profile"                  element={<Profile />} />
-          <Route path="/settings"                 element={<Settings />} />
-          <Route path="/community"                element={<Community />} />
-          <Route path="/notifications"            element={<Notifications />} />
-          <Route path="/user/:username"           element={<UserProfilePage />} />
-          <Route path="/posts"                    element={<Posts />} />
-          <Route path="/discussions"              element={<Discussions />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/auth" element={<Index />} />
+          <Route path="/homepage" element={<Index />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/backlog" element={<Backlog />} />
+          <Route path="/my-games" element={<MyGames />} />
+          <Route path="/game/:gameId" element={<GameDetails />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/user/:username" element={<UserProfilePage />} />
+          <Route path="/posts" element={<Posts />} />
+          <Route path="/discussions" element={<Discussions />} />
           <Route path="/discussions/:discussionId" element={<DiscussionDetails />} />
-          <Route path="/chat/:userId"             element={<Chat />} />
-          <Route path="/inbox"                    element={<ChatInbox />} />
-          <Route path="/contact"                  element={<Contact />} />
-          <Route path="/search"                   element={<SearchResults />} />
-          <Route path="*"                         element={<NotFound />} />
+          <Route path="/chat/:userId" element={<Chat />} />
+          <Route path="/inbox" element={<ChatInbox />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

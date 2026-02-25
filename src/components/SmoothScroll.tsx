@@ -49,3 +49,11 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 export function scrollTo(target: string | HTMLElement, offset = 0) {
     lenisInstance?.scrollTo(target, { offset });
 }
+
+export function stopLenis() {
+    lenisInstance?.stop();
+}
+
+export function startLenis() {
+    lenisInstance?.start();
+}

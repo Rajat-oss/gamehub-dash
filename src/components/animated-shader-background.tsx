@@ -118,8 +118,23 @@ const AnimatedShaderBackground = memo(() => {
     };
     frameId = requestAnimationFrame(animate);
 
+    // ── Intersection Observer ────────────────────────────────────────────────
+    // Pauses the entire rendering loop when the hero is scrolled out of view.
+    // Huge performance gain for the rest of the page.
+    let isIntersecting = true;
+    const io = new IntersectionObserver(([entry]) => {
+      isIntersecting = entry.isIntersecting;
+      updatePauseState();
+    }, { threshold: 0.1 });
+    io.observe(container);
+
+    // Combine hidden tab and out-of-viewport logic
+    const updatePauseState = () => {
+      paused = document.hidden || !isIntersecting;
+    };
+
     // Pause when tab is hidden to save battery / CPU
-    const handleVisibility = () => { paused = document.hidden; };
+    const handleVisibility = () => { updatePauseState(); };
     document.addEventListener('visibilitychange', handleVisibility);
 
     // ── Resize (use ResizeObserver — cheaper than window resize) ─────────────
@@ -134,6 +149,7 @@ const AnimatedShaderBackground = memo(() => {
       cancelAnimationFrame(frameId);
       document.removeEventListener('visibilitychange', handleVisibility);
       ro.disconnect();
+      io.disconnect();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }

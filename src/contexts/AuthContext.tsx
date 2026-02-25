@@ -25,6 +25,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   sendOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, otp: string) => Promise<void>;
+  updateUserProfile: (updates: { displayName?: string; photoURL?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,21 +61,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string, userName?: string) => {
     try {
       const displayName = userName || 'Gamer' + Math.floor(Math.random() * 10000);
-      
+
       if (userName) {
         const isAvailable = await userService.isUsernameAvailable(userName);
         if (!isAvailable) {
           throw new Error('Username is already taken. Please choose a different one.');
         }
       }
-      
+
       // Store registration data in sessionStorage (more secure than localStorage)
       const regData = { email, password, displayName };
       sessionStorage.setItem('pendingRegistration', JSON.stringify(regData));
-      
+
       // Send OTP
       await otpService.sendOTP(email);
-      
+
       return { needsVerification: true, email };
     } catch (error: any) {
       sessionStorage.removeItem('pendingRegistration');
@@ -87,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
       // Check if profile exists, create if not
       const existingProfile = await profileService.getUserProfile(user.uid);
       if (!existingProfile) {
@@ -123,26 +124,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsRegistering(true);
       await otpService.verifyOTP(email, otp);
-      
+
       const pendingReg = sessionStorage.getItem('pendingRegistration');
       if (pendingReg) {
         const { email: regEmail, password, displayName } = JSON.parse(pendingReg);
-        
+
         if (regEmail === email) {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
-          
+
           await updateProfile(user, { displayName });
-          
+
           await userService.createUserProfile(user.uid, {
             username: displayName,
             displayName: displayName,
             email: email,
             isPublic: true
           });
-          
+
           await signOut(auth);
-          
+
           sessionStorage.removeItem('pendingRegistration');
           await otpService.cleanupOTP(email);
         }
@@ -151,6 +152,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  const refreshUser = () => {
+    if (auth.currentUser) {
+      setUser({ ...auth.currentUser } as User);
+    }
+  };
+
+  const updateUserProfile = async (updates: { displayName?: string; photoURL?: string }) => {
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, updates);
+      refreshUser();
     }
   };
 
@@ -163,7 +177,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     resetPassword,
     sendOTP,
-    verifyOTP
+    verifyOTP,
+    updateUserProfile
   };
 
   return (

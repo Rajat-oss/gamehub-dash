@@ -15,9 +15,16 @@ interface CommentSectionProps {
   postAuthorId: string;
   isExpanded: boolean;
   onCommentAdded?: () => void;
+  userProfileCache?: { [userId: string]: string };
 }
 
-export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuthorId, isExpanded, onCommentAdded }) => {
+export const CommentSection: React.FC<CommentSectionProps> = ({
+  postId,
+  postAuthorId,
+  isExpanded,
+  onCommentAdded,
+  userProfileCache = {}
+}) => {
   const { user } = useAuth();
   const [comments, setComments] = useState<PostComment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -29,13 +36,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
       setComments([]);
       return;
     }
-    
+
     setIsLoading(true);
     const unsubscribe = commentService.subscribeToComments(postId, (newComments) => {
       setComments(newComments);
       setIsLoading(false);
     });
-    
+
     return unsubscribe;
   }, [postId, isExpanded]);
 
@@ -65,7 +72,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
 
   const handleDeleteComment = async (commentId: string) => {
     if (!user) return;
-    
+
     if (window.confirm('Are you sure you want to delete this comment?')) {
       try {
         await commentService.deleteComment(postId, commentId);
@@ -84,7 +91,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
       {user && (
         <form onSubmit={handleSubmitComment} className="flex gap-2 mb-4">
           <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
+            <AvatarImage src={userProfileCache[user.uid] || user.photoURL || ''} alt={user.displayName || ''} />
             <AvatarFallback className="text-xs">
               {user.displayName?.charAt(0).toUpperCase() || <FaUser className="w-3 h-3" />}
             </AvatarFallback>
@@ -97,9 +104,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
               className="flex-1"
               disabled={isSubmitting}
             />
-            <Button 
-              type="submit" 
-              size="sm" 
+            <Button
+              type="submit"
+              size="sm"
               disabled={!newComment.trim() || isSubmitting}
               className="px-3"
             >
@@ -122,11 +129,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
-              <Avatar 
+              <Avatar
                 className="h-8 w-8 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
                 onClick={() => window.location.href = `/user/${comment.username}`}
               >
-                <AvatarImage src={comment.userPhotoURL} alt={comment.username} />
+                <AvatarImage src={userProfileCache[comment.userId] || comment.userPhotoURL} alt={comment.username} />
                 <AvatarFallback className="text-xs">
                   {comment.username.charAt(0).toUpperCase() || <FaUser className="w-3 h-3" />}
                 </AvatarFallback>
@@ -148,8 +155,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, postAuth
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            onClick={() => handleDeleteComment(comment.id)} 
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteComment(comment.id)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <FaTrash className="mr-2 h-3 w-3" />

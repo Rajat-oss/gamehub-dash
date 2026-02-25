@@ -148,7 +148,7 @@ export const Footer: React.FC = () => {
         */}
         <div className="relative pt-20 overflow-hidden">
           <p
-            className="text-[14vw] font-black leading-none tracking-tighter text-center select-none bg-gradient-to-b from-white/15 to-white/5 bg-clip-text text-transparent"
+            className="text-[11vw] font-black leading-none tracking-tighter text-center select-none bg-gradient-to-b from-white/15 to-white/5 bg-clip-text text-transparent"
             aria-hidden="true"
           >
             PIXELPILGRIM

@@ -4,6 +4,7 @@ import { gameLogService } from '@/services/gameLogService';
 import { GameLog, GameStatus, GAME_STATUS_LABELS, GAME_STATUS_COLORS, GameLogStats } from '@/types/gameLog';
 import { Navbar } from '@/components/homepage/Navbar';
 import { GameLogModal } from '@/components/game/GameLogModal';
+import { TwitchGame } from '@/lib/twitch';
 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,11 +20,11 @@ import {
 } from '@/components/ui/select';
 import { StarRating } from '@/components/ui/star-rating';
 import { toast } from 'sonner';
-import { 
-  FaGamepad, 
-  FaFilter, 
-  FaEdit, 
-  FaTrash, 
+import {
+  FaGamepad,
+  FaFilter,
+  FaEdit,
+  FaTrash,
   FaStar,
   FaTrophy,
   FaPlay,
@@ -44,7 +45,7 @@ const MyGames: React.FC = () => {
   const [stats, setStats] = useState<GameLogStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | 'all'>('all');
-  const [selectedGameLog, setSelectedGameLog] = useState<GameLog | null>(null);
+  const [selectedGameLog, setSelectedGameLog] = useState<TwitchGame | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
 
@@ -65,23 +66,23 @@ const MyGames: React.FC = () => {
     try {
       console.log('User object:', user);
       console.log('User UID:', user.uid);
-      
+
       const [userLogs, userStats] = await Promise.all([
         gameLogService.getUserGameLogs(user.uid),
         gameLogService.getUserGameLogStats(user.uid)
       ]);
-      
+
       console.log('Loaded logs:', userLogs);
       setGameLogs(userLogs);
       setStats(userStats);
     } catch (error) {
       console.error('Error loading user game logs:', error);
-      
+
       let errorMessage = 'Failed to load your games';
       if (error.code === 'permission-denied') {
         errorMessage = 'Permission denied. Please check Firestore security rules in Firebase Console.';
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -136,21 +137,21 @@ const MyGames: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar onSearch={() => {}} />
-      
+      <Navbar onSearch={() => { }} />
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <div className="mb-6">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate('/homepage')}
             className="flex items-center gap-2"
           >
             <FaArrowLeft className="w-4 h-4" />
-            Back to Marketplace
+            Back to Dashboard
           </Button>
         </div>
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -158,7 +159,7 @@ const MyGames: React.FC = () => {
               <FaGamepad className="text-primary text-3xl" />
               <h1 className="text-3xl font-bold text-foreground">My Games</h1>
             </div>
-            <Button 
+            <Button
               onClick={() => navigate('/homepage')}
               className="flex items-center gap-2"
             >
@@ -191,7 +192,7 @@ const MyGames: React.FC = () => {
                     <div className="text-sm text-muted-foreground">Total Games</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-green-500 mb-1">{stats.completed}</div>
@@ -209,7 +210,7 @@ const MyGames: React.FC = () => {
                 <Card className="bg-card border-border">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-purple-500 mb-1">{stats.wantToPlay}</div>
-                    <div className="text-sm text-muted-foreground">Want to Play</div>
+                    <div className="text-sm text-muted-foreground">Backlog</div>
                   </CardContent>
                 </Card>
 
@@ -254,9 +255,9 @@ const MyGames: React.FC = () => {
                 </SelectContent>
               </Select>
               {selectedStatus !== 'all' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSelectedStatus('all')}
                 >
                   <FaTimes className="w-3 h-3 mr-1" />
@@ -274,20 +275,20 @@ const MyGames: React.FC = () => {
                       {/* Game Image */}
                       {gameLog.gameImageUrl && (
                         <div className="aspect-[3/4] w-full overflow-hidden rounded-t-lg">
-                          <img 
+                          <img
                             src={gameLog.gameImageUrl}
                             alt={gameLog.gameName}
                             className="w-full h-full object-cover"
                           />
                         </div>
                       )}
-                      
+
                       {/* Game Info */}
                       <div className="p-4">
                         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{gameLog.gameName}</h3>
-                        
+
                         {/* Status Badge */}
-                        <Badge 
+                        <Badge
                           className={cn(
                             'mb-3 text-white',
                             GAME_STATUS_COLORS[gameLog.status]
@@ -311,7 +312,7 @@ const MyGames: React.FC = () => {
                               <span>{gameLog.hoursPlayed} hours</span>
                             </div>
                           )}
-                          
+
                           {gameLog.platform && (
                             <div className="flex items-center gap-2">
                               <FaGamepad className="w-3 h-3" />
@@ -365,7 +366,7 @@ const MyGames: React.FC = () => {
                   {selectedStatus === 'all' ? 'No games in your library' : `No ${GAME_STATUS_LABELS[selectedStatus as GameStatus]?.toLowerCase()} games`}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {selectedStatus === 'all' 
+                  {selectedStatus === 'all'
                     ? 'Start building your game library by adding games from the marketplace!'
                     : 'Try changing the filter or add more games to your library.'
                   }

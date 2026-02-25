@@ -1,3 +1,5 @@
+import { GameLog } from '@/types/gameLog';
+
 interface CacheItem<T> {
   data: T;
   timestamp: number;
@@ -50,9 +52,9 @@ class Cache<T> {
 }
 
 // Global caches for different data types
-export const commentsCache = new Cache(180000); // 3 minutes
-export const gameLogsCache = new Cache(300000); // 5 minutes
-export const activitiesCache = new Cache(120000); // 2 minutes
-export const ratingsCache = new Cache(600000); // 10 minutes
+export const commentsCache = new Cache<any>(180000); // 3 minutes
+export const gameLogsCache = new Cache<GameLog[]>(300000); // 5 minutes
+export const activitiesCache = new Cache<any>(120000); // 2 minutes
+export const ratingsCache = new Cache<any>(600000); // 10 minutes
 
 export { Cache };

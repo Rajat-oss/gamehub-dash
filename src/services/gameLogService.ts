@@ -1,14 +1,14 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
-  getDoc, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  getDoc,
+  query,
+  where,
+  orderBy,
   Timestamp,
   limit
 } from 'firebase/firestore';
@@ -50,7 +50,7 @@ export const gameLogService = {
   // Add a new game log
   async addGameLog(userId: string, gameLogInput: GameLogInput, userName?: string): Promise<string> {
     const rateLimitKey = `gameLog_${userId}`;
-    
+
     if (!firestoreRateLimiter.canMakeRequest(rateLimitKey)) {
       throw new Error('Too many requests. Please wait before adding another game.');
     }
@@ -63,10 +63,10 @@ export const gameLogService = {
         dateAdded: now,
         dateUpdated: now,
       });
-      
+
       // Clear cache
       gameLogsCache.delete(`gameLogs_${userId}`);
-      
+
       // Activity logging temporarily disabled to prevent infinite saves
       // if (userName) {
       //   try {
@@ -81,9 +81,30 @@ export const gameLogService = {
       //     console.warn('Failed to log activity:', activityError);
       //   }
       // }
-      
+
       return docRef.id;
     });
+  },
+
+  // Quick add a game to backlog
+  async quickAddToBacklog(userId: string, game: { id: string, name: string, box_art_url?: string }, userName?: string): Promise<string> {
+    const existingLog = await this.isGameLogged(userId, game.id);
+    if (existingLog) {
+      if (existingLog.status === 'want-to-play') {
+        throw new Error('Game is already in your backlog');
+      }
+      await this.updateGameLog(existingLog.id, { status: 'want-to-play' }, userName);
+      return existingLog.id;
+    }
+
+    const input: GameLogInput = {
+      gameId: game.id,
+      gameName: game.name,
+      gameImageUrl: game.box_art_url?.replace('{width}', '300').replace('{height}', '400') || '',
+      status: 'want-to-play',
+    };
+
+    return this.addGameLog(userId, input, userName);
   },
 
   // Update an existing game log
@@ -92,12 +113,12 @@ export const gameLogService = {
       const docRef = doc(db, COLLECTION_NAME, logId);
       const existingDoc = await getDoc(docRef);
       const existingData = existingDoc.data();
-      
+
       await updateDoc(docRef, {
         ...updates,
         dateUpdated: Timestamp.now(),
       });
-      
+
       // Activity logging temporarily disabled to prevent infinite saves
       // if (userName && existingData) {
       //   // Status change
@@ -156,7 +177,7 @@ export const gameLogService = {
   // Get all game logs for a user
   async getUserGameLogs(userId: string): Promise<GameLog[]> {
     const cacheKey = `gameLogs_${userId}`;
-    
+
     // Check cache first
     const cached = gameLogsCache.get(cacheKey);
     if (cached) {
@@ -171,10 +192,10 @@ export const gameLogService = {
       );
       const querySnapshot = await getDocs(q);
       const gameLogs = querySnapshot.docs.map(convertGameLogDocument);
-      
+
       // Cache the result
       gameLogsCache.set(cacheKey, gameLogs);
-      
+
       return gameLogs;
     });
   },
@@ -182,14 +203,8 @@ export const gameLogService = {
   // Get game logs by status
   async getUserGameLogsByStatus(userId: string, status: GameStatus): Promise<GameLog[]> {
     try {
-      const q = query(
-        collection(db, COLLECTION_NAME),
-        where('userId', '==', userId),
-        where('status', '==', status),
-        orderBy('dateUpdated', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(convertGameLogDocument);
+      const logs = await this.getUserGameLogs(userId);
+      return logs.filter(log => log.status === status);
     } catch (error) {
       console.error('Error fetching game logs by status:', error);
       throw error;
@@ -218,7 +233,7 @@ export const gameLogService = {
   async getUserGameLogStats(userId: string): Promise<GameLogStats> {
     try {
       const gameLogs = await this.getUserGameLogs(userId);
-      
+
       const stats: GameLogStats = {
         totalGames: gameLogs.length,
         completed: 0,

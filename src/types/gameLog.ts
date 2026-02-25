@@ -14,11 +14,11 @@ export interface GameLog {
   genre?: string;
 }
 
-export type GameStatus = 
-  | 'want-to-play' 
-  | 'playing' 
-  | 'completed' 
-  | 'on-hold' 
+export type GameStatus =
+  | 'want-to-play'
+  | 'playing'
+  | 'completed'
+  | 'on-hold'
   | 'dropped';
 
 export interface GameLogInput {
@@ -44,7 +44,7 @@ export interface GameLogStats {
 }
 
 export const GAME_STATUS_LABELS: Record<GameStatus, string> = {
-  'want-to-play': 'Want to Play',
+  'want-to-play': 'Backlog',
   'playing': 'Currently Playing',
   'completed': 'Completed',
   'on-hold': 'On Hold',

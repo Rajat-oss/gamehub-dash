@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { gameLogService } from '@/services/gameLogService';
 import { GameStatus, GameLogInput, GAME_STATUS_LABELS, GameLog } from '@/types/gameLog';
 import { TwitchGame } from '@/lib/twitch';
+import { stopLenis, startLenis } from '@/components/SmoothScroll';
 
 import {
   Dialog,
@@ -69,7 +70,7 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
         platform: '',
         genre: ''
       });
-      
+
       // Check if game is already logged
       if (user) {
         checkExistingLog();
@@ -77,9 +78,19 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
     }
   }, [game, isOpen, user]);
 
+  // Handle Lenis scroll locking
+  useEffect(() => {
+    if (isOpen) {
+      stopLenis();
+    } else {
+      startLenis();
+    }
+    return () => startLenis(); // Ensure Lenis is restarted if component unmounts
+  }, [isOpen]);
+
   const checkExistingLog = async () => {
     if (!user || !game) return;
-    
+
     try {
       const existingGameLog = await gameLogService.isGameLogged(user.uid, game.id);
       if (existingGameLog) {
@@ -113,7 +124,7 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
     setIsLoading(true);
     try {
       const userName = user.displayName || user.email || 'Anonymous';
-      
+
       if (existingLog) {
         // Update existing log
         await gameLogService.updateGameLog(existingLog.id, formData, userName);
@@ -123,14 +134,14 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
         await gameLogService.addGameLog(user.uid, formData, userName);
         toast.success('Game added to your library!');
       }
-      
+
       if (onGameLogged) {
         onGameLogged();
       }
       onClose();
     } catch (error) {
       console.error('Error saving game log:', error);
-      
+
       // More specific error handling
       let errorMessage = 'Failed to save game log';
       if (error.code === 'permission-denied') {
@@ -140,7 +151,7 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -174,7 +185,10 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto"
+        data-lenis-prevent
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FaGamepad className="text-primary" />
@@ -186,8 +200,8 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
           {/* Game Info Display */}
           <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
             {formData.gameImageUrl && (
-              <img 
-                src={formData.gameImageUrl} 
+              <img
+                src={formData.gameImageUrl}
                 alt={formData.gameName}
                 className="w-12 h-16 object-cover rounded"
               />
@@ -203,8 +217,8 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">Status *</Label>
-            <Select 
-              value={formData.status} 
+            <Select
+              value={formData.status}
               onValueChange={(value: GameStatus) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
@@ -240,9 +254,9 @@ export const GameLogModal: React.FC<GameLogModalProps> = ({
               min="0"
               step="0.5"
               value={formData.hoursPlayed || ''}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                hoursPlayed: e.target.value ? parseFloat(e.target.value) : undefined 
+              onChange={(e) => setFormData({
+                ...formData,
+                hoursPlayed: e.target.value ? parseFloat(e.target.value) : undefined
               })}
               placeholder="0"
             />

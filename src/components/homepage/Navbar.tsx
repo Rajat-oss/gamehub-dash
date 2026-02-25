@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope, FaBars, FaTimes, FaUsers } from 'react-icons/fa';
+import { FaSearch, FaUser, FaSignOutAlt, FaCog, FaHeart, FaGamepad, FaComments, FaBell, FaPlus, FaEnvelope, FaBars, FaTimes, FaUsers, FaListUl } from 'react-icons/fa';
 import { MobileSidebar } from '@/components/MobileSidebar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
-  
+
   // Define pages where game search should be shown
   const showGameSearch = ['/homepage', '/'].includes(location.pathname);
 
@@ -54,15 +54,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     }
     setShowSuggestions(false);
   };
-  
+
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-  
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (searchTimeout) clearTimeout(searchTimeout);
-    
+
     if (query.length > 1) {
       const timeout = setTimeout(async () => {
         try {
@@ -78,19 +78,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       setShowSuggestions(false);
     }
   };
-  
+
   const handleSuggestionClick = (game: TwitchGame) => {
     navigate(`/search?q=${encodeURIComponent(game.name)}`);
     setShowSuggestions(false);
   };
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -117,24 +117,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
       setUnreadCount(0);
       return;
     }
-    
+
     // Set up real-time listener for unread notifications (excluding chat)
     const q = query(
       collection(db, 'notifications'),
       where('userId', '==', user.uid),
       where('read', '==', false)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // Filter out chat notifications
-      const nonChatNotifications = snapshot.docs.filter(doc => 
+      const nonChatNotifications = snapshot.docs.filter(doc =>
         doc.data().type !== 'chat_message'
       );
       setUnreadCount(nonChatNotifications.length);
     }, (error) => {
       console.error('Error listening to notification count:', error);
     });
-    
+
     return () => unsubscribe();
   }, [user]);
 
@@ -152,10 +152,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="cursor-pointer" onClick={() => navigate('/')}>
-            <img 
-              src="/logofinal.png" 
-              alt="GameHub" 
-              className="h-16 w-16 lg:h-20 lg:w-20 xl:h-28 xl:w-28 object-contain" 
+            <img
+              src="/logofinal.png"
+              alt="GameHub"
+              className="h-16 w-16 lg:h-20 lg:w-20 xl:h-28 xl:w-28 object-contain"
             />
           </div>
 
@@ -187,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                     </button>
                   )}
                 </div>
-                
+
                 {/* Clean Search Suggestions */}
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-popover border border-border rounded-md mt-1 shadow-md z-50 max-h-60 overflow-y-auto">
@@ -233,24 +233,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
 
           {/* Desktop Navigation Buttons */}
           <div className="hidden lg:flex items-center gap-2 mr-4">
-            <Button 
+            <Button
               variant={location.pathname === '/posts' ? 'default' : 'ghost'}
               onClick={() => navigate('/posts')}
               size="sm"
             >
               Social
             </Button>
-            
-            <Button 
-              variant={location.pathname === '/my-games' ? 'default' : 'ghost'}
-              onClick={() => navigate('/my-games')}
-              size="sm"
-            >
-              <FaGamepad className="w-4 h-4 mr-2" />
-              My Games
-            </Button>
-            
-            <Button 
+
+            <Button
               variant={location.pathname === '/favorites' ? 'default' : 'ghost'}
               onClick={() => navigate('/favorites')}
               size="sm"
@@ -258,8 +249,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               <FaHeart className="w-4 h-4 mr-2" />
               Favorites
             </Button>
-            
-            <Button 
+
+            <Button
+              variant={location.pathname === '/backlog' ? 'default' : 'ghost'}
+              onClick={() => navigate('/backlog')}
+              size="sm"
+            >
+              <FaListUl className="w-4 h-4 mr-2" />
+              Backlog
+            </Button>
+
+            <Button
               variant={location.pathname === '/inbox' ? 'default' : 'ghost'}
               onClick={() => navigate('/inbox')}
               size="sm"
@@ -337,11 +337,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* Mobile Profile Button */}
           <div className="lg:hidden">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="relative h-8 w-8 rounded-full"
               onClick={() => setIsMobileSidebarOpen(true)}
             >
@@ -366,8 +366,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
               className="lg:hidden pb-4"
             >
               <form onSubmit={handleSearchSubmit} className="w-full">
-                <motion.div 
-                  className="relative" 
+                <motion.div
+                  className="relative"
                   ref={searchRef}
                 >
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
@@ -383,11 +383,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                     className="pl-10 bg-secondary/50 border-border/50 focus:border-primary transition-all duration-300 focus:bg-background/80 focus:shadow-lg focus:ring-2 focus:ring-primary/20"
                     autoFocus
                   />
-                  
+
                   {/* Mobile Search Suggestions */}
                   <AnimatePresence>
                     {showSuggestions && suggestions.length > 0 && (
-                      <motion.div 
+                      <motion.div
                         className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg mt-1 shadow-xl z-50 max-h-72 overflow-y-auto"
                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -429,9 +429,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Mobile Sidebar */}
-        <MobileSidebar 
+        <MobileSidebar
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
           userProfile={userProfile}

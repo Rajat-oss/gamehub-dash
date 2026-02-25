@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { postService } from '@/services/postService';
 import { Post } from '@/types/post';
-import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaBookmark, FaHome, FaGamepad, FaUsers, FaBell, FaComments, FaFire, FaTrendingUp, FaUserPlus, FaSmile, FaThumbsUp, FaSurprise, FaCamera } from 'react-icons/fa';
+import { FaPlus, FaHeart, FaRegHeart, FaUser, FaComment, FaRegComment, FaShare, FaEllipsisV, FaTrash, FaBookmark, FaHome, FaGamepad, FaUsers, FaBell, FaComments, FaFire, FaUserPlus, FaSmile, FaThumbsUp, FaSurprise, FaCamera } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CommentSection } from '@/components/posts/CommentSection';
 import { ShareModal } from '@/components/posts/ShareModal';
@@ -30,19 +30,27 @@ const Posts: React.FC = () => {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [sharePost, setSharePost] = useState<Post | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [commentCounts, setCommentCounts] = useState<{[key: string]: number}>({});
+  const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
   const [stories, setStories] = useState<Story[]>([]);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
   const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
+  const [userProfiles, setUserProfiles] = useState<{ [userId: string]: string }>({}); // Cache: userId -> photoURL
 
   const loadPosts = async () => {
     try {
       const fetchedPosts = await postService.getPosts();
       setPosts(fetchedPosts);
-      
+
+      // Update cache from posts
+      const profileUpdates: { [userId: string]: string } = {};
       fetchedPosts.forEach(post => {
+        if (post.userPhotoURL) {
+          profileUpdates[post.userId] = post.userPhotoURL;
+        }
+
         commentService.subscribeToComments(post.id, (comments) => {
           setCommentCounts(prev => ({
             ...prev,
@@ -50,6 +58,7 @@ const Posts: React.FC = () => {
           }));
         });
       });
+      setUserProfiles(prev => ({ ...prev, ...profileUpdates }));
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
@@ -60,17 +69,39 @@ const Posts: React.FC = () => {
   useEffect(() => {
     loadPosts();
     if (user) {
+      loadCurrentUserProfile();
       loadStories();
       loadSuggestions();
     }
   }, [user]);
 
+  const loadCurrentUserProfile = async () => {
+    if (!user) return;
+    try {
+      const profile = await userService.getUserProfile(user.uid);
+      setCurrentUserProfile(profile);
+      if (profile?.photoURL) {
+        setUserProfiles(prev => ({ ...prev, [user.uid]: profile.photoURL! }));
+      }
+    } catch (error) {
+      console.error('Error loading current user profile:', error);
+    }
+  };
+
   const loadStories = async () => {
     if (!user) return;
-    
+
     try {
       const unsubscribe = await storyService.subscribeToFollowedUsersStories(user.uid, (userStories) => {
         setStories(userStories);
+        // Update cache from stories
+        const profileUpdates: { [userId: string]: string } = {};
+        userStories.forEach(story => {
+          if (story.userPhotoURL) {
+            profileUpdates[story.userId] = story.userPhotoURL;
+          }
+        });
+        setUserProfiles(prev => ({ ...prev, ...profileUpdates }));
       });
       return unsubscribe;
     } catch (error) {
@@ -80,19 +111,28 @@ const Posts: React.FC = () => {
 
   const loadSuggestions = async () => {
     if (!user) return;
-    
+
     try {
       const userProfile = await userService.getUserProfile(user.uid);
       if (!userProfile) return;
-      
+
       const allUsers = await userService.getAllPublicUsers();
-      const filteredSuggestions = allUsers.filter(u => 
-        u.uid !== user.uid && 
+      const filteredSuggestions = allUsers.filter(u =>
+        u.uid !== user.uid &&
         !userProfile.following?.includes(u.uid) &&
         u.isPublic !== false
       ).slice(0, 3);
-      
+
       setSuggestions(filteredSuggestions);
+
+      // Update cache from suggestions (these are full UserProfiles, so very fresh)
+      const profileUpdates: { [userId: string]: string } = {};
+      allUsers.forEach(u => {
+        if (u.photoURL) {
+          profileUpdates[u.uid] = u.photoURL;
+        }
+      });
+      setUserProfiles(prev => ({ ...prev, ...profileUpdates }));
     } catch (error) {
       console.error('Error loading suggestions:', error);
     }
@@ -100,7 +140,7 @@ const Posts: React.FC = () => {
 
   const handleFollowUser = async (targetUserId: string) => {
     if (!user) return;
-    
+
     try {
       await userService.followUser(user.uid, targetUserId);
       loadSuggestions(); // Refresh suggestions
@@ -113,7 +153,7 @@ const Posts: React.FC = () => {
 
   const handleLike = async (postId: string, isLiked: boolean) => {
     if (!user) return;
-    
+
     try {
       if (isLiked) {
         await postService.unlikePost(postId, user.uid);
@@ -143,7 +183,7 @@ const Posts: React.FC = () => {
 
   const handleDeletePost = async (postId: string) => {
     if (!user) return;
-    
+
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await postService.deletePost(postId);
@@ -158,18 +198,18 @@ const Posts: React.FC = () => {
 
   const sidebarItems = [
     { icon: FaHome, label: 'Home', active: true },
-  
-    
-    
-    
+
+
+
+
   ];
 
 
 
   return (
     <div className="min-h-screen bg-background relative">
-      <Navbar onSearch={() => {}} />
-      
+      <Navbar onSearch={() => { }} />
+
       <div className="flex max-w-7xl mx-auto">
         {/* Left Sidebar */}
         <div className="hidden lg:block w-64 p-6 sticky top-0 h-screen">
@@ -178,11 +218,10 @@ const Posts: React.FC = () => {
               <motion.div
                 key={item.label}
                 whileHover={{ scale: 1.02, x: 4 }}
-                className={`flex items-center gap-4 p-4 rounded-full cursor-pointer transition-all duration-200 ${
-                  item.active 
-                    ? 'bg-primary/10 border border-primary/20' 
-                    : 'hover:bg-muted/50'
-                }`}
+                className={`flex items-center gap-4 p-4 rounded-full cursor-pointer transition-all duration-200 ${item.active
+                  ? 'bg-primary/10 border border-primary/20'
+                  : 'hover:bg-muted/50'
+                  }`}
               >
                 <div className={`p-2 rounded-xl ${item.active ? 'bg-primary' : 'bg-muted'}`}>
                   <item.icon className={`w-5 h-5 ${item.active ? 'text-primary-foreground' : 'text-foreground'}`} />
@@ -213,7 +252,7 @@ const Posts: React.FC = () => {
                 <FaCamera className="w-4 h-4" />
               </motion.button>
             </div>
-            
+
             {stories.length > 0 ? (
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                 {Object.entries(
@@ -227,10 +266,10 @@ const Posts: React.FC = () => {
                 ).map(([userId, userStories]) => {
                   const latestStory = userStories[0];
                   const isOwnStory = userId === user?.uid;
-                  const hasUnviewedStories = !isOwnStory && userStories.some(story => 
+                  const hasUnviewedStories = !isOwnStory && userStories.some(story =>
                     user && !story.views.includes(user.uid)
                   );
-                  
+
                   return (
                     <motion.div
                       key={userId}
@@ -242,14 +281,13 @@ const Posts: React.FC = () => {
                         setIsStoryViewerOpen(true);
                       }}
                     >
-                      <div className={`relative p-0.5 rounded-full ${
-                        hasUnviewedStories && !isOwnStory
-                          ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500' 
-                          : 'bg-gray-500'
-                      }`}>
+                      <div className={`relative p-0.5 rounded-full ${hasUnviewedStories && !isOwnStory
+                        ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500'
+                        : 'bg-gray-500'
+                        }`}>
                         <div className="p-0.5 bg-black rounded-full">
                           <Avatar className="w-16 h-16">
-                            <AvatarImage src={latestStory.userPhotoURL} />
+                            <AvatarImage src={userProfiles[userId] || latestStory.userPhotoURL} />
                             <AvatarFallback className="bg-white text-black">
                               {latestStory.username.slice(0, 2)}
                             </AvatarFallback>
@@ -280,9 +318,9 @@ const Posts: React.FC = () => {
           <div className="bg-card border border-border rounded-3xl p-6 mb-6">
             <div className="flex items-center gap-4">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={user?.photoURL} />
+                <AvatarImage src={currentUserProfile?.photoURL || user?.photoURL || ''} />
                 <AvatarFallback className="bg-white text-black">
-                  {user?.displayName?.charAt(0) || <FaUser />}
+                  {currentUserProfile?.username?.charAt(0) || user?.displayName?.charAt(0) || <FaUser />}
                 </AvatarFallback>
               </Avatar>
               <button
@@ -337,7 +375,7 @@ const Posts: React.FC = () => {
               {posts.map((post, index) => {
                 const isLiked = user ? post.likes.includes(user.uid) : false;
                 const isOwner = user?.uid === post.userId;
-                
+
                 return (
                   <motion.div
                     key={post.id}
@@ -349,11 +387,11 @@ const Posts: React.FC = () => {
                   >
                     {/* Post Header */}
                     <div className="flex items-center gap-4 mb-4">
-                      <Avatar 
+                      <Avatar
                         className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all"
                         onClick={() => window.location.href = `/user/${post.username}`}
                       >
-                        <AvatarImage src={post.userPhotoURL} alt={post.username} />
+                        <AvatarImage src={userProfiles[post.userId] || post.userPhotoURL} alt={post.username} />
                         <AvatarFallback className="bg-white text-black">
                           {post.username.charAt(0).toUpperCase() || <FaUser />}
                         </AvatarFallback>
@@ -387,14 +425,14 @@ const Posts: React.FC = () => {
                         </DropdownMenu>
                       )}
                     </div>
-                    
+
                     {/* Post Content */}
                     {post.content && (
                       <div className="mb-4">
                         <p className="text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
                       </div>
                     )}
-                    
+
                     {/* Post Media */}
                     {post.mediaUrl && (
                       <div className="mb-6 overflow-hidden rounded-2xl">
@@ -418,7 +456,7 @@ const Posts: React.FC = () => {
                         )}
                       </div>
                     )}
-                    
+
                     {/* Reactions */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
@@ -426,11 +464,10 @@ const Posts: React.FC = () => {
                           onClick={() => handleLike(post.id, isLiked)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
-                            isLiked 
-                              ? 'bg-primary/20 text-primary border border-primary/30' 
-                              : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
-                          }`}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${isLiked
+                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
+                            }`}
                         >
                           <motion.div
                             animate={isLiked ? { scale: [1, 1.3, 1] } : {}}
@@ -440,16 +477,15 @@ const Posts: React.FC = () => {
                           </motion.div>
                           <span className="text-sm font-medium">{post.likeCount}</span>
                         </motion.button>
-                        
+
                         <motion.button
                           onClick={() => toggleComments(post.id)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
-                            expandedComments.has(post.id)
-                              ? 'bg-primary/20 text-primary border border-primary/30'
-                              : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
-                          }`}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${expandedComments.has(post.id)
+                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            : 'bg-muted/50 text-muted-foreground border border-border hover:border-primary/50 hover:text-foreground'
+                            }`}
                         >
                           {expandedComments.has(post.id) ? <FaComment className="w-4 h-4" /> : <FaRegComment className="w-4 h-4" />}
                           <span className="text-sm font-medium">{commentCounts[post.id] || 0}</span>
@@ -457,7 +493,7 @@ const Posts: React.FC = () => {
 
 
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <motion.button
                           onClick={() => handleShare(post)}
@@ -467,7 +503,7 @@ const Posts: React.FC = () => {
                         >
                           <FaShare className="w-4 h-4" />
                         </motion.button>
-                        
+
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
@@ -477,7 +513,7 @@ const Posts: React.FC = () => {
                         </motion.button>
                       </div>
                     </div>
-                    
+
                     {/* Comments Section */}
                     <AnimatePresence>
                       {expandedComments.has(post.id) && (
@@ -488,10 +524,11 @@ const Posts: React.FC = () => {
                           transition={{ duration: 0.3 }}
                           className="border-t border-white/10 pt-4"
                         >
-                          <CommentSection 
+                          <CommentSection
                             postId={post.id}
                             postAuthorId={post.userId}
                             isExpanded={expandedComments.has(post.id)}
+                            userProfileCache={userProfiles}
                           />
                         </motion.div>
                       )}
@@ -518,7 +555,7 @@ const Posts: React.FC = () => {
                 <FaCamera className="w-4 h-4" />
               </motion.button>
             </div>
-            
+
             {stories.length > 0 ? (
               <div className="flex flex-wrap gap-4 justify-center">
                 {Object.entries(
@@ -532,10 +569,10 @@ const Posts: React.FC = () => {
                 ).map(([userId, userStories]) => {
                   const latestStory = userStories[0];
                   const isOwnStory = userId === user?.uid;
-                  const hasUnviewedStories = !isOwnStory && userStories.some(story => 
+                  const hasUnviewedStories = !isOwnStory && userStories.some(story =>
                     user && !story.views.includes(user.uid)
                   );
-                  
+
                   return (
                     <motion.div
                       key={userId}
@@ -547,14 +584,13 @@ const Posts: React.FC = () => {
                         setIsStoryViewerOpen(true);
                       }}
                     >
-                      <div className={`relative p-0.5 rounded-full ${
-                        hasUnviewedStories && !isOwnStory
-                          ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500' 
-                          : 'bg-gray-500'
-                      }`}>
+                      <div className={`relative p-0.5 rounded-full ${hasUnviewedStories && !isOwnStory
+                        ? 'bg-gradient-to-r from-pink-500 via-red-500 to-orange-500'
+                        : 'bg-gray-500'
+                        }`}>
                         <div className="p-0.5 bg-black rounded-full">
                           <Avatar className="w-14 h-14">
-                            <AvatarImage src={latestStory.userPhotoURL} />
+                            <AvatarImage src={userProfiles[userId] || latestStory.userPhotoURL} />
                             <AvatarFallback className="bg-white text-black">
                               {latestStory.username.slice(0, 2)}
                             </AvatarFallback>
@@ -591,18 +627,18 @@ const Posts: React.FC = () => {
               <div className="space-y-4">
                 {suggestions.map((suggestion) => (
                   <div key={suggestion.uid} className="flex items-center gap-3">
-                    <Avatar 
+                    <Avatar
                       className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all"
                       onClick={() => window.location.href = `/user/${suggestion.username}`}
                     >
-                      <AvatarImage src={suggestion.photoURL} />
+                      <AvatarImage src={userProfiles[suggestion.uid] || suggestion.photoURL} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                         {suggestion.username?.slice(0, 2) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <p className="text-foreground font-medium text-sm">{suggestion.username}</p>
-                      <p className="text-muted-foreground text-xs">{suggestion.followers?.length || 0} followers</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground font-medium text-sm truncate">{suggestion.username}</p>
+                      <p className="text-muted-foreground text-xs truncate">{suggestion.followers?.length || 0} followers</p>
                     </div>
                     <motion.button
                       onClick={() => handleFollowUser(suggestion.uid)}
@@ -625,7 +661,7 @@ const Posts: React.FC = () => {
         onClose={() => setIsPostModalOpen(false)}
         onPostCreated={loadPosts}
       />
-      
+
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => {
@@ -634,7 +670,7 @@ const Posts: React.FC = () => {
         }}
         post={sharePost}
       />
-      
+
       <StoryModal
         isOpen={isStoryModalOpen}
         onClose={() => setIsStoryModalOpen(false)}
@@ -643,7 +679,7 @@ const Posts: React.FC = () => {
           toast.success('Story added successfully!');
         }}
       />
-      
+
       <StoryViewer
         isOpen={isStoryViewerOpen}
         onClose={() => setIsStoryViewerOpen(false)}
